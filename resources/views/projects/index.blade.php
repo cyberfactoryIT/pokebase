@@ -36,7 +36,7 @@
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-4 py-2 font-medium text-gray-800">{{ $project->name }}</td>
                             <td class="px-4 py-2 text-gray-700">{{ $project->code }}</td>
-                            <td class="px-4 py-2 text-gray-700">{{ $project->responsible?->name }}</td>
+                            <td class="px-4 py-2 text-gray-700">{{ optional($project->responsible)->name }}</td>
                             <td class="px-4 py-2 text-center">
                                 @if($project->is_active)
                                     <span class="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Yes</span>
@@ -45,7 +45,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-center text-gray-700">
-                                {{ $project->starts_at?->format('d/m/Y') }} — {{ $project->ends_at?->format('d/m/Y') }}
+                                {{ optional($project->starts_at)->format('d/m/Y') ?? '-' }} — {{ optional($project->ends_at)->format('d/m/Y') ?? '-' }}
                             </td>
                             <td class="px-4 py-2 text-center flex gap-2 justify-center">
                                 @can('view', $project)

@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+@if(!config('organizations.enabled'))
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-7xl mx-auto">
+        <x-card>
+            <p>{{ __('messages.organizations_disabled_notice', ['name' => auth()->user()->name ?? 'User']) }}</p>
+        </x-card>
+    </div>
+</div>
+@else
 <div class="bg-gray-50 min-h-screen py-8">
     <div class="max-w-7xl mx-auto">
         <div class="bg-white rounded-lg shadow p-8">

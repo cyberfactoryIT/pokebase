@@ -13,7 +13,7 @@ class HelpRegistry
             return Help::active()->where('key',$key)->first();
         });
 
-        return $entry?->resolve($locale);
+    return optional($entry)->resolve($locale);
     }
 
     public function forget(string $key): void

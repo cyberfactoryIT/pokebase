@@ -7,6 +7,7 @@
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
+        @if(config('organizations.enabled'))
         <!-- Organization CVR -->
         <div class="mt-4">
             <x-input-label for="organization_cvr" :value="__('auth.organization_cvr')" />
@@ -48,6 +49,11 @@
                 <x-input-error :messages="$errors->get('organization_city')" class="mt-2" />
             </div>
         </div>
+        @else
+            <div class="mb-4 p-4 bg-yellow-50 rounded">
+                <p class="text-sm text-yellow-800">{{ __('messages.organizations_disabled_notice', ['name' => auth()->user()->name ?? 'User']) }}</p>
+            </div>
+        @endif
 
         <!-- Name -->
         <div>

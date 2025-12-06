@@ -20,15 +20,19 @@ class AdminUserController
 
     public function index()
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
-        $users = User::where('organization_id', Auth::user()->organization_id)->get();
+    $users = User::where('organization_id', config('organizations.enabled') ? Auth::user()->organization_id : null)->get();
         return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
         $roles = Role::whereNotIn('name', ['superadmin'])->get();
         foreach ($roles as $role) {
@@ -40,7 +44,9 @@ class AdminUserController
 
     public function store(Request $request)
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -51,20 +57,24 @@ class AdminUserController
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'organization_id' => Auth::user()->organization_id,
+            'organization_id' => config('organizations.enabled') ? Auth::user()->organization_id : null,
         ]);
         if ($request->filled('role')) {
-            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+                config('organizations.enabled') ? Auth::user()->organization_id : null
+            );
             $user->assignRole($request->role);
         }
-        ActivityLog::logActivity('user', 'create', ['user' => $user->name], Auth::user()->organization_id, Auth::id());
+    ActivityLog::logActivity('user', 'create', ['user' => $user->name], config('organizations.enabled') ? Auth::user()->organization_id : null, Auth::id());
 
         return Redirect::route('users.index')->with('status', __('messages.user_created'));
     }
 
     public function edit(User $user)
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
         $this->authorizeUser($user);
         $roles = $user->roles->pluck('name')->toArray();
@@ -73,7 +83,9 @@ class AdminUserController
 
     public function update(Request $request, User $user)
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
         $this->authorizeUser($user);
         $request->validate([
@@ -89,20 +101,24 @@ class AdminUserController
         }
         $user->save();
         if ($request->has('roles')) {
-            app(PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+            app(PermissionRegistrar::class)->setPermissionsTeamId(
+                config('organizations.enabled') ? $user->organization_id : null
+            );
             $user->syncRoles($request->roles);
         }
-        ActivityLog::logActivity('user', 'update', ['user' => $user->name], Auth::user()->organization_id, Auth::id());
+        ActivityLog::logActivity('user', 'update', ['user' => $user->name], config('organizations.enabled') ? Auth::user()->organization_id : null, Auth::id());
 
         return Redirect::route('users.index')->with('status', __('messages.user_updated'));
     }
 
     public function destroy(User $user)
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
         $this->authorizeUser($user);
-         ActivityLog::logActivity('user', 'delete', ['user' => $user->name], Auth::user()->organization_id, Auth::id());
+         ActivityLog::logActivity('user', 'delete', ['user' => $user->name], config('organizations.enabled') ? Auth::user()->organization_id : null, Auth::id());
        
         $user->delete();
         return Redirect::route('users.index')->with('status', __('messages.user_deleted'));
@@ -110,7 +126,7 @@ class AdminUserController
 
     protected function authorizeUser(User $user)
     {
-        if ($user->organization_id !== Auth::user()->organization_id) {
+    if (config('organizations.enabled') && $user->organization_id !== Auth::user()->organization_id) {
             abort(403);
         }
     }

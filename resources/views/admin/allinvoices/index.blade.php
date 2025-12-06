@@ -8,6 +8,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">{{ __('messages.allinvoices') }}</h2>
                 <div class="flex gap-2">
+                    @if(config('organizations.enabled'))
                     <form method="GET" action="" class="flex items-center gap-2">
                         <label for="organization_id" class="font-semibold text-sm">{{ __('messages.organization') }}</label>
                         <x-select id="organization_id" name="organization_id" :options="App\Models\Organization::orderBy('name')->pluck('name','id')->toArray()" placeholder="{{ __('messages.all') }}" :value="request('organization_id')" />
@@ -16,14 +17,21 @@
                     <x-button as="a" href="{{ route('superadmin.billing.invoices.export', array_filter(['organization_id' => request('organization_id')])) }}" icon="download" target="_blank" variant="success">
                         {{ __('messages.export_csv') }}
                     </x-button>
+                    @else
+                    <x-button as="a" href="{{ route('superadmin.billing.invoices.export') }}" icon="download" target="_blank" variant="success">
+                        {{ __('messages.export_csv') }}
+                    </x-button>
+                    @endif
                 </div>
             </div>
             <div class="overflow-x-auto">
                 <x-table>
-                    <thead class="bg-gray-50">
+            <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-2 text-left">{{ __('messages.number') }}</th>
-                            <th class="px-4 py-2 text-left">{{ __('messages.organization') }}</th>
+                @if(config('organizations.enabled'))
+                <th class="px-4 py-2 text-left">{{ __('messages.organization') }}</th>
+                @endif
                             <th class="px-4 py-2 text-left">{{ __('messages.issued') }}</th>
                             <th class="px-4 py-2 text-left">{{ __('messages.status') }}</th>
                             <th class="px-4 py-2 text-left">{{ __('messages.total') }}</th>
@@ -31,10 +39,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($invoices as $invoice)
+            @foreach($invoices as $invoice)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="px-4 py-2">{{ $invoice->number }}</td>
-                                <td class="px-4 py-2">{{ $invoice->organization->name ?? $invoice->organization_id }}</td>
+                @if(config('organizations.enabled'))
+                <td class="px-4 py-2">{{ optional($invoice->organization)->name ?? $invoice->organization_id }}</td>
+                @endif
                                 <td class="px-4 py-2">{{ $invoice->issued_at->format('d/m/Y') }}</td>
                                 <td class="px-4 py-2">
                                     <x-badge variant="{{ $invoice->status === 'paid' ? 'success' : ($invoice->status === 'open' ? 'warning' : 'danger') }}">

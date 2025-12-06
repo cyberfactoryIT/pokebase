@@ -5,8 +5,11 @@ use App\Models\Organization;
 
 class PlanGate
 {
-    public function allows(Organization $org, string $featureKey, $operator = 'bool', $default = null)
+    public function allows(?Organization $org, string $featureKey, $operator = 'bool', $default = null)
     {
+        if (!config('organizations.enabled') || !$org) {
+            return $default;
+        }
         $plan = $org->pricingPlan;
         if (!$plan) return $default;
         $value = $plan->getFeatureValue($featureKey, $default);
@@ -15,7 +18,7 @@ class PlanGate
         return $value;
     }
 
-    public function limit(Organization $org, string $featureKey, int $fallback = 0): int
+    public function limit(?Organization $org, string $featureKey, int $fallback = 0): int
     {
         return (int)($this->allows($org, $featureKey, 'int', $fallback));
     }

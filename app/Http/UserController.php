@@ -24,7 +24,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $orgId = $request->user()->organization_id;
+    $orgId = config('organizations.enabled') ? $request->user()->organization_id : null;
 
         $users = User::query()
             ->where('organization_id', $orgId)
@@ -58,7 +58,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $orgId = $request->user()->organization_id;
+    $orgId = config('organizations.enabled') ? $request->user()->organization_id : null;
 
         $data = $request->validate([
             'name' => ['required','string','max:255'],
@@ -76,7 +76,9 @@ class UserController extends Controller
         ]);
 
         // Imposta il team corrente = org per assegnare ruoli "scopati" sull'org
-        app(PermissionRegistrar::class)->setPermissionsTeamId($orgId);
+        app(PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? $orgId : null
+        );
 
         if (!empty($data['roles'])) {
             $user->syncRoles($data['roles']);
@@ -90,8 +92,10 @@ class UserController extends Controller
      */
     public function edit(Request $request, User $user)
     {
-        $orgId = $request->user()->organization_id;
-        abort_unless($user->organization_id === $orgId, 403);
+        $orgId = config('organizations.enabled') ? $request->user()->organization_id : null;
+        if (config('organizations.enabled')) {
+            abort_unless($user->organization_id === $orgId, 403);
+        }
 
         $roles = Role::query()
             ->where('guard_name', 'web')
@@ -99,7 +103,9 @@ class UserController extends Controller
             ->pluck('name', 'name');
 
         // Ruoli correnti dell'utente (nomi)
-        app(PermissionRegistrar::class)->setPermissionsTeamId($orgId);
+        app(PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? $orgId : null
+        );
         $currentRoles = $user->roles->pluck('name')->all();
 
         return view('users.edit', [
@@ -114,8 +120,10 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $orgId = $request->user()->organization_id;
-        abort_unless($user->organization_id === $orgId, 403);
+        $orgId = config('organizations.enabled') ? $request->user()->organization_id : null;
+        if (config('organizations.enabled')) {
+            abort_unless($user->organization_id === $orgId, 403);
+        }
 
         $data = $request->validate([
             'name' => ['required','string','max:255'],
@@ -134,7 +142,9 @@ class UserController extends Controller
         $user->update($data);
 
         // Team context = org per sync ruoli
-        app(PermissionRegistrar::class)->setPermissionsTeamId($orgId);
+        app(PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? $orgId : null
+        );
 
         if (array_key_exists('roles', $data)) {
             $user->syncRoles($data['roles'] ?? []);
@@ -148,8 +158,10 @@ class UserController extends Controller
      */
     public function destroy(Request $request, User $user)
     {
-        $orgId = $request->user()->organization_id;
-        abort_unless($user->organization_id === $orgId, 403);
+        $orgId = config('organizations.enabled') ? $request->user()->organization_id : null;
+        if (config('organizations.enabled')) {
+            abort_unless($user->organization_id === $orgId, 403);
+        }
 
         // Evita auto-cancellazione
         if ($user->id === $request->user()->id) {

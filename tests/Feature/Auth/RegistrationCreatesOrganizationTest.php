@@ -15,6 +15,9 @@ class RegistrationCreatesOrganizationTest extends TestCase
 
     public function test_successful_registration_creates_organization_and_admin_user()
     {
+        if (!config('organizations.enabled')) {
+            $this->markTestSkipped('Organizations feature is disabled.');
+        }
         $response = $this->post('/register', [
             'organization_name' => 'Test Org',
             'organization_code' => 'ORG123',
@@ -42,6 +45,9 @@ class RegistrationCreatesOrganizationTest extends TestCase
 
     public function test_duplicate_organization_registration_fails_and_no_extra_records()
     {
+        if (!config('organizations.enabled')) {
+            $this->markTestSkipped('Organizations feature is disabled.');
+        }
         // First registration
         $this->post('/register', [
             'organization_name' => 'Test Org',

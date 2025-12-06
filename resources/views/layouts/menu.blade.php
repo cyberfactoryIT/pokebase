@@ -13,10 +13,12 @@
             <i class="fa fa-history text-purple-500"></i>
             <span>{{ __('messages.nav.activity_log') }}</span>
         </a>
+        @if(config('organizations.enabled'))
         <a href="{{ route('superadmin.organizations.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition {{ request()->routeIs('superadmin.organizations.index') ? 'bg-gray-100 font-bold' : '' }}">
             <i class="fa fa-building text-green-500"></i>
             <span>{{ __('messages.nav.all_organizations') }}</span>
         </a>
+        @endif
         <a href="{{ route('superadmin.plans.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition {{ request()->routeIs('superadmin.plans.index') ? 'bg-gray-100 font-bold' : '' }}">
             <i class="fa fa-coins text-yellow-500"></i>
             <span>{{ __('messages.nav.pricing_plans') }}</span>
@@ -44,10 +46,12 @@
             <i class="fa fa-users text-blue-500"></i>
             <span>{{ __('messages.nav.user_management') }}</span>
         </a>
+        @if(config('organizations.enabled'))
         <a href="{{ route('admin.organization.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition {{ request()->routeIs('admin.organization.edit') ? 'bg-gray-100 font-bold' : '' }}">
             <i class="fa fa-building text-green-500"></i>
             <span>{{ __('messages.nav.organization_management') }}</span>
         </a>
+        @endif
         <a href="{{ route('admin.activitylog.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition {{ request()->routeIs('admin.activitylog.index') ? 'bg-gray-100 font-bold' : '' }}">
             <i class="fa fa-history text-purple-500"></i>
             <span>{{ __('messages.nav.activity_log') }}</span>

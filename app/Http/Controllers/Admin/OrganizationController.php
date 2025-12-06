@@ -19,6 +19,9 @@ class OrganizationController extends Controller
 
     public function __invoke(Request $request): View
     {
+        if (!config('organizations.enabled')) {
+            abort(404);
+        }
         //Log::info('Invoking organization view for user ID: ' . $request->user()->id);
         $organization = $request->user()->organization;
         return view('admin.organization', compact('organization'));
@@ -26,12 +29,17 @@ class OrganizationController extends Controller
 
     public function edit()
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        if (!config('organizations.enabled')) {
+            abort(404);
+        }
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
         $user = Auth::user();
         $roles = $user->roles->pluck('name')->toArray();
         $permissions = $user->getAllPermissions()->pluck('name')->toArray();
-        $organization = $user->organization;
+    $organization = $user->organization;
         $denmark = Country::where('name_en', 'Denmark')->first();
         $otherCountries = Country::where('name_en', '!=', 'Denmark')->orderBy('name_en')->get();
         $countries = collect([]);
@@ -42,7 +50,12 @@ class OrganizationController extends Controller
 
     public function update(Request $request)
     {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(Auth::user()->organization_id);
+        if (!config('organizations.enabled')) {
+            abort(404);
+        }
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+            config('organizations.enabled') ? Auth::user()->organization_id : null
+        );
         if (!Auth::user()->hasRole('admin')) abort(403);
         //log::info('Update request received for organization ID: ' . Auth::user()->organization_id);
         $organization = Auth::user()->organization;
@@ -66,7 +79,7 @@ class OrganizationController extends Controller
             'company', 'billing_email', 'vat_number',
             'address_line1', 'address_line2', 'city', 'postcode', 'country'
         ]));
-        ActivityLog::logActivity('organization', 'update', ['organization' => $organization->name], $organization->id, Auth::id());
+    ActivityLog::logActivity('organization', 'update', ['organization' => $organization->name], config('organizations.enabled') ? $organization->id : null, Auth::id());
         return Redirect::back()->with('status', __('messages.profile_updated'));
     }
 }

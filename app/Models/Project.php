@@ -44,8 +44,11 @@ class Project extends \Illuminate\Database\Eloquent\Model
         return $this->belongsTo(User::class, 'responsible_user_id');
     }
 
-    public function scopeForOrg(Builder $q, int $orgId)
+    public function scopeForOrg(Builder $q, ?int $orgId)
     {
+        if (is_null($orgId)) {
+            return $q;
+        }
         return $q->where('organization_id', $orgId);
     }
 

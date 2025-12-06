@@ -238,6 +238,9 @@ return [
     'discount' => 'Discount',
     'tax' => 'Tax (VAT)',
     'grand_total' => 'Grand Total',
+
+// Notices
+'organizations_disabled_notice' => 'Organizations are currently disabled. Functionality related to organizations is hidden. Logged in as :name.',
     'paid_on' => 'Paid On',
     'items_title' => 'Items',
     'no_items' => 'No items found.',

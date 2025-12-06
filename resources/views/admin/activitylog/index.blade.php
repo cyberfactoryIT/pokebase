@@ -4,9 +4,9 @@
 
 <x-card>
     <h2 class="text-2xl font-bold mb-6">{{ __('messages.activity_log') }}</h2>
-    <form method="GET" class="mb-6 flex flex-wrap gap-3 items-center">
+        <form method="GET" class="mb-6 flex flex-wrap gap-3 items-center">
         <x-select name="type" :options="$types" placeholder="All types" :value="request('type')" />
-        @if(!$isAdmin)
+        @if(config('organizations.enabled') && !$isAdmin)
             <x-input name="organization_id" :value="request('organization_id')" placeholder="{{ __('messages.organization_id') }}" />
         @endif
         <x-button type="submit" icon="filter">{{ __('messages.filter') }}</x-button>
@@ -17,7 +17,7 @@
                 <tr>
                     <th class="px-4 py-2">{{ __('messages.type') }}</th>
                     <th class="px-4 py-2">{{ __('messages.action') }}</th>
-                    @if(!$isAdmin)
+                    @if(config('organizations.enabled') && !$isAdmin)
                         <th class="px-4 py-2">{{ __('messages.organization') }}</th>
                     @endif
                     <th class="px-4 py-2">{{ __('messages.user') }}</th>
@@ -34,7 +34,7 @@
                     <td>
                         <x-badge variant="neutral">{{ __('logmessages.action.'.$log->action) }}</x-badge>
                     </td>
-                    @if(!$isAdmin)
+                    @if(config('organizations.enabled') && !$isAdmin)
                         <td>{{ $log->organization_id }} - {{ $organizations[$log->organization_id] ?? '-' }}</td>
                     @endif
                     <td>

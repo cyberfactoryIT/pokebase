@@ -61,7 +61,7 @@ class PlansController extends Controller
 
     public function destroy(PricingPlan $plan)
     {
-        if (method_exists($plan, 'organizations') && $plan->organizations()->exists()) {
+        if (config('organizations.enabled') && method_exists($plan, 'organizations') && $plan->organizations()->exists()) {
             return back()->withErrors(['error' => 'Cannot delete: plan is in use.']);
         }
         $plan->delete();

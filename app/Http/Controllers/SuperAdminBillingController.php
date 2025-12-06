@@ -20,14 +20,14 @@ class SuperAdminBillingController extends Controller
         // Superadmin può vedere tutte le fatture
         return view('billing.invoice', [
             'invoice' => $invoice,
-            'org' => $invoice->organization
+            'org' => config('organizations.enabled') ? $invoice->organization : null
         ]);
     }
 
     public function exportInvoices(Request $request)
     {
         $query = \App\Models\Invoice::with('organization');
-        if ($request->filled('organization_id')) {
+        if (config('organizations.enabled') && $request->filled('organization_id')) {
             $query->where('organization_id', $request->organization_id);
         }
         $invoices = $query->get();

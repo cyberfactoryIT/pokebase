@@ -85,6 +85,19 @@ class User extends Authenticatable
         return $this->belongsTo(Organization::class);
     }
 
+    /**
+     * Return a display name for the user's organization.
+     * If organizations are disabled, return the user's name as fallback.
+     */
+    public function getOrganizationNameAttribute()
+    {
+        if (config('organizations.enabled') && $this->organization) {
+            return $this->organization->name;
+        }
+
+        return $this->name;
+    }
+
     
      /**
      * Override default email verification notification to use custom template.

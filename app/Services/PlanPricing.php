@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class PlanPricing
 {
-    public function currentPriceForPlan(PricingPlan $plan, Organization $org, ?string $coupon = null, ?Carbon $at = null, ?int $base = null): array
+    public function currentPriceForPlan(PricingPlan $plan, ?Organization $org = null, ?string $coupon = null, ?Carbon $at = null, ?int $base = null): array
     {
     $base = $base ?? $plan->monthly_price_cents;
         $discount = 0;

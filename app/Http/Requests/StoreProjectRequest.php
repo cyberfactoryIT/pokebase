@@ -12,7 +12,7 @@ class StoreProjectRequest extends FormRequest
     }
     public function rules(): array
     {
-        $orgId = auth()->user()->organization_id;
+    $orgId = config('organizations.enabled') ? auth()->user()->organization_id : null;
         return [
             'name' => ['required','string','max:191'],
             'code' => [

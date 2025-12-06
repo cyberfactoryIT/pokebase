@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class PromotionEngine
 {
-    public function resolveApplicable(PricingPlan $plan, Organization $org, ?string $coupon = null, ?Carbon $at = null)
+    public function resolveApplicable(PricingPlan $plan, ?Organization $org = null, ?string $coupon = null, ?Carbon $at = null)
     {
     $at = $at ?: now();
     $query = Promotion::query()->activeInWindow($at);
@@ -17,7 +17,7 @@ class PromotionEngine
         }
         \Log::info('PromotionEngine: query base', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
     
-        return $query->first();
+    return $query->first();
     }
 
     public function applyToAmount(Promotion $promo, int $amount): int
@@ -31,9 +31,9 @@ class PromotionEngine
         return 0;
     }
 
-    public function recordRedemption(Organization $org, ?Promotion $promo, ?string $coupon = null)
+    public function recordRedemption(?Organization $org, ?Promotion $promo, ?string $coupon = null)
     {
-        if ($promo) {
+        if ($promo && $org) {
             $org->promotions()->attach($promo->id, [
                 'redeemed_at' => now(),
                 'coupon_code' => $coupon,

@@ -11,7 +11,7 @@ class AllInvoicesController
     {
         if (!Auth::user()->hasRole('superadmin')) abort(403);
         $query = \App\Models\Invoice::with('organization')->orderByDesc('issued_at');
-        if ($request->filled('organization_id')) {
+        if (config('organizations.enabled') && $request->filled('organization_id')) {
             $query->where('organization_id', $request->organization_id);
         }
         $invoices = $query->paginate(50);

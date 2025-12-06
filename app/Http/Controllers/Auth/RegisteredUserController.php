@@ -53,15 +53,18 @@ class RegisteredUserController extends Controller
         }
 
         $user = \DB::transaction(function () use ($validated, $request) {
-            // 1. Crea organizzazione
-            $organization = \App\Models\Organization::create([
-                'name' => $validated['organization_name'],
-                'code' => $validated['organization_code'],
-                'slug' => \Str::slug($validated['organization_code']),
-                'address_line1' => $validated['organization_address'] ?? null,
-                'postcode' => $validated['organization_zipcode'] ?? null,
-                'city' => $validated['organization_city'] ?? null,
-            ]);
+            $organization = null;
+            if (config('organizations.enabled')) {
+                // 1. Crea organizzazione
+                $organization = \App\Models\Organization::create([
+                    'name' => $validated['organization_name'],
+                    'code' => $validated['organization_code'],
+                    'slug' => \Str::slug($validated['organization_code']),
+                    'address_line1' => $validated['organization_address'] ?? null,
+                    'postcode' => $validated['organization_zipcode'] ?? null,
+                    'city' => $validated['organization_city'] ?? null,
+                ]);
+            }
 
             // 2. Crea utente con token di verifica
             $token = \Str::random(32);
@@ -70,13 +73,15 @@ class RegisteredUserController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => \Hash::make($validated['password']),
-                'organization_id' => $organization->id,
+                'organization_id' => $organization ? $organization->id : null,
                 'email_verification_token' => $token,
                 'email_verification_expires_at' => $expires,
             ]);
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
+                config('organizations.enabled') ? $user->organization_id : null
+            );
             $user->assignRole($saRole);
 
             return $user;
@@ -94,12 +99,12 @@ class RegisteredUserController extends Controller
             'user',
             'create',
             ['user' => $user->name],
-            $user->organization_id ?? null,
+            config('organizations.enabled') ? $user->organization_id : null,
             $user->id
         );
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+    return redirect(route('dashboard', [], false));
     }
 }

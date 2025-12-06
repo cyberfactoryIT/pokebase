@@ -26,8 +26,12 @@ class RolesSeeder extends Seeder
                 'project.view', 'survey.view', 'response.view', 'report.view', 'audit.view',
             ],
         ];
-        $organizationId = 1; // Sostituisci con l'ID desiderato o cicla su più organizzazioni
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($organizationId);
+    // Use team-scoped roles only when orgs enabled; otherwise use global (null)
+    if (config('organizations.enabled')) {
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(1);
+    } else {
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(null);
+    }
         foreach ($roles as $roleName => $perms) {
             $role = Role::firstOrCreate([
                 'name' => $roleName,

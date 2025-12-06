@@ -218,6 +218,9 @@ return [
     'amount' => 'Beløb',
     'total' => 'I alt',
     'notes' => 'Noter',
+    
+// Notices
+'organizations_disabled_notice' => 'Organisationer er deaktiveret. Funktionalitet relateret til organisationer er skjult. Logget ind som :name.',
     'terms' => 'Vilkår',
     'footer' => 'Tak for din handel!',
     'title' => 'Faktura',
@@ -420,7 +423,7 @@ return [
 'subscription_not_found' => 'Du er ikke tilmeldt vores nyhedsbrev.',
 'error' => 'Der opstod en fejl. Prøv venligst igen.',
 'success' => 'Handling gennemført.',  
-'welcome_message' => 'Velkommen til Evalua, platformen til effektiv styring af dine projekter og spørgeskemaer.',
+'welcome_message' => 'Velkommen til XXXXX.',
 'getting_started' => 'Kom godt i gang',
 'learn_more' => 'Lær mere',
 'documentation' => 'Dokumentation',

@@ -218,6 +218,9 @@ return [
     'amount' => 'Importo',
     'total' => 'Totale',
     'notes' => 'Note',
+    
+// Notices
+'organizations_disabled_notice' => 'Le organizzazioni sono disabilitate. Le funzionalità correlate sono nascoste. Accesso effettuato come :name.',
     'terms' => 'Termini',
     'footer' => 'Grazie per la tua attività!',
     'title' => 'Fattura',

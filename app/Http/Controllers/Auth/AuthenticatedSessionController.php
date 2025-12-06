@@ -30,7 +30,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
         $user = Auth::user();
-        ActivityLog::logActivity('login', 'user_login', [], $user->organization_id, $user->id);
+    ActivityLog::logActivity('login', 'user_login', [], config('organizations.enabled') ? $user->organization_id : null, $user->id);
 
         // Set locale from user profile if available
         if ($user && $user->locale) {
@@ -65,7 +65,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-    ActivityLog::logActivity('login', 'user_logout', [], Auth::user()->organization_id, Auth::id());
+    ActivityLog::logActivity('login', 'user_logout', [], config('organizations.enabled') ? Auth::user()->organization_id : null, Auth::id());
 
     // Revoke remember token and clear cookie custom
     app(\App\Services\RememberTokenService::class)->revokeCurrent($request);

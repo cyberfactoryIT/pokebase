@@ -43,7 +43,7 @@
                         <x-select name="plan_id" required id="plan_id_select">
                             <option value="">{{ __('messages.select_plan') }}</option>
                             @foreach($plans as $plan)
-                                @if($plan->id > ($org->pricing_plan_id ?? 0))
+                                @if($plan->id > (($org->pricing_plan_id ?? 0) ?? 0))
                                     <option value="{{ $plan->id }}" data-monthly="{{ number_format($plan->monthly_price_cents / 100, 2) }}" data-yearly="{{ number_format($plan->yearly_price_cents / 100, 2) }}" data-currency="{{ $plan->currency }}">
                                         {{ __('messages.'.$plan->name) }} ({{ number_format($plan->monthly_price_cents / 100, 2) }} {{ $plan->currency }})
                                     </option>
@@ -80,6 +80,9 @@
                         <thead>
                             <tr>
                                 <th>{{ __('messages.number') }}</th>
+                    @if(config('organizations.enabled'))
+                        <th>{{ __('messages.organization') }}</th>
+                    @endif
                                 <th>{{ __('messages.issued') }}</th>
                                 <th>{{ __('messages.status') }}</th>
                                 <th>{{ __('messages.total') }}</th>
@@ -90,6 +93,9 @@
                             @foreach($invoices as $invoice)
                                 <tr>
                                     <td>{{ $invoice->number }}</td>
+                                    @if(config('organizations.enabled'))
+                                    <td>{{ optional($invoice->organization)->name ?? $invoice->organization_id }}</td>
+                                    @endif
                                     <td>{{ $invoice->issued_at->format('Y-m-d') }}</td>
                                     <td><x-badge type="{{ $invoice->status === 'paid' ? 'success' : ($invoice->status === 'open' ? 'warning' : 'danger') }}">{{ ucfirst($invoice->status) }}</x-badge></td>
                                     <td><x-money :cents="$invoice->total_cents" :currency="$invoice->currency" /></td>
@@ -123,7 +129,7 @@
                                 @foreach(\App\Models\Invoice::orderByDesc('issued_at')->limit(100)->get() as $invoice)
                                     <tr>
                                         <td>{{ $invoice->number }}</td>
-                                        <td>{{ $invoice->organization->name ?? $invoice->organization_id }}</td>
+                                        <td>{{ optional($invoice->organization)->name ?? $invoice->organization_id }}</td>
                                         <td>{{ $invoice->issued_at->format('Y-m-d') }}</td>
                                         <td><x-badge type="{{ $invoice->status === 'paid' ? 'success' : ($invoice->status === 'open' ? 'warning' : 'danger') }}">{{ ucfirst($invoice->status) }}</x-badge></td>
                                         <td><x-money :cents="$invoice->total_cents" :currency="$invoice->currency" /></td>
