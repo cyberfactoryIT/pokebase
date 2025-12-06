@@ -1,0 +1,17 @@
+<?php
+namespace App\Http\Controllers\Concerns;
+
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\PermissionRegistrar;
+
+trait EnforcesAdmin
+{
+    protected function enforceAdmin(): void
+    {
+        $u = Auth::user();
+        app(PermissionRegistrar::class)->setPermissionsTeamId($u->organization_id ?? null);
+        if (!$u || !($u->hasRole('admin') ?? false)) {
+            abort(403);
+        }
+    }
+}

@@ -1,0 +1,27 @@
+<?php
+return [
+    'failed' => 'These credentials do not match our records.',
+    'password' => 'The provided password is incorrect.',
+    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'login' => 'Log in',
+    'register' => 'Register',
+    'organization_name' => 'Organization Name',
+    'organization_code' => 'Organization Code',
+    'name' => 'Name',
+    'email' => 'Email',
+    'password' => 'Password',
+    'confirm_password' => 'Confirm Password',
+    'organization_zipcode' => 'Zip code',
+    'organization_address' => 'Address',
+    'organization_city' => 'City',
+    'organization_cvr' => 'CVR',
+    'forgot_password' => 'Forgot your password?',
+    'reset_password' => 'Reset Password',
+    'send_reset_link' => 'Send Password Reset Link',
+    'remember_me' => [
+        'label' => 'Remember me',
+        'session_restored' => 'Session restored from your device.',
+        'invalid_or_expired' => 'Your session has expired or the device token is invalid.',
+        'revoked' => 'Your device session has been revoked.',
+    ],
+];
