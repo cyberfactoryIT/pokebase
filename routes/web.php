@@ -24,6 +24,9 @@ Route::get('/test-cookie', function () {
     );
 });
 Route::get('/verify-email/{token}', [\App\Http\Controllers\Auth\EmailVerificationController::class, 'verify'])->name('verification.custom');
+use App\Http\Controllers\WaitlistController;
+
+Route::post('/waitlist', [WaitlistController::class, 'store'])->name('waitlist.store');
 
 
 // Public FAQ route

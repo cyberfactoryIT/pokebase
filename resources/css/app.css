@@ -5,3 +5,33 @@
 :root {
     color-scheme: dark;
 }
+
+
+
+@keyframes holoShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Card holo principale */
+.holo-card {
+    background-image: linear-gradient(
+        135deg,
+        rgba(167, 139, 250, 0.85),   /* violet */
+        rgba(244, 114, 182, 0.9),    /* pink */
+        rgba(251, 146, 60, 0.9)      /* orange */
+    );
+    background-size: 220% 220%;
+    animation: holoShift 18s ease-in-out infinite;
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.45),
+        0 0 40px rgba(255, 255, 255, 0.08);
+}
+
+/* Badge sopra la card */
+.holo-badge {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+

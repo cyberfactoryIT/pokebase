@@ -51,5 +51,12 @@ return [
     'step_3_title' => 'Tag informerede beslutninger',
     'step_3_desc' => 'Brug data til at købe, sælge eller handle dine kort med selvtillid.', 
 
+    'waitlist_title'    => 'Kom på ventelisten til :app',
+    'waitlist_subtitle' => 'Vi giver dig besked, så snart vi åbner for de første brugere.',
+    'join_waitlist'     => 'Tilmeld venteliste',
+    'waitlist_privacy'  => 'Ingen spam, kun opdateringer om lansering og nyheder.',
+
+    'waitlist_thanks' => 'Tak! Du er nu på ventelisten. Vi skriver til dig, når vi åbner.',
+
 
 ];

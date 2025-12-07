@@ -20,7 +20,109 @@
                 /*! tailwindcss v4.0.7 | MIT License | https://tailwindcss.com */
                 @layer theme{...} /* lascio intatto il tuo blob tailwind qui */
             </style>
+            
         @endif
+        <style>
+            .holo-card {
+                position: relative;
+                padding: 2px;
+                border-radius: 1.25rem;
+                background: linear-gradient(
+                    120deg,
+                    #60a5fa,
+                    #a855f7,
+                    #f97316,
+                    #22c55e,
+                    #60a5fa
+                );
+                background-size: 300% 300%;
+                animation: holoShift 10s linear infinite;
+                box-shadow: 0 18px 45px rgba(0,0,0,0.45);
+                transition: transform 0.25s ease, box-shadow 0.25s ease;
+                overflow: hidden; /* per contenere il bagliore */
+            }
+
+            .holo-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 25px 55px rgba(0,0,0,0.55);
+            }
+
+            /* Bagliore foil aggiuntivo */
+            .holo-card::before {
+                content: "";
+                position: absolute;
+                inset: -40%;
+                background: conic-gradient(
+                    from 0deg,
+                    rgba(96,165,250,0.0),
+                    rgba(96,165,250,0.2),
+                    rgba(168,85,247,0.35),
+                    rgba(249,115,22,0.25),
+                    rgba(45,212,191,0.25),
+                    rgba(96,165,250,0.0)
+                );
+                mix-blend-mode: screen;
+                opacity: 0;
+                pointer-events: none;
+                animation: holoGlow 6s linear infinite;
+            }
+
+            .holo-card:hover::before {
+                opacity: 0.7;
+            }
+
+            @keyframes holoShift {
+                0%   { background-position: 0% 50%; }
+                50%  { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+
+            @keyframes holoGlow {
+                0% {
+                    transform: translateX(-20%) rotate(0deg);
+                }
+                50% {
+                    transform: translateX(20%) rotate(180deg);
+                }
+                100% {
+                    transform: translateX(-20%) rotate(360deg);
+                }
+            }
+
+             .hero-holo-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 20% 0%, rgba(96,165,250,0.25), transparent 55%),
+            radial-gradient(circle at 80% 100%, rgba(244,114,182,0.22), transparent 55%),
+            conic-gradient(
+                from 0deg,
+                rgba(96,165,250,0.0),
+                rgba(96,165,250,0.22),
+                rgba(168,85,247,0.30),
+                rgba(249,115,22,0.22),
+                rgba(45,212,191,0.28),
+                rgba(96,165,250,0.0)
+            );
+        mix-blend-mode: screen;
+        opacity: 0.4;
+        animation: heroHoloMove 18s linear infinite;
+    }
+
+    @keyframes heroHoloMove {
+        0% {
+            transform: translate3d(-5%, -5%, 0) rotate(0deg);
+        }
+        50% {
+            transform: translate3d(5%, 5%, 0) rotate(180deg);
+        }
+        100% {
+            transform: translate3d(-5%, -5%, 0) rotate(360deg);
+        }
+    }
+        </style>
+
     </head>
   <body class="text-white bg-black dark:bg-black dark:text-white flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col" data-theme="dark">
 
@@ -56,61 +158,130 @@
         </header>
 
       
-       <!-- HERO SECTION -->
-        <section class="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
+       <!-- HERO HOLO -->
+        <section class="relative w-full min-h-screen flex justify-center pt-20 pb-20 overflow-hidden">
 
-            <!-- Background image -->
+            <!-- Sfondo blur con carte -->
             <img 
                 src="{{ asset('images/welcome/hero.jpeg') }}" 
                 alt="Hero Background" 
-                class="absolute inset-0 w-full h-full object-cover object-center"
+                class="absolute inset-0 w-full h-full object-cover object-center blur-[2px] scale-110"
             >
 
-            <!-- Overlay -->
+            <!-- Overlay scuro sopra lo sfondo -->
+            <div class="absolute inset-0 bg-black/55"></div>
 
-            <div class="absolute inset-0 bg-black/60"></div>
+            <div class="relative z-10 w-full flex items-center justify-center px-4 py-16 md:py-28">
 
-            <!-- Content -->
-            <div class="relative w-full h-screen flex items-center justify-center bg-cover bg-center"
-            style="background-image: url('/images/hero/bg.jpg');">
+            <div class="w-full max-w-3xl 
+                            holo-card 
+                            rounded-3xl 
+                            p-10 md:p-16 
+                            text-center 
+                            border border-white/25 
+                            backdrop-blur-2xl">
+ <br/><br/>
+                    <!-- Badge 30 giorni prova -->
+                    <div class="flex justify-center mb-6">
+                       
+                        <span class="holo-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-slate-700 text-sm font-semibold">
+                            ⭐ 30 dages gratis prøve · intet kort kræves
+                        </span>
+                    </div>
 
-            <!-- Dark overlay -->
-            <div class="absolute inset-0 bg-black/60"></div>
+                    <!-- Titolo -->
+                    <h1 class="text-4xl md:text-5xl font-extrabold mb-6 text-white leading-tight drop-shadow-xl">
+                        {!! __('welcome.title') !!}
+                    </h1>
 
-            <!-- HERO CONTENT CARD -->
-            <div class="relative z-10 bg-gray-800/90 text-white rounded-2xl p-10 md:p-16 max-w-3xl w-[90%] text-center shadow-2xl">
+                    <!-- Sottotitolo: grassetto + corsivo -->
+                    <p class="text-lg md:text-xl text-slate-800 mb-10 leading-relaxed font-semibold italic drop-shadow-sm">
+                        {{ __('welcome.subtitle') }}
+                    </p>
 
-                <h1 class="text-4xl md:text-5xl font-extrabold mb-6 leading-tight drop-shadow-xl">
-                    {!! __('welcome.title') !!}
-                </h1>
+                    @if (config('app.waitlist_enabled'))    
+                                <!-- WAITING LIST -->
+                        <section class="w-full flex justify-center px-4 mt-12">
+                            <div class="w-full max-w-xl bg-[#161615] border border-white/15 rounded-2xl p-6 md:p-8 shadow-xl">
+                                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 text-center">
+                                    {{ __('welcome.waitlist_title', ['app' => 'XXXXXXX']) }}
+                                </h2>
+                                <p class="text-gray-300 text-sm md:text-base mb-6 text-center">
+                                    {{ __('welcome.waitlist_subtitle') }}
+                                </p>
 
-                <p class="text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed">
-                    {{ __('welcome.subtitle') }}
-                </p>
+                                @if (session('waitlist_success'))
+                                    <div class="mb-4 text-sm text-green-300 text-center">
+                                        {{ session('waitlist_success') }}
+                                    </div>
+                                @endif
 
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="{{ route('register') }}"
-                    class="px-8 py-4 rounded-xl bg-blue-600 text-white text-lg font-semibold shadow-lg hover:bg-blue-700 transition">
-                        <i class="fa fa-rocket"></i> {{ __('welcome.get_started') }}
-                    </a>
+                                <form method="POST" action="{{ route('waitlist.store') }}" class="flex flex-col md:flex-row gap-3">
+                                    @csrf
 
-                    <a href="{{ route('login') }}"
-                    class="px-8 py-4 rounded-xl bg-white/20 text-blue-200 text-lg font-semibold shadow-lg hover:bg-white/30 transition">
-                        <i class="fa fa-sign-in-alt"></i> {{ __('welcome.sign_in') }}
-                    </a>
+                                    <div class="flex-1">
+                                        <label for="waitlist_email" class="sr-only">Email</label>
+                                        <input
+                                            id="waitlist_email"
+                                            type="email"
+                                            name="email"
+                                            required
+                                            placeholder="din@email.dk"
+                                            value="{{ old('email') }}"
+                                            class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/20 text-white text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                        @if ($errors->has('email'))
+                                            <p class="mt-1 text-xs text-red-400">
+                                                {{ $errors->first('email') }}
+                                            </p>
+                                        @endif
+
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        class="px-6 py-3 rounded-xl bg-blue-600 text-white text-sm md:text-base font-semibold shadow-lg hover:bg-blue-700 transition"
+                                    >
+                                        {{ __('welcome.join_waitlist') }}
+                                    </button>
+                                </form>
+
+                                <p class="mt-3 text-[11px] text-gray-400 text-center">
+                                    {{ __('welcome.waitlist_privacy') }}
+                                </p>
+                            </div>
+                        </section>
+                    @else   
+                        <!-- Bottoni -->
+                        <div class="flex flex-col sm:flex-row justify-center gap-4">
+                            <a href="{{ route('register') }}"
+                            class="px-8 py-4 rounded-xl bg-blue-600 text-white text-lg font-semibold shadow-lg hover:bg-blue-700 transition">
+                                <i class="fa fa-rocket"></i> {{ __('welcome.get_started') }}
+                            </a>
+
+                            <a href="{{ route('login') }}"
+                            class="px-8 py-4 rounded-xl bg-white text-blue-700 text-lg font-semibold shadow-lg hover:bg-gray-100 transition">
+                                <i class="fa fa-sign-in-alt"></i> {{ __('welcome.sign_in') }}
+                            </a>
+                        </div>
+                    @endif
+<br/><br/>
                 </div>
-
             </div>
-        </div>
 
         </section>
+        <!-- FINE HERO HOLO -->
+
+
 
 
         <br/>
         <br/>
 
         <!-- WHO SECTION -->
-        <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
+        <div class="p-6 rounded-2xl bg-[#161615] shadow-xl flex flex-col items-center text-center gap-4
+     border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.08)]">
+
             <main class="flex max-w-[335px] w-full flex-col lg:max-w-4xl lg:flex-row">
                 <div class="mt-12 max-w-2xl w-full mx-auto">
                     

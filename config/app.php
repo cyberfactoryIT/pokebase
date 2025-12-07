@@ -123,4 +123,5 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'waitlist_enabled' => env('WAITLIST_ENABLED', false),
 ];
