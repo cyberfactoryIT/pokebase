@@ -157,6 +157,41 @@
             @endif
         </header>
 
+       @if (session('waitlist_success'))
+            <div
+                id="waitlist-toast"
+                class="fixed top-4 right-4 z-50
+                    bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400
+                    text-slate-900 text-sm md:text-base px-4 py-3
+                    rounded-2xl shadow-[0_0_25px_rgba(255,255,255,0.4)]
+                    flex items-center gap-3 transition-opacity duration-500"
+            >
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/40">
+                    ✨
+                </span>
+                <div class="leading-snug">
+                    <div class="font-bold text-xs uppercase tracking-wide">
+                        Du er på listen!
+                    </div>
+                    <div class="text-[11px] md:text-xs">
+                        {{ session('waitlist_success') }}
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(function () {
+                        const toast = document.getElementById('waitlist-toast');
+                        if (toast) {
+                            toast.classList.add('opacity-0', 'pointer-events-none');
+                        }
+                    }, 4000);
+                });
+            </script>
+        @endif
+
+
       
        <!-- HERO HOLO -->
         <section class="relative w-full min-h-screen flex justify-center pt-20 pb-20 overflow-hidden">
@@ -199,24 +234,84 @@
                         {{ __('welcome.subtitle') }}
                     </p>
 
-                    @if (config('app.waitlist_enabled'))    
-                                <!-- WAITING LIST -->
+                    @if (config('app.waitlist_enabled'))
+                       
                         <section class="w-full flex justify-center px-4 mt-12">
                             <div class="w-full max-w-xl bg-[#161615] border border-white/15 rounded-2xl p-6 md:p-8 shadow-xl">
+
+                                {{-- Titolo --}}
                                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 text-center">
                                     {{ __('welcome.waitlist_title', ['app' => 'XXXXXXX']) }}
                                 </h2>
-                                <p class="text-gray-300 text-sm md:text-base mb-6 text-center">
+
+                                <p class="text-gray-300 text-sm md:text-base mb-4 text-center">
                                     {{ __('welcome.waitlist_subtitle') }}
                                 </p>
 
-                                @if (session('waitlist_success'))
-                                    <div class="mb-4 text-sm text-green-300 text-center">
-                                        {{ session('waitlist_success') }}
+                                {{-- Badge + contatore animato --}}
+                                @if (isset($waitlistCount) && $waitlistCount >= 0)
+                                    <div class="flex flex-col items-center mb-4 space-y-1">
+
+                                        {{-- Badge --}}
+                                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full
+                                                    bg-emerald-500/10 border border-emerald-400/60
+                                                    text-emerald-200 text-[11px] md:text-xs">
+                                            <span class="text-[10px]">⚡</span>
+                                            <span>Hurtigt voksende community</span>
+                                        </div>
+
+                                        {{-- Testo contatore --}}
+                                        @if ($waitlistCount === 0)
+                                            <p class="text-[11px] md:text-xs text-emerald-200 text-center">
+                                                Ingen på ventelisten endnu – du kan være den første!
+                                            </p>
+                                        @else
+                                            @php
+                                                $label = $waitlistCount === 1
+                                                    ? 'samler er allerede på ventelisten.'
+                                                    : 'samlere er allerede på ventelisten.';
+                                            @endphp
+                                            <p class="text-[11px] md:text-xs text-emerald-200 text-center">
+                                                <span
+                                                    id="waitlist-count"
+                                                    data-target="{{ $waitlistCount }}"
+                                                    class="font-semibold"
+                                                >
+                                                    0
+                                                </span>
+                                                {{ $label }}
+                                            </p>
+                                        @endif
+
+                                        {{-- Countdown launch --}}
+                                        <div id="launch-countdown"
+                                            class="mt-1 text-[11px] md:text-xs text-blue-200 text-center">
+                                            <span class="font-semibold">{{ __('welcome.launch_countdown') }}</span>
+                                            <span id="launch-date-label">{{ __('welcome.launch_date') }}</span>
+                                            <span> · </span>
+                                            <span id="launch-timer">{{ __('welcome.launch_count') }}</span>
+                                        </div>
+
                                     </div>
                                 @endif
 
-                                <form method="POST" action="{{ route('waitlist.store') }}" class="flex flex-col md:flex-row gap-3">
+
+                                {{-- Messaggio di conferma dentro la card --}}
+                                @if (session('waitlist_success'))
+                                    <div class="mb-4 text-xs md:text-sm text-center
+                                                bg-gradient-to-r from-violet-600/40 via-fuchsia-600/40 to-amber-400/30
+                                                border border-violet-300/40 rounded-xl px-3 py-2 text-violet-50 shadow-inner">
+                                        💫 Du er på listen! {{ session('waitlist_success') }}
+                                    </div>
+                                @endif
+
+                                {{-- FORM --}}
+                                <form
+                                    method="POST"
+                                    action="{{ route('waitlist.store') }}"
+                                    class="flex flex-col md:flex-row gap-3"
+                                    onsubmit="handleWaitlistSubmit(event)"
+                                >
                                     @csrf
 
                                     <div class="flex-1">
@@ -228,30 +323,39 @@
                                             required
                                             placeholder="din@email.dk"
                                             value="{{ old('email') }}"
-                                            class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/20 text-white text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full px-4 py-3 rounded-xl bg-black/40 border
+                                                @if ($errors->has('email')) border-red-500 @else border-white/20 @endif
+                                                text-white text-sm md:text-base
+                                                focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         >
                                         @if ($errors->has('email'))
                                             <p class="mt-1 text-xs text-red-400">
                                                 {{ $errors->first('email') }}
                                             </p>
                                         @endif
-
                                     </div>
 
                                     <button
+                                        id="waitlist-submit"
                                         type="submit"
-                                        class="px-6 py-3 rounded-xl bg-blue-600 text-white text-sm md:text-base font-semibold shadow-lg hover:bg-blue-700 transition"
+                                        class="px-6 py-3 rounded-xl bg-blue-600 text-white text-sm md:text-base font-semibold shadow-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
                                     >
-                                        {{ __('welcome.join_waitlist') }}
+                                        <span class="waitlist-label">
+                                            {{ __('welcome.join_waitlist') }}
+                                        </span>
+                                        <span class="waitlist-spinner hidden">
+                                            <i class="fa fa-circle-notch fa-spin text-xs"></i>
+                                        </span>
                                     </button>
                                 </form>
 
                                 <p class="mt-3 text-[11px] text-gray-400 text-center">
-                                    {{ __('welcome.waitlist_privacy') }}
+                                   {!! __('welcome.waitlist_privacy') !!}
                                 </p>
                             </div>
                         </section>
-                    @else   
+                        @else
+ 
                         <!-- Bottoni -->
                         <div class="flex flex-col sm:flex-row justify-center gap-4">
                             <a href="{{ route('register') }}"
@@ -532,5 +636,85 @@
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>
         @endif
+        <script>
+            function handleWaitlistSubmit(event) {
+                const button = document.getElementById('waitlist-submit');
+                if (!button) return;
+
+                button.disabled = true;
+                button.classList.add('opacity-80', 'cursor-not-allowed');
+
+                const label   = button.querySelector('.waitlist-label');
+                const spinner = button.querySelector('.waitlist-spinner');
+
+                if (label && spinner) {
+                    label.textContent = "{{ __('welcome.join_waitlist') }}...";
+                    spinner.classList.remove('hidden');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                // ---------- Contatore animato ----------
+                const countEl = document.getElementById('waitlist-count');
+                if (countEl) {
+                    const target = parseInt(countEl.dataset.target, 10) || 0;
+
+                    if (target <= 0) {
+                        countEl.textContent = target;
+                    } else {
+                        let current   = 0;
+                        const duration = 1200; // ms
+                        const fps      = 60;
+                        const interval = duration / fps;
+                        const step     = Math.max(1, Math.round(target / (duration / interval)));
+
+                        const timer = setInterval(function () {
+                            current += step;
+                            if (current >= target) {
+                                current = target;
+                                clearInterval(timer);
+                            }
+                            countEl.textContent = current;
+                        }, interval);
+                    }
+                }
+
+                // ---------- Countdown launch ----------
+                const timerEl = document.getElementById('launch-timer');
+                if (!timerEl) return;
+
+                // QUI imposti la data di apertura (locale browser)
+                // Cambia questa data come vuoi:
+                const target = new Date('2026-01-20T18:00:00');
+
+                function updateCountdown() {
+                    const now = new Date();
+                    const diff = target - now;
+
+                    if (diff <= 0) {
+                        timerEl.textContent = 'vi er live!';
+                        return;
+                    }
+
+                    const totalSeconds = Math.floor(diff / 1000);
+                    const days   = Math.floor(totalSeconds / 86400);
+                    const hours  = Math.floor((totalSeconds % 86400) / 3600);
+                    const mins   = Math.floor((totalSeconds % 3600) / 60);
+
+                    let parts = [];
+                    if (days > 0) parts.push(days + ' d');
+                    parts.push(String(hours).padStart(2, '0') + ' t');
+                    parts.push(String(mins).padStart(2, '0') + ' min');
+
+                    timerEl.textContent = parts.join(' · ');
+                }
+
+                updateCountdown();
+                // Aggiorniamo ogni 60 secondi (va benissimo per un launch)
+                setInterval(updateCountdown, 60000);
+            });
+        </script>
+
+
     </body>
 </html>

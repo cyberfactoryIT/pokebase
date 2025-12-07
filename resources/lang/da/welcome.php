@@ -52,11 +52,15 @@ return [
     'step_3_desc' => 'Brug data til at købe, sælge eller handle dine kort med selvtillid.', 
 
     'waitlist_title'    => 'Kom på ventelisten til :app',
-    'waitlist_subtitle' => 'Vi giver dig besked, så snart vi åbner for de første brugere.',
+    'waitlist_subtitle' => 'Vi giver dig besked, så snart vi åbner for de første samlere.',
     'join_waitlist'     => 'Tilmeld venteliste',
-    'waitlist_privacy'  => 'Ingen spam, kun opdateringer om lansering og nyheder.',
+    'waitlist_privacy'  => 'Du kan altid afmelde dig med ét klik.<br/> Vi hader også spam. Du får kun mail, når der sker noget vigtigt.',
+    'waitlist_thanks'   => 'Tak! Du er nu på ventelisten. Vi skriver til dig, når vi åbner.',
+    'waitlist_counter' => '{0} Ingen på ventelisten endnu – du kan være den første!|{1} :count samler er allerede på ventelisten.|[2,*] :count samlere er allerede på ventelisten.',
+    'launch_countdown' => 'Forventet launch:',
+    'launch_date' => 'd. 20. januar 2026',
+    'launch_count' => 'beregner...',
 
-    'waitlist_thanks' => 'Tak! Du er nu på ventelisten. Vi skriver til dig, når vi åbner.',
 
 
 ];

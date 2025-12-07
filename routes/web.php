@@ -4,10 +4,12 @@ use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request; 
 use App\Http\Controllers\Admin\HelpController;
+use App\Models\WaitlistEntry;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    $waitlistCount = WaitlistEntry::count()+49;
+    return view('welcome', compact('waitlistCount'));
 });
 
 // Route di test per invalidare la sessione e fare logout
