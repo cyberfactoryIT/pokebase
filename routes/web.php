@@ -11,6 +11,10 @@ Route::get('/', function () {
     $waitlistCount = WaitlistEntry::count()+49;
     return view('welcome', compact('waitlistCount'));
 });
+// routes/web.php
+Route::view('/terms', 'legal.terms')->name('terms');
+Route::view('/privacy', 'legal.privacy')->name('privacy');
+
 
 // Route di test per invalidare la sessione e fare logout
 Route::get('/test-session-invalidate', function (\Illuminate\Http\Request $request) {

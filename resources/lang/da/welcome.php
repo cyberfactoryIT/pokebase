@@ -1,7 +1,7 @@
     <?php
 return [
     'title' => 'Udforsk din samling. <br/>Forstå dens værdi.',
-    'subtitle' => 'Cardbase.dk giver dig et klart og levende overblik over dine kort — følg værdiudviklingen, opdag tendenser og se, hvad der gør hvert kort unikt.',
+    'subtitle' => 'basecard.dk giver dig et klart og levende overblik over dine kort — følg værdiudviklingen, opdag tendenser og se, hvad der gør hvert kort unikt.',
     'get_started' => 'Start her',
     'sign_in' => 'Har du allerede en konto? Log ind',
     'choose_plan' => 'Vælg din plan',
@@ -15,12 +15,12 @@ return [
     'coming_soon' => 'Kommer snart',
     'trial' => '30 dages gratis prøveperiode tilgængelig.',
     'still_not_convinced' => 'Stadig ikke overbevist?',
-'pick_plan' => 'Opret en konto og prøv Cardbase.dk gratis i 30 dage. Udforsk alle funktioner og se, hvordan platformen kan hjælpe dig med at forstå værdien af dine kort.',
+'pick_plan' => 'Opret en konto og prøv basecard.dk gratis i 30 dage. Udforsk alle funktioner og se, hvordan platformen kan hjælpe dig med at forstå værdien af dine kort.',
 
 'faqs_general' => 'Ofte stillede spørgsmål',
 
-'faq_evalua_q' => 'Hvad er Cardbase.dk?',
-'faq_evalua_a' => 'Cardbase.dk er et værktøj til samlere, der giver dig et klart overblik over dine kort og deres værdi over tid. Du kan oprette decks, følge prisudviklingen og se den samlede værdi af din samling.',
+'faq_evalua_q' => 'Hvad er basecard.dk?',
+'faq_evalua_a' => 'basecard.dk er et værktøj til samlere, der giver dig et klart overblik over dine kort og deres værdi over tid. Du kan oprette decks, følge prisudviklingen og se den samlede værdi af din samling.',
 
 'faq_start_q' => 'Hvordan kommer jeg i gang?',
 'faq_start_a' => 'Opret en gratis konto, log ind og begynd at tilføje dine kort. Du kan søge i databasen, vælge sæt, tilstand og sprog og gemme dem i din samling eller i specifikke decks.',
@@ -31,7 +31,7 @@ return [
 'faq_trial_q' => 'Er der en gratis prøveperiode?',
 'faq_trial_a' => 'Ja. Alle nye brugere får 30 dages gratis adgang til alle funktioner. Ingen betaling kræves før prøveperioden udløber.',
 
-    'who_title' => 'Hvem er Cardbase.dk til?',
+    'who_title' => 'Hvem er basecard.dk til?',
     'who_1_title' => 'Nysgerrige samlere',
     'who_1_desc' => 'Til dig, der elsker at udforske dine kort og opdage, hvad de egentlig er værd — både nu og over tid.',
     'who_2_title' => 'Strategiske spillere',
@@ -42,7 +42,7 @@ return [
     'available' => 'Tilgængelig!',
     'best_value' => 'Bedst værdi',
 
-    'getting_started' => 'Sådan fungerer Cardbase.dk',
+    'getting_started' => 'Sådan fungerer basecard.dk',
     'getting_started_detail' => 'På få minutter får du overblik over værdien af din samling – uden regneark og manuelt arbejde.',
     'step_1_title' => 'Tilføj dine kort',
     'step_1_desc' => 'Indtast kort manuelt eller vælg dem fra databasen, sæt sæt, sprog og tilstand.',
@@ -61,6 +61,26 @@ return [
     'launch_date' => 'd. 20. januar 2026',
     'launch_count' => 'beregner...',
 
-
-
+    'pokemon_disclaimer_title' => 'Juridisk meddelelse',
+    'pokemon_disclaimer' => 'Pokémon og alle relaterede varemærker tilhører © Nintendo, Creatures Inc. og Game Freak. Dette er et uafhængigt, fanlavet projekt og er ikke tilknyttet, godkendt eller sponsoreret af The Pokémon Company eller nogen relaterede enheder.',
+    'information_title' => 'Information',
+    'terms_conditions' => 'Vilkår & Betingelser',
+    'privacy_policy' => 'Privatlivspolitik',
+    'support' => 'Support',
+    'contact_title' => 'Kontakt',
+    'invoice_biller_name' => env('INVOICE_BILLER_NAME'),
+    'invoice_biller_address' => env('INVOICE_BILLER_ADDRESS'),
+    'invoice_biller_vat' => env('INVOICE_BILLER_VAT'),
+    'invoice_biller_email' => env('INVOICE_BILLER_EMAIL'),
+    'invoice_biller_phone' => env('INVOICE_BILLER_PHONE'),
+    'all_rights_reserved' => 'Alle rettigheder forbeholdes',
+    'welcome_message_30_days' => '30 dages gratis prøveperiode · intet kort kræves',
+    'waitlist_success_title' => 'Du er på ventelisten!',
+    'waitlist_badge' => 'Hurtigt voksende community',
+    'waitlist_no_one_yet' => 'Ingen på ventelisten endnu – du kan være den første!',
+    'waitlist_one' => 'samler er allerede på ventelisten.',
+    'waitlist_many' => 'samlere er allerede på ventelisten.',
+    'launched' => 'vi er live!',
+    'waitlist_placeholder' => 'din@email.dk',
+    'welcome_message_30_days' => '30 dages gratis prøveperiode · intet kort kræves',        
 ];
