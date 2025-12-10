@@ -15,14 +15,14 @@ class SyncPokemonSets extends Command
         $this->info('Syncing Pokemon TCG sets from API...');
 
         try {
-            // Usa curl nativo invece di Http facade
-            $url = config('pokemon.base_url') . '/sets?' . http_build_query(['pageSize' => 250]);
+            // L'endpoint /sets non supporta paginazione, ritorna tutti i set in una chiamata
+            $url = config('pokemon.base_url') . '/sets';
             
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_TIMEOUT => 120,
+                CURLOPT_TIMEOUT => 30,
                 CURLOPT_CONNECTTIMEOUT => 10,
                 CURLOPT_HTTPHEADER => [
                     'Accept: application/json',
@@ -52,7 +52,7 @@ class SyncPokemonSets extends Command
             }
             
             $sets = $data['data'] ?? [];
-            $totalCount = $data['totalCount'] ?? count($sets);
+            $totalCount = $data['count'] ?? count($sets);
 
             $this->info("Found {$totalCount} sets");
 
@@ -60,32 +60,32 @@ class SyncPokemonSets extends Command
             $updatedSets = 0;
 
             foreach ($sets as $setData) {
-                $set = PokemonSet::updateOrCreate(
-                    ['set_id' => $setData['id']],
-                    [
-                        'name' => $setData['name'],
-                        'series' => $setData['series'] ?? null,
-                        'printed_total' => $setData['printedTotal'] ?? null,
-                        'total' => $setData['total'] ?? null,
-                        'ptcgo_code' => $setData['ptcgoCode'] ?? null,
-                        'release_date' => isset($setData['releaseDate']) 
-                            ? \Carbon\Carbon::createFromFormat('Y/m/d', $setData['releaseDate'])
-                            : null,
-                        'api_updated_at' => isset($setData['updatedAt'])
-                            ? \Carbon\Carbon::createFromFormat('Y/m/d H:i:s', $setData['updatedAt'])
-                            : null,
-                        'symbol_url' => $setData['images']['symbol'] ?? null,
-                        'logo_url' => $setData['images']['logo'] ?? null,
-                        'legalities' => $setData['legalities'] ?? null,
-                    ]
-                );
+                    $set = PokemonSet::updateOrCreate(
+                        ['set_id' => $setData['id']],
+                        [
+                            'name' => $setData['name'],
+                            'series' => $setData['series'] ?? null,
+                            'printed_total' => $setData['printedTotal'] ?? null,
+                            'total' => $setData['total'] ?? null,
+                            'ptcgo_code' => $setData['ptcgoCode'] ?? null,
+                            'release_date' => isset($setData['releaseDate']) 
+                                ? \Carbon\Carbon::createFromFormat('Y/m/d', $setData['releaseDate'])
+                                : null,
+                            'api_updated_at' => isset($setData['updatedAt'])
+                                ? \Carbon\Carbon::createFromFormat('Y/m/d H:i:s', $setData['updatedAt'])
+                                : null,
+                            'symbol_url' => $setData['images']['symbol'] ?? null,
+                            'logo_url' => $setData['images']['logo'] ?? null,
+                            'legalities' => $setData['legalities'] ?? null,
+                        ]
+                    );
 
-                if ($set->wasRecentlyCreated) {
-                    $newSets++;
-                } else {
-                    $updatedSets++;
+                    if ($set->wasRecentlyCreated) {
+                        $newSets++;
+                    } else {
+                        $updatedSets++;
+                    }
                 }
-            }
 
             $this->newLine();
             $this->info('Sync completed successfully!');
