@@ -51,10 +51,11 @@ class DownloadPokemonCards extends Command
                 : "{$outputDir}/cards_page_{$page}.json";
             
             $this->line("Downloading page {$page}...");
+            $this->line("URL: {$url}");
             
             // Usa curl da shell
             $cmd = sprintf(
-                'curl -s -H "X-Api-Key: %s" "%s" -o "%s"',
+                'curl -s -w "\nHTTP_CODE:%%{http_code}" -H "X-Api-Key: %s" "%s" -o "%s" 2>&1',
                 escapeshellarg($apiKey),
                 escapeshellarg($url),
                 escapeshellarg($outputFile)
@@ -64,6 +65,8 @@ class DownloadPokemonCards extends Command
             
             if ($returnCode !== 0) {
                 $this->error("Failed to download page {$page}");
+                $this->error("Return code: {$returnCode}");
+                $this->error("Output: " . implode("\n", $output));
                 break;
             }
             
