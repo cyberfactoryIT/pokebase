@@ -14,16 +14,17 @@ class ImportSetsFromFile extends Command
     public function handle(): int
     {
         $filename = $this->argument('file');
+        $path = storage_path('app/' . $filename);
         
-        if (!Storage::exists($filename)) {
-            $this->error("File not found: storage/app/{$filename}");
+        if (!file_exists($path)) {
+            $this->error("File not found: {$path}");
             return static::FAILURE;
         }
 
-        $this->info("Reading sets from: storage/app/{$filename}");
+        $this->info("Reading sets from: {$path}");
 
         try {
-            $json = Storage::get($filename);
+            $json = file_get_contents($path);
             $data = json_decode($json, true);
             
             if (json_last_error() !== JSON_ERROR_NONE) {
