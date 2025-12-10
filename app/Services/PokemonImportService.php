@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Models\Game;
 use App\Models\PokemonImportLog;
@@ -237,57 +235,56 @@ class PokemonImportService
         $attempt = 0;
         $lastException = null;
 
-        // Aumenta i limiti PHP
-        set_time_limit(120); // 2 minuti per richiesta
-        ini_set('max_execution_time', '120');
-
         while ($attempt < $this->maxRetries) {
             try {
-                // Usa exec curl diretto come nel browser
+                // Usa curl diretto (SDK usa Guzzle che ha gli stessi problemi)
                 $url = "{$this->baseUrl}/cards?" . http_build_query($params);
                 
-                $curlCmd = sprintf(
-                    'curl -s -H "Accept: application/json" -H "X-Api-Key: %s" "%s"',
-                    escapeshellarg($this->apiKey),
-                    escapeshellarg($url)
-                );
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_TIMEOUT => 30,
+                    CURLOPT_CONNECTTIMEOUT => 10,
+                    CURLOPT_HTTPHEADER => [
+                        'Accept: application/json',
+                        'X-Api-Key: ' . $this->apiKey,
+                    ],
+                ]);
                 
-                $json = shell_exec($curlCmd);
+                $json = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlError = curl_error($ch);
+                curl_close($ch);
                 
-                if ($json === null || $json === false || empty($json)) {
-                    throw new \RuntimeException("Failed to fetch data from API via curl");
+                if ($curlError) {
+                    throw new \RuntimeException("cURL error: {$curlError}");
                 }
                 
-                // Decodifica JSON
+                if ($httpCode >= 500) {
+                    throw new \RuntimeException("API returned HTTP {$httpCode} (Server Error)");
+                }
+                
+                if ($httpCode >= 400) {
+                    throw new \RuntimeException("API returned HTTP {$httpCode} (Client Error)");
+                }
+                
+                if (empty($json)) {
+                    throw new \RuntimeException("Empty response from API");
+                }
+                
                 $data = json_decode($json, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new \RuntimeException("Invalid JSON response: " . json_last_error_msg());
+                    throw new \RuntimeException("Invalid JSON: " . json_last_error_msg());
                 }
                 
-                // Ritorna un oggetto compatibile
+                // Ritorna oggetto compatibile
                 return new class($data) {
                     private $data;
                     public function __construct($data) { $this->data = $data; }
                     public function successful() { return true; }
                     public function json() { return $this->data; }
                 };
-                
-                /* Vecchio metodo Guzzle che non funziona
-                $response = Http::withHeaders($this->headers())
-                    ->timeout(30)
-                    ->connectTimeout(10)
-                    ->get("{$this->baseUrl}/cards", $params);
-
-                if ($response->successful()) {
-                    return $response;
-                }
-
-                // Se non è successful, logga e ritenta
-                Log::warning("API returned non-200 status on page {$page}, attempt " . ($attempt + 1), [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-                */
 
             } catch (\Throwable $e) {
                 $lastException = $e;
@@ -297,8 +294,8 @@ class PokemonImportService
             $attempt++;
             
             if ($attempt < $this->maxRetries) {
-                // Exponential backoff: 3s, 6s, 12s, 24s, 48s
-                $delay = $this->retryDelay * pow(2, $attempt - 1);
+                // Exponential backoff: 5s, 10s, 20s, 40s, 80s
+                $delay = 5000 * pow(2, $attempt - 1);
                 
                 if ($output) {
                     $output("⏳ Retry {$attempt}/{$this->maxRetries} after " . ($delay / 1000) . "s...");
