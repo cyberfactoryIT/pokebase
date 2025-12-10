@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             PlansAndFeaturesSeeder::class,
             PromotionsSeeder::class,
             GameSeeder::class,
-            CardCatalogDemoSeeder::class,
+            
         ]);
 
         // Crea organizzazione di default (se la feature è abilitata)
