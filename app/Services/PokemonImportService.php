@@ -182,8 +182,8 @@ class PokemonImportService
 
                 $page++;
                 
-                // Pausa più lunga per API lenta
-                usleep(500000); // 500ms invece di 200ms
+                // Pausa molto lunga per API instabile (2 secondi)
+                sleep(2);
 
             } catch (\Throwable $e) {
                 Log::error("Error processing page {$page}: " . $e->getMessage(), [
@@ -238,14 +238,44 @@ class PokemonImportService
         $lastException = null;
 
         // Aumenta i limiti PHP
-        set_time_limit(600); // 10 minuti per richiesta
-        ini_set('max_execution_time', '600');
+        set_time_limit(120); // 2 minuti per richiesta
+        ini_set('max_execution_time', '120');
 
         while ($attempt < $this->maxRetries) {
             try {
+                // Usa exec curl diretto come nel browser
+                $url = "{$this->baseUrl}/cards?" . http_build_query($params);
+                
+                $curlCmd = sprintf(
+                    'curl -s -H "Accept: application/json" -H "X-Api-Key: %s" "%s"',
+                    escapeshellarg($this->apiKey),
+                    escapeshellarg($url)
+                );
+                
+                $json = shell_exec($curlCmd);
+                
+                if ($json === null || $json === false || empty($json)) {
+                    throw new \RuntimeException("Failed to fetch data from API via curl");
+                }
+                
+                // Decodifica JSON
+                $data = json_decode($json, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new \RuntimeException("Invalid JSON response: " . json_last_error_msg());
+                }
+                
+                // Ritorna un oggetto compatibile
+                return new class($data) {
+                    private $data;
+                    public function __construct($data) { $this->data = $data; }
+                    public function successful() { return true; }
+                    public function json() { return $this->data; }
+                };
+                
+                /* Vecchio metodo Guzzle che non funziona
                 $response = Http::withHeaders($this->headers())
-                    ->timeout(300) // 5 minuti timeout HTTP
-                    ->connectTimeout(60) // 1 minuto per connessione
+                    ->timeout(30)
+                    ->connectTimeout(10)
                     ->get("{$this->baseUrl}/cards", $params);
 
                 if ($response->successful()) {
@@ -257,6 +287,7 @@ class PokemonImportService
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+                */
 
             } catch (\Throwable $e) {
                 $lastException = $e;
