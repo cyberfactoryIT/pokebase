@@ -18,30 +18,54 @@ class SyncPokemonSets extends Command
             // L'endpoint /sets non supporta paginazione, ritorna tutti i set in una chiamata
             $url = config('pokemon.base_url') . '/sets';
             
-            $ch = curl_init($url);
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_CONNECTTIMEOUT => 10,
-                CURLOPT_HTTPHEADER => [
-                    'Accept: application/json',
-                    'X-Api-Key: ' . config('pokemon.api_key'),
-                ],
-            ]);
+            $this->line("Fetching from: {$url}");
             
-            $json = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $curlError = curl_error($ch);
-            curl_close($ch);
+            $maxRetries = 5;
+            $attempt = 0;
+            $success = false;
+            $json = null;
             
-            if ($curlError) {
-                $this->error("cURL error: {$curlError}");
-                return static::FAILURE;
+            while ($attempt < $maxRetries && !$success) {
+                $attempt++;
+                
+                if ($attempt > 1) {
+                    $delay = 5 * pow(2, $attempt - 2); // 5s, 10s, 20s, 40s
+                    $this->line("Retry {$attempt}/{$maxRetries} after {$delay}s...");
+                    sleep($delay);
+                }
+                
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_TIMEOUT => 60, // Aumentato per l'endpoint sets
+                    CURLOPT_CONNECTTIMEOUT => 10,
+                    CURLOPT_HTTPHEADER => [
+                        'Accept: application/json',
+                        'X-Api-Key: ' . config('pokemon.api_key'),
+                    ],
+                ]);
+                
+                $json = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlError = curl_error($ch);
+                curl_close($ch);
+                
+                if ($curlError) {
+                    $this->warn("cURL error (attempt {$attempt}): {$curlError}");
+                    continue;
+                }
+                
+                if ($httpCode !== 200) {
+                    $this->warn("HTTP {$httpCode} (attempt {$attempt})");
+                    continue;
+                }
+                
+                $success = true;
             }
             
-            if ($httpCode !== 200) {
-                $this->error("HTTP request returned status code {$httpCode}");
+            if (!$success) {
+                $this->error("Failed to fetch sets after {$maxRetries} attempts");
                 return static::FAILURE;
             }
             
