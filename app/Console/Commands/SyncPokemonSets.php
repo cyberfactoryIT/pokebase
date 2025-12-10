@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 use App\Models\PokemonSet;
 
 class SyncPokemonSets extends Command
@@ -16,22 +15,42 @@ class SyncPokemonSets extends Command
         $this->info('Syncing Pokemon TCG sets from API...');
 
         try {
-            $response = Http::withHeaders([
-                'Accept' => 'application/json',
-                'X-Api-Key' => config('pokemon.api_key'),
-            ])
-            ->timeout(120)
-            ->retry(3, 2000)
-            ->get(config('pokemon.base_url') . '/sets', [
-                'pageSize' => 250,
+            // Usa curl nativo invece di Http facade
+            $url = config('pokemon.base_url') . '/sets?' . http_build_query(['pageSize' => 250]);
+            
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 120,
+                CURLOPT_CONNECTTIMEOUT => 10,
+                CURLOPT_HTTPHEADER => [
+                    'Accept: application/json',
+                    'X-Api-Key: ' . config('pokemon.api_key'),
+                ],
             ]);
-
-            if (!$response->successful()) {
-                $this->error('Failed to fetch sets from API');
+            
+            $json = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+            
+            if ($curlError) {
+                $this->error("cURL error: {$curlError}");
                 return static::FAILURE;
             }
-
-            $data = $response->json();
+            
+            if ($httpCode !== 200) {
+                $this->error("HTTP request returned status code {$httpCode}");
+                return static::FAILURE;
+            }
+            
+            $data = json_decode($json, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $this->error('Invalid JSON response: ' . json_last_error_msg());
+                return static::FAILURE;
+            }
+            
             $sets = $data['data'] ?? [];
             $totalCount = $data['totalCount'] ?? count($sets);
 
