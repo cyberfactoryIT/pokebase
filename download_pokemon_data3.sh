@@ -26,17 +26,17 @@ else
     echo "✗ Failed to download sets"
 fi
 
-# Download cards (100 pages, 50 cards per page)
+# Download cards (1000 pages, 250 cards per page)
 echo ""
-echo "Downloading Pokemon cards (100 pages)..."
+echo "Downloading Pokemon cards (1000 pages)..."
 
 success_count=0
 fail_count=0
 
-for page in {1..100}; do
+for page in {697..1200}; do
     curl -H "X-Api-Key: $API_KEY" \
-         "$BASE_URL/cards?page=$page&pageSize=50" \
-         -o "$STORAGE_DIR/pokemon_cards/pokemon_cards_page$page.json" \
+         "$BASE_URL/cards?page=$page&pageSize=250" \
+         -o "$STORAGE_DIR/pokemon_cards_page$page.json" \
          --silent --show-error
     
     if [ $? -eq 0 ]; then
