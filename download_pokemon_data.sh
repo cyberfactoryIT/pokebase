@@ -26,25 +26,42 @@ else
     echo "✗ Failed to download sets"
 fi
 
-# Download cards (100 pages, 250 cards per page)
+# Download cards (500 pages, 50 cards per page)
 echo ""
-echo "Downloading Pokemon cards (100 pages)..."
+echo "Downloading Pokemon cards (500 pages)..."
 
 success_count=0
 fail_count=0
 
-for page in {1..100}; do
-    curl -H "X-Api-Key: $API_KEY" \
-         "$BASE_URL/cards?page=$page&pageSize=250" \
-         -o "$STORAGE_DIR/pokemon_cards_page$page.json" \
-         --silent --show-error
+for page in {1..1000}; do
+    retries=0
+    max_retries=3
+    downloaded=false
     
-    if [ $? -eq 0 ]; then
-        success_count=$((success_count + 1))
-        echo "✓ Page $page downloaded ($success_count/100)"
-    else
+    while [ $retries -lt $max_retries ] && [ "$downloaded" = false ]; do
+        curl -H "X-Api-Key: $API_KEY" \
+             "$BASE_URL/cards?page=$page&pageSize=25" \
+             -o "$STORAGE_DIR/pokemon_cards_page$page.json" \
+             --silent --show-error
+        
+        # Check if file contains error
+        if grep -q "error code: 504" "$STORAGE_DIR/pokemon_cards_page$page.json" 2>/dev/null || \
+           grep -q "error" "$STORAGE_DIR/pokemon_cards/pokemon_cards_page$page.json" 2>/dev/null; then
+            retries=$((retries + 1))
+            if [ $retries -lt $max_retries ]; then
+                echo "⚠ Page $page error (retry $retries/$max_retries)"
+                sleep 2
+            fi
+        else
+            downloaded=true
+            success_count=$((success_count + 1))
+            echo "✓ Page $page downloaded ($success_count/500)"
+        fi
+    done
+    
+    if [ "$downloaded" = false ]; then
         fail_count=$((fail_count + 1))
-        echo "✗ Page $page failed"
+        echo "✗ Page $page failed after $max_retries retries"
     fi
     
     # Sleep 1 second between requests to be nice to the API
@@ -56,6 +73,6 @@ echo "================================================"
 echo "Download Summary"
 echo "================================================"
 echo "Sets: $([ -f "$STORAGE_DIR/pokemon_sets.json" ] && echo 'Downloaded' || echo 'Failed')"
-echo "Card pages: $success_count successful, $fail_count failed"
+echo "Card pages: $success_count successful, $fail_count failed (out of 500)"
 echo "Completed: $(date)"
 echo "================================================"
