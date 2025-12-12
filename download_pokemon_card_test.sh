@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Pokemon TCG Data Download Script
+# Pokemon TCG Data Download Script - TEST VERSION (pages 11-20)
 # Downloads all sets and cards from Pokemon TCG API
 
 API_KEY="1fec095e-b12d-4c16-b1a7-17d96a10a75c"
@@ -12,32 +12,18 @@ CARDS_DIR="$STORAGE_DIR/pokemon_cards"
 mkdir -p "$CARDS_DIR"
 
 echo "================================================"
-echo "Pokemon TCG Data Download"
+echo "Pokemon TCG Data Download - TEST (pages 11-20)"
 echo "Started: $(date)"
 echo "================================================"
 
-# Download sets
+# Download cards (pages 11-20 only)
 echo ""
-echo "Downloading Pokemon sets..."
-curl -H "X-Api-Key: $API_KEY" \
-     "$BASE_URL/sets" \
-     -o "$STORAGE_DIR/pokemon_sets.json" \
-     --silent --show-error
-
-if [ $? -eq 0 ]; then
-    echo "✓ Sets downloaded successfully"
-else
-    echo "✗ Failed to download sets"
-fi
-
-# Download cards (1000 pages, 25 cards per page)
-echo ""
-echo "Downloading Pokemon cards (1000 pages)..."
+echo "Downloading Pokemon cards (pages 11-20)..."
 
 success_count=0
 fail_count=0
 
-for page in {1..1000}; do
+for page in {11..20}; do
     retries=0
     max_retries=5
     downloaded=false
@@ -69,7 +55,7 @@ for page in {1..1000}; do
         else
             downloaded=true
             success_count=$((success_count + 1))
-            echo "✓ Page $page downloaded ($file_size bytes) - $success_count/1000"
+            echo "✓ Page $page downloaded ($file_size bytes) - $success_count/10"
         fi
     done
     
@@ -88,7 +74,6 @@ echo ""
 echo "================================================"
 echo "Download Summary"
 echo "================================================"
-echo "Sets: $([ -f "$STORAGE_DIR/pokemon_sets.json" ] && echo 'Downloaded' || echo 'Failed')"
-echo "Card pages: $success_count successful, $fail_count failed (out of 1000)"
+echo "Card pages: $success_count successful, $fail_count failed (out of 10)"
 echo "Completed: $(date)"
 echo "================================================"
