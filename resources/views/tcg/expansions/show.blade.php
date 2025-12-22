@@ -15,17 +15,29 @@
 
         <!-- Expansion Header -->
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl mb-6">
-            <div class="px-6 py-6">
-                <h1 class="text-4xl font-bold text-white">{{ $expansion->name }}</h1>
-                <div class="mt-2 flex items-center space-x-4 text-sm text-gray-300">
-                    @if($expansion->abbreviation)
-                        <span class="px-3 py-1 bg-white/10 border border-white/20 rounded-full font-semibold">{{ $expansion->abbreviation }}</span>
-                    @endif
-                    @if($expansion->published_on)
-                        <span>{{ __('catalogue.released') }}: {{ $expansion->published_on->format('F j, Y') }}</span>
-                    @endif
-                    <span>{{ __('catalogue.cards_count', ['count' => $expansion->products_count]) }}</span>
+            <div class="px-6 py-6 flex items-start justify-between">
+                <div class="flex-1">
+                    <h1 class="text-4xl font-bold text-white">{{ $expansion->name }}</h1>
+                    <div class="mt-2 flex items-center space-x-4 text-sm text-gray-300">
+                        @if($expansion->abbreviation)
+                            <span class="px-3 py-1 bg-white/10 border border-white/20 rounded-full font-semibold">{{ $expansion->abbreviation }}</span>
+                        @endif
+                        @if($expansion->published_on)
+                            <span>{{ __('catalogue.released') }}: {{ $expansion->published_on->format('F j, Y') }}</span>
+                        @endif
+                        <span>{{ __('catalogue.cards_count', ['count' => $expansion->products_count]) }}</span>
+                    </div>
                 </div>
+                @if($expansion->abbreviation)
+                    <div class="ml-6 flex-shrink-0">
+                        <img 
+                            src="/images/logos/{{ $expansion->abbreviation }}-logo.png" 
+                            alt="{{ $expansion->name }} logo" 
+                            class="h-16 w-auto object-contain"
+                            onerror="this.style.display='none'"
+                        >
+                    </div>
+                @endif
             </div>
         </div>
 

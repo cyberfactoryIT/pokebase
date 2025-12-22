@@ -16,23 +16,43 @@
         <!-- Card Detail Layout (Scrydex-like) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Left Column: Card Image -->
-            <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                <div class="aspect-[245/342] max-w-md mx-auto">
-                    @if($imageUrl)
-                        <img 
-                            src="{{ $imageUrl }}" 
-                            alt="{{ $card->name }}"
-                            class="w-full h-full object-contain rounded-lg shadow-lg"
-                            onerror="this.src='https://via.placeholder.com/490x684/1a1a19/666?text=No+Image'"
-                        >
-                    @else
-                        <div class="w-full h-full bg-black/50 rounded-lg flex items-center justify-center">
-                            <svg class="w-24 h-24 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                    @endif
+            <div class="space-y-6">
+                <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
+                    <div class="aspect-[245/342] max-w-md mx-auto">
+                        @if($imageUrl)
+                            <img 
+                                src="{{ $imageUrl }}" 
+                                alt="{{ $card->name }}"
+                                class="w-full h-full object-contain rounded-lg shadow-lg"
+                                onerror="this.src='https://via.placeholder.com/490x684/1a1a19/666?text=No+Image'"
+                            >
+                        @else
+                            <div class="w-full h-full bg-black/50 rounded-lg flex items-center justify-center">
+                                <svg class="w-24 h-24 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        @endif
+                    </div>
                 </div>
+
+                <!-- Additional Details -->
+                @if($card->raw && is_array($card->raw))
+                    <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
+                        <h2 class="text-xl font-bold text-white mb-4">{{ __('catalogue.additional_details') }}</h2>
+                        
+                        <dl class="space-y-3">
+                            @foreach($card->raw as $key => $value)
+                                @if(!is_array($value) && !is_object($value) && !in_array($key, ['raw', 'extended_data', 'extendedData']))
+                                    <div class="flex justify-between py-2 border-b border-white/10">
+                                        <dt class="text-sm font-medium text-gray-400 capitalize">{{ str_replace('_', ' ', $key) }}</dt>
+                                        <dd class="text-sm text-white">{{ is_bool($value) ? ($value ? 'Yes' : 'No') : $value }}</dd>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </dl>
+                    </div>
+                @endif
             </div>
 
             <!-- Right Column: Card Details -->
@@ -118,24 +138,6 @@
                         </div>
                     @endif
                 </div>
-
-                <!-- Additional Details -->
-                @if($card->raw && is_array($card->raw))
-                    <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                        <h2 class="text-xl font-bold text-white mb-4">{{ __('catalogue.additional_details') }}</h2>
-                        
-                        <dl class="space-y-3">
-                            @foreach($card->raw as $key => $value)
-                                @if(!is_array($value) && !is_object($value) && !in_array($key, ['raw', 'extended_data', 'extendedData']))
-                                    <div class="flex justify-between py-2 border-b border-white/10">
-                                        <dt class="text-sm font-medium text-gray-400 capitalize">{{ str_replace('_', ' ', $key) }}</dt>
-                                        <dd class="text-sm text-white">{{ is_bool($value) ? ($value ? 'Yes' : 'No') : $value }}</dd>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </dl>
-                    </div>
-                @endif
 
                 <!-- Extended Data -->
                 @if($card->extended_data && is_array($card->extended_data) && count($card->extended_data) > 0)
