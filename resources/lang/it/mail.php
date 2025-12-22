@@ -9,7 +9,7 @@ return [
         'success' => 'La tua email è stata verificata con successo!',
         'already_verified' => 'La tua email era già verificata.',
         'expired' => 'Il link di verifica è scaduto. Registrati nuovamente per ricevere un nuovo link.',
-        'invalid' => 'Il link di verifica non è valido.',
+        'invalid' => 'L\'accesso deve essere verificato. Controlla la tua email per il link di verifica.',
         'check_mail_verification' => 'Controlla la tua email e clicca sul link di verifica per attivare il tuo account.',
         'resend' => 'Clicca qui per richiedere un\'altra email di verifica.',
         'farewell' => 'Saluti,',

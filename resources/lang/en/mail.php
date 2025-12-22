@@ -9,7 +9,7 @@ return [
         'success' => 'Your email has been successfully verified!',
         'already_verified' => 'Your email was already verified.',
         'expired' => 'The verification link has expired. Please register again to receive a new link.',
-        'invalid' => 'The verification link is invalid.',
+        'invalid' => 'The access should be verified. Please check your email for the verification link.',
         'resend' => 'Click here to request another verification email.',
         'farewell' => 'Regards,',
         'team' => 'The Evalua Team',

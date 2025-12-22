@@ -9,7 +9,7 @@ return [
         'success' => 'Din e-mail er nu bekræftet!',
         'already_verified' => 'Din e-mail var allerede bekræftet.',
         'expired' => 'Bekræftelseslinket er udløbet. Registrer dig igen for at modtage et nyt link.',
-        'invalid' => 'Bekræftelseslinket er ugyldigt.',
+        'invalid' => 'Adgangen skal bekræftes. Tjek venligst din e-mail for bekræftelseslinket.',
         'check_mail_verification' => 'Tjek venligst din e-mail og klik på bekræftelseslinket for at aktivere din konto.',
         'resend' => 'Klik her for at anmode om en ny bekræftelses-e-mail.',
         'farewell' => 'Venlig hilsen,',
