@@ -164,7 +164,7 @@ return [
 'profile_update' => 'Profil opdateret',
 'email_updated' => 'E-mail opdateret',
 'access_performed' => 'Adgang udført',
-
+'Edit_Profile' => 'Rediger profil',
 'next_renew_date' => 'Næste fornyelsesdato',
 'subscription_cancelled_on' => 'Abonnement annulleret den',
 'confirm_cancel_subscription' => 'Er du sikker på, at du vil annullere dit abonnement? Du vil have adgang indtil slutningen af din nuværende faktureringsperiode.',

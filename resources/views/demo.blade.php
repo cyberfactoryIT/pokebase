@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="bg-gray-50 min-h-screen py-8">
+<div class="bg-black min-h-screen py-8">
     <div class="max-w-4xl mx-auto">
         <x-card>
           {{-- Smoke test: se vedi questo badge, i componenti funzionano --}}

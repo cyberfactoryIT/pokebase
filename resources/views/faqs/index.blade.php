@@ -5,17 +5,18 @@
 @section('content')
 <div class="max-w-5xl mx-auto py-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">{{ __('faq.faq') }}</h1>
-        <a href="{{ route('faqs.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded shadow">{{ __('faq.add_faq') }}</a>
+        <h1 class="text-2xl font-bold text-white">{{ __('faq.faq') }}</h1>
+        <a href="{{ route('faqs.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded shadow-lg hover:bg-blue-700">{{ __('faq.add_faq') }}</a>
     </div>
-    <table class="min-w-full bg-white rounded shadow">
-        <thead>
+    <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl overflow-hidden">
+    <table class="min-w-full">
+        <thead class="bg-black/30">
             <tr>
-                <th class="px-4 py-2">{{ __('faq.category') }}</th>
-                <th class="px-4 py-2">{{ __('faq.question') }}</th>
-                <th class="px-4 py-2">{{ __('faq.status') }}</th>
-                <th class="px-4 py-2">{{ __('faq.sort_order') }}</th>
-                <th class="px-4 py-2">Actions</th>
+                <th class="px-4 py-2 text-left text-gray-300">{{ __('faq.category') }}</th>
+                <th class="px-4 py-2 text-left text-gray-300">{{ __('faq.question') }}</th>
+                <th class="px-4 py-2 text-left text-gray-300">{{ __('faq.status') }}</th>
+                <th class="px-4 py-2 text-left text-gray-300">{{ __('faq.sort_order') }}</th>
+                <th class="px-4 py-2 text-left text-gray-300">Actions</th>
             </tr>
         </thead>
         <tbody id="faq-table-body">

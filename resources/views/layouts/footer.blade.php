@@ -1,4 +1,4 @@
-<footer class="bg-white border-t mt-8 py-4 text-center text-gray-400">
+<footer class="bg-[#161615] border-t border-white/15 mt-8 py-4 text-center text-gray-400">
     <div>
         {!! __('messages.copyright', ['year' => date('Y')]) !!}<br>
         {{ __('messages.footer_dummy', [

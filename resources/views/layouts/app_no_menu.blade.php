@@ -15,15 +15,15 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-gray-50">
+    <body class="font-sans antialiased bg-black">
         <div class="min-h-screen flex flex-col">
            
             <div class="flex flex-1">
                 
                 <!-- Main Content -->
-                <main class="flex-1 p-8 bg-gray-50">
+                <main class="flex-1 p-8 bg-black">
                     @isset($header)
-                        <header class="bg-white shadow rounded-lg mb-6 p-6">
+                        <header class="bg-[#161615] border border-white/15 shadow-xl rounded-2xl mb-6 p-6">
                             <div class="max-w-7xl mx-auto">
                                 {{ $header }}
                             </div>

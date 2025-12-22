@@ -123,6 +123,18 @@ Route::delete('/faq/{faq}', [\App\Http\Controllers\FaqController::class, 'destro
 
 require __DIR__.'/auth.php';
 
+// TCG Browsing Routes (game-agnostic)
+Route::prefix('tcg')->group(function () {
+    // Expansions
+    Route::get('/expansions', [\App\Http\Controllers\TcgExpansionController::class, 'index'])->name('tcg.expansions.index');
+    Route::get('/expansions/search', [\App\Http\Controllers\TcgExpansionController::class, 'search'])->name('tcg.expansions.search');
+    Route::get('/expansions/{groupId}', [\App\Http\Controllers\TcgExpansionController::class, 'show'])->name('tcg.expansions.show');
+    Route::get('/expansions/{groupId}/cards/search', [\App\Http\Controllers\TcgExpansionController::class, 'cardsSearch'])->name('tcg.expansions.cards.search');
+    
+    // Cards
+    Route::get('/cards/{productId}', [\App\Http\Controllers\TcgCardController::class, 'show'])->name('tcg.cards.show');
+});
+
 // Locale switch route
 Route::post('/language-change', [\App\Http\Controllers\LocaleController::class, 'switch'])->name('language.change');
 Route::post('/locale-switch', [\App\Http\Controllers\LocaleController::class, 'switch'])->name('locale.switch');
