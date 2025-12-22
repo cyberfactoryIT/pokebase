@@ -30,7 +30,9 @@ class TcgcsvImportStatus extends Command
                 $this->warn('No imports found');
                 return self::SUCCESS;
             }
-            return $this->showBatchDetails($log->batch_id);
+            // Use batch_id for imports, run_id for checkups
+            $id = $log->batch_id ?? $log->run_id;
+            return $this->showBatchDetails($id);
         }
         
         return $this->showImportHistory($limit);
@@ -53,27 +55,37 @@ class TcgcsvImportStatus extends Command
         $rows = [];
         foreach ($logs as $log) {
             $statusColor = match($log->status) {
-                'completed' => 'green',
+                'completed', 'ok' => 'green',
                 'failed' => 'red',
+                'warn' => 'yellow',
                 'in_progress' => 'yellow',
                 default => 'gray',
             };
             
-            $rows[] = [
-                $log->batch_id,
-                "<fg={$statusColor}>{$log->status}</>",
-                $log->started_at->format('Y-m-d H:i:s'),
-                $log->duration ?? 'N/A',
-                $log->groups_processed,
-                $log->products_processed,
-                $log->prices_processed,
-                $log->total_new,
-                $log->total_failed > 0 ? "<fg=red>{$log->total_failed}</>" : '0',
-            ];
+            // Different display for checkup vs import
+            if ($log->type === 'checkup') {
+                $rows[] = [
+                    $log->run_id,
+                    'checkup',
+                    "<fg={$statusColor}>{$log->status}</>",
+                    $log->started_at->format('Y-m-d H:i:s'),
+                    $log->duration_ms ? "{$log->duration_ms}ms" : 'N/A',
+                    $log->message ?? 'N/A',
+                ];
+            } else {
+                $rows[] = [
+                    $log->batch_id ?? 'N/A',
+                    'import',
+                    "<fg={$statusColor}>{$log->status}</>",
+                    $log->started_at->format('Y-m-d H:i:s'),
+                    $log->duration ?? 'N/A',
+                    "G:{$log->groups_processed} P:{$log->products_processed} Pr:{$log->prices_processed}",
+                ];
+            }
         }
         
         $this->table(
-            ['Batch ID', 'Status', 'Started', 'Duration', 'Groups', 'Products', 'Prices', 'New', 'Failed'],
+            ['ID', 'Type', 'Status', 'Started', 'Duration', 'Details'],
             $rows
         );
         
@@ -84,9 +96,16 @@ class TcgcsvImportStatus extends Command
         return self::SUCCESS;
     }
     
-    protected function showBatchDetails(string $batchId): int
+    protected function showBatchDetails(?string $batchId): int
     {
-        $log = TcgcsvImportLog::where('batch_id', $batchId)->first();
+        if (!$batchId) {
+            $this->error("No batch ID or run ID provided");
+            return self::FAILURE;
+        }
+        
+        $log = TcgcsvImportLog::where('batch_id', $batchId)
+            ->orWhere('run_id', $batchId)
+            ->first();
         
         if (!$log) {
             $this->error("Import not found: {$batchId}");

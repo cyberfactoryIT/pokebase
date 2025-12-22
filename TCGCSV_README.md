@@ -6,8 +6,8 @@ This is a **separate** import pipeline for TCGplayer Pokemon data via tcgcsv.com
 
 - **Source**: https://tcgcsv.com (TCGplayer API)
 - **Category**: Pokemon (categoryId = 3)
-- **Tables**: `tcgcsv_groups`, `tcgcsv_products`, `tcgcsv_prices`
-- **Models**: `TcgcsvGroup`, `TcgcsvProduct`, `TcgcsvPrice`
+- **Tables**: `tcgcsv_groups`, `tcgcsv_products`, `tcgcsv_prices`, `tcgcsv_import_logs`
+- **Models**: `TcgcsvGroup`, `TcgcsvProduct`, `TcgcsvPrice`, `TcgcsvImportLog`
 - **Namespace**: `App\Services\Tcgcsv\`
 
 ## Configuration
@@ -54,36 +54,113 @@ Stores pricing data with history support.
 - `raw`: Full JSON payload
 - Unique key: `(product_id, printing, condition, snapshot_at)`
 
-## Usage
+### tcgcsv_import_logs
+Tracks both import and checkup operations.
+- `type`: 'import' or 'checkup'
+- `batch_id`: Unique ID for imports (nullable)
+- `run_id`: UUID for checkups (nullable)
+- `status`: completed/failed/ok/warn/fail
+- `message`: Human-readable summary
+- `metrics`: JSON of checkup metrics (for type='checkup')
+- Import stats: groups/products/prices processed/new/updated/failed
+- `duration_ms`: Execution time in milliseconds
 
-### Import Everything (all groups + products + prices)
+## Commands
+
+### Import Data
+
+#### Import Everything (all groups + products + prices)
 
 ```bash
 php artisan tcgcsv:import-pokemon
 ```
 
-### Import Only Groups
+#### Import Only Groups
 
 ```bash
 php artisan tcgcsv:import-pokemon --only=groups
 ```
 
-### Import Products for Specific Group
+#### Import Products for Specific Group
 
 ```bash
 php artisan tcgcsv:import-pokemon --groupId=123 --only=products
 ```
 
-### Import Prices for Specific Group
+#### Import Prices for Specific Group
 
 ```bash
 php artisan tcgcsv:import-pokemon --groupId=123 --only=prices
 ```
 
-### Import Everything for One Group
+#### Import Everything for One Group
 
 ```bash
 php artisan tcgcsv:import-pokemon --groupId=123
+```
+
+### Data Integrity Checkup
+
+Run comprehensive data integrity verification:
+
+```bash
+php artisan tcgcsv:checkup
+```
+
+#### Checkup Options
+
+**JSON Output** - Get machine-readable JSON instead of tables:
+```bash
+php artisan tcgcsv:checkup --json
+```
+
+**Fail on Warnings** - Exit with code 1 on warnings (useful for CI/CD):
+```bash
+php artisan tcgcsv:checkup --fail-on-warn
+```
+
+#### What the Checkup Verifies
+
+1. **Row Counts**: Total groups, products, and prices
+2. **Referential Integrity**:
+   - Orphaned prices (prices without matching product)
+   - Orphaned products (products without matching group)
+3. **Parsing Completeness**:
+   - Products missing card_number
+   - Products missing rarity
+4. **Duplicates**:
+   - Duplicate groups (by group_id)
+   - Duplicate products (by product_id)
+   - Duplicate prices (by product_id + printing + condition + snapshot_at)
+
+#### Checkup Status Codes
+
+- **ok**: All checks passed, no issues
+- **warn**: Minor issues (missing optional fields like card_number or rarity)
+- **fail**: Critical issues (orphaned data or duplicates)
+
+Exit codes:
+- `0`: Status is 'ok', or 'warn' without --fail-on-warn
+- `1`: Status is 'fail', or 'warn' with --fail-on-warn
+
+### View Import/Checkup History
+
+#### View Recent History
+
+```bash
+php artisan tcgcsv:import-status --limit=10
+```
+
+#### View Last Operation (Import or Checkup)
+
+```bash
+php artisan tcgcsv:import-status --last
+```
+
+#### View Specific Import Details
+
+```bash
+php artisan tcgcsv:import-status --batch-id=tcgcsv_20251222_113159_gOTA2X
 ```
 
 ## Features

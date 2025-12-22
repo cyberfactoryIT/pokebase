@@ -10,9 +10,13 @@ class TcgcsvImportLog extends Model
     
     protected $fillable = [
         'batch_id',
+        'type',
+        'run_id',
         'status',
+        'message',
         'started_at',
         'completed_at',
+        'duration_ms',
         'groups_processed',
         'groups_new',
         'groups_updated',
@@ -28,6 +32,7 @@ class TcgcsvImportLog extends Model
         'groups_completed',
         'error_details',
         'options',
+        'metrics',
     ];
     
     protected $casts = [
@@ -36,6 +41,7 @@ class TcgcsvImportLog extends Model
         'groups_completed' => 'array',
         'error_details' => 'array',
         'options' => 'array',
+        'metrics' => 'array',
     ];
     
     public function getDurationAttribute(): ?string
