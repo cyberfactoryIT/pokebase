@@ -37,49 +37,101 @@
 
         <!-- Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Rarity Distribution -->
             <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-500/20 p-3 rounded-lg">
-                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-gray-400 text-sm">Total Cards</p>
-                        <p class="text-white text-2xl font-bold">{{ number_format($stats['total_cards']) }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 mb-3">
                     <div class="bg-purple-500/20 p-3 rounded-lg">
                         <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-gray-400 text-sm">Unique Cards</p>
-                        <p class="text-white text-2xl font-bold">{{ number_format($stats['unique_cards']) }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
-                <div class="flex items-center gap-4">
-                    <div class="bg-yellow-500/20 p-3 rounded-lg">
-                        <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
                         </svg>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">Foil Cards</p>
-                        <p class="text-white text-2xl font-bold">{{ number_format($stats['foil_cards']) }}</p>
+                        <p class="text-gray-400 text-sm">Rarity Distribution</p>
+                        <p class="text-white text-2xl font-bold">{{ $topStats['rarity_distribution']->count() }} Types</p>
                     </div>
                 </div>
+                @if($topStats['rarity_distribution']->isNotEmpty())
+                <div class="space-y-1">
+                    @foreach($topStats['rarity_distribution']->take(3) as $rarity)
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">{{ $rarity->rarity ?: 'Unknown' }}</span>
+                        <span class="text-white font-medium">{{ $rarity->total_quantity }}</span>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+
+            <!-- Foil Percentage -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="bg-yellow-500/20 p-3 rounded-lg">
+                        <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-sm">Foil Cards</p>
+                        <p class="text-white text-2xl font-bold">{{ $topStats['foil_percentage'] }}%</p>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-yellow-400 h-2 rounded-full" style="width: {{ $topStats['foil_percentage'] }}%"></div>
+                    </div>
+                    <p class="text-gray-400 text-xs mt-1">{{ number_format($topStats['foil_count']) }} of {{ number_format($topStats['total_count']) }} cards</p>
+                </div>
+            </div>
+
+            <!-- Set Completion -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="bg-green-500/20 p-3 rounded-lg">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-sm">Top Set</p>
+                        @if($topStats['set_completion'])
+                        <p class="text-white text-lg font-bold">{{ $topStats['set_completion']['percentage'] }}%</p>
+                        @else
+                        <p class="text-white text-lg font-bold">-</p>
+                        @endif
+                    </div>
+                </div>
+                @if($topStats['set_completion'])
+                <div class="mt-2">
+                    <p class="text-gray-300 text-sm truncate">{{ $topStats['set_completion']['name'] }}</p>
+                    <p class="text-gray-400 text-xs">{{ $topStats['set_completion']['owned'] }}/{{ $topStats['set_completion']['total'] }} cards</p>
+                </div>
+                @endif
             </div>
         </div>
 
+        <!-- Tabs -->
+        <div class="mb-6" x-data="{ activeTab: 'cards' }">
+            <div class="border-b border-white/15">
+                <nav class="flex gap-4">
+                    <button 
+                        @click="activeTab = 'cards'"
+                        :class="activeTab === 'cards' ? 'border-blue-500 text-white' : 'border-transparent text-gray-400 hover:text-white'"
+                        class="py-3 px-4 border-b-2 font-medium transition"
+                    >
+                        Cards ({{ $collection->total() }})
+                    </button>
+                    <button 
+                        @click="activeTab = 'statistics'"
+                        :class="activeTab === 'statistics' ? 'border-blue-500 text-white' : 'border-transparent text-gray-400 hover:text-white'"
+                        class="py-3 px-4 border-b-2 font-medium transition"
+                    >
+                        Statistics
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Cards Tab -->
+            <div x-show="activeTab === 'cards'" class="mt-6">
         @if($collection->isEmpty())
         <!-- Empty State -->
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-12 text-center">
@@ -145,6 +197,170 @@
             {{ $collection->links() }}
         </div>
         @endif
+            </div>
+
+            <!-- Statistics Tab -->
+            <div x-show="activeTab === 'statistics'" class="mt-6">
+                <div class="space-y-6">
+                    <!-- Row 1: Rarity & Condition Distribution -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Full Rarity Distribution -->
+                        <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                            <h3 class="text-white text-lg font-semibold mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                </svg>
+                                Rarity Distribution
+                            </h3>
+                            <div class="space-y-3">
+                                @forelse($topStats['rarity_distribution'] as $rarity)
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-300">{{ $rarity->rarity ?: 'Unknown' }}</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-32 bg-gray-700 rounded-full h-2">
+                                            @php
+                                                $percentage = ($rarity->total_quantity / $stats['total_cards']) * 100;
+                                            @endphp
+                                            <div class="bg-purple-500 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
+                                        </div>
+                                        <span class="text-white font-medium w-12 text-right">{{ $rarity->total_quantity }}</span>
+                                    </div>
+                                </div>
+                                @empty
+                                <p class="text-gray-400 text-sm">No rarity data available</p>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <!-- Condition Distribution -->
+                        <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                            <h3 class="text-white text-lg font-semibold mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Condition Distribution
+                            </h3>
+                            <div class="space-y-3">
+                                @forelse($detailedStats['condition_distribution'] as $condition)
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-300">{{ ucfirst(str_replace('_', ' ', $condition->condition ?: 'Standard')) }}</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-32 bg-gray-700 rounded-full h-2">
+                                            @php
+                                                $percentage = ($condition->total_quantity / $stats['total_cards']) * 100;
+                                            @endphp
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
+                                        </div>
+                                        <span class="text-white font-medium w-12 text-right">{{ $condition->total_quantity }}</span>
+                                    </div>
+                                </div>
+                                @empty
+                                <p class="text-gray-400 text-sm">No condition data available</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Set Completion -->
+                    <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                        <h3 class="text-white text-lg font-semibold mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            Top 5 Sets by Completion
+                        </h3>
+                        <div class="space-y-4">
+                            @forelse($detailedStats['top_sets'] as $set)
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-gray-300 font-medium">{{ $set->name }}</span>
+                                    <span class="text-white font-bold">{{ $set->completion_percentage }}%</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 bg-gray-700 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ $set->completion_percentage }}%"></div>
+                                    </div>
+                                    <span class="text-gray-400 text-sm">{{ $set->owned_count }}/{{ $set->total_in_set }}</span>
+                                </div>
+                            </div>
+                            @empty
+                            <p class="text-gray-400 text-sm">No set data available</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Quick Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
+                            <div class="bg-blue-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-400 text-sm">Different Sets</p>
+                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['total_sets'] }}</p>
+                        </div>
+
+                        <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
+                            <div class="bg-purple-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-400 text-sm">With Notes</p>
+                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['cards_with_notes'] }}</p>
+                        </div>
+
+                        <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
+                            <div class="bg-orange-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-400 text-sm">Duplicates</p>
+                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['duplicate_cards'] }}</p>
+                        </div>
+
+                        <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
+                            <div class="bg-yellow-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-400 text-sm">Avg per Set</p>
+                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['total_sets'] > 0 ? round($stats['unique_cards'] / $detailedStats['total_sets'], 1) : 0 }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Timeline -->
+                    @if($detailedStats['timeline']->isNotEmpty())
+                    <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                        <h3 class="text-white text-lg font-semibold mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Collection Growth (Last 6 Months)
+                        </h3>
+                        <div class="grid grid-cols-6 gap-2">
+                            @foreach($detailedStats['timeline'] as $month)
+                            <div class="text-center">
+                                <div class="h-32 flex items-end justify-center">
+                                    @php
+                                        $maxCount = $detailedStats['timeline']->max('count');
+                                        $heightPercentage = $maxCount > 0 ? ($month->count / $maxCount) * 100 : 0;
+                                    @endphp
+                                    <div class="w-full bg-blue-500 rounded-t" style="height: {{ $heightPercentage }}%"></div>
+                                </div>
+                                <p class="text-white font-medium mt-2">{{ $month->count }}</p>
+                                <p class="text-gray-400 text-xs">{{ \Carbon\Carbon::parse($month->month . '-01')->format('M Y') }}</p>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
