@@ -649,7 +649,7 @@
                         <p><a href="mailto:info@basios.dk">{{ __('welcome.support') }}</a></p>
                     </div>
 
-                    <!-- Colonna 3 - Disclaimer Pokémon -->
+                    <!-- Column 3 - Trademark Disclaimer -->
                     <div>
                         <h3 class="font-semibold text-white mb-2">{{ __('welcome.pokemon_disclaimer_title') }}</h3>
                         <p class="text-xs leading-relaxed text-gray-400">
