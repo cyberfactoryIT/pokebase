@@ -66,6 +66,20 @@ Route::middleware('auth')->group(function () {
     // Theme preference
     Route::post('/user/theme', [\App\Http\Controllers\ProfileController::class, 'updateTheme'])->name('user.theme.update');
 
+    // Deck Management
+    Route::resource('decks', \App\Http\Controllers\DeckController::class);
+    Route::post('decks/{deck}/cards', [\App\Http\Controllers\DeckController::class, 'addCard'])->name('decks.cards.add');
+    Route::delete('decks/{deck}/cards/{deckCard}', [\App\Http\Controllers\DeckController::class, 'removeCard'])->name('decks.cards.remove');
+    Route::patch('decks/{deck}/cards/{deckCard}/quantity', [\App\Http\Controllers\DeckController::class, 'updateCardQuantity'])->name('decks.cards.updateQuantity');
+
+    // User Collection
+    Route::get('collection', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collection.index');
+    Route::post('collection/add', [\App\Http\Controllers\CollectionController::class, 'add'])->name('collection.add');
+    Route::delete('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'remove'])->name('collection.remove');
+    Route::patch('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'update'])->name('collection.update');
+    Route::get('collection/check/{productId}', [\App\Http\Controllers\CollectionController::class, 'checkCard'])->name('collection.check');
+    Route::get('collection/ids', [\App\Http\Controllers\Api\CollectionController::class, 'getProductIds'])->name('collection.ids');
+
     // Billing
     Route::get('/billing', [\App\Http\Controllers\BillingController::class,'index'])->name('billing.index');
     Route::post('/billing/change-plan', [\App\Http\Controllers\BillingController::class,'changePlan'])->name('billing.changePlan');

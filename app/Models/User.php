@@ -99,6 +99,22 @@ class User extends Authenticatable
         return $this->name;
     }
 
+    /**
+     * Get all decks for this user
+     */
+    public function decks()
+    {
+        return $this->hasMany(\App\Models\Deck::class);
+    }
+
+    /**
+     * Get all collection items for this user
+     */
+    public function collection()
+    {
+        return $this->hasMany(\App\Models\UserCollection::class);
+    }
+
     
      /**
      * Override default email verification notification to use custom template.

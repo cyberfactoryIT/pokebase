@@ -58,6 +58,30 @@
             </div>
         </div>
 
+        <!-- Bulk Actions Bar -->
+        <div id="bulkActionsBar" class="bg-blue-600 border border-blue-500 rounded-xl shadow-xl mb-6 p-4 hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <span class="text-white font-semibold"><span id="selectedCount">0</span> cards selected</span>
+                    <button onclick="clearSelection()" class="text-blue-100 hover:text-white text-sm underline">Clear</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openBulkCollectionModal()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add to Collection
+                    </button>
+                    <button onclick="openBulkDeckModal()" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Add to Deck
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Loading State -->
         <div id="loadingState" class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8 text-center text-gray-400 hidden">
             <svg class="animate-spin h-8 w-8 mx-auto mb-2 text-blue-400" fill="none" viewBox="0 0 24 24">
@@ -105,6 +129,118 @@
     </div>
 </div>
 
+<!-- Collection Modal -->
+<div id="collectionModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/75 transition-opacity" onclick="closeCollectionModal()"></div>
+        <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-white">Add to Collection</h3>
+                <button onclick="closeCollectionModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="collectionForm" onsubmit="return submitBulkCollection(event)">
+                @csrf
+                <input type="hidden" name="product_ids" id="collectionProductIds">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Quantity per card</label>
+                        <input type="number" name="quantity" value="1" min="1" max="99" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Condition</label>
+                        <select name="condition" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white">
+                            <option value="">Standard</option>
+                            <option value="mint">Mint</option>
+                            <option value="near_mint">Near Mint</option>
+                            <option value="excellent">Excellent</option>
+                            <option value="good">Good</option>
+                            <option value="light_played">Light Played</option>
+                            <option value="played">Played</option>
+                            <option value="poor">Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" name="is_foil" value="1" id="isFoil" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded">
+                        <label for="isFoil" class="ml-2 text-sm text-gray-300">Foil/Holo</label>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Notes (optional)</label>
+                        <textarea name="notes" rows="2" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white"></textarea>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex gap-3">
+                    <button type="button" onclick="closeCollectionModal()" class="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+                        Add to Collection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Deck Modal -->
+<div id="deckModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/75 transition-opacity" onclick="closeDeckModal()"></div>
+        <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-white">Add to Deck</h3>
+                <button onclick="closeDeckModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            @php
+                $userDecks = Auth::user()->decks ?? collect();
+            @endphp
+            
+            @if($userDecks->isEmpty())
+                <p class="text-gray-400 mb-4">You don't have any decks yet.</p>
+                <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
+                    Create Your First Deck
+                </a>
+            @else
+                <div class="space-y-2 mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Quantity per card</label>
+                    <input type="number" id="deckQuantity" value="1" min="1" max="4" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white mb-4">
+                </div>
+                
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    @foreach($userDecks as $deck)
+                        <button type="button" onclick="addToDeck({{ $deck->id }})" class="w-full text-left px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg transition group">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-semibold text-white group-hover:text-blue-400">{{ $deck->name }}</div>
+                                    @if($deck->format)
+                                        <div class="text-sm text-gray-400">{{ ucfirst($deck->format) }}</div>
+                                    @endif
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </div>
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
 <script>
 const groupId = {{ $expansion->group_id }};
 let currentPage = 1;
@@ -112,6 +248,7 @@ let currentQuery = '';
 let lastPage = 1;
 let debounceTimer = null;
 let isLoading = false;
+let selectedCards = new Set();
 
 const searchInput = document.getElementById('searchInput');
 const loadingState = document.getElementById('loadingState');
@@ -120,8 +257,120 @@ const cardsGrid = document.getElementById('cardsGrid');
 const othersSection = document.getElementById('othersSection');
 const othersGrid = document.getElementById('othersGrid');
 const noResults = document.getElementById('noResults');
-const loadMoreContainer = document.getElementById('loadMoreContainer');
 const loadMoreBtn = document.getElementById('loadMoreBtn');
+const loadMoreContainer = document.getElementById('loadMoreContainer');
+const bulkActionsBar = document.getElementById('bulkActionsBar');
+const selectedCountSpan = document.getElementById('selectedCount');
+
+// Selection management
+function toggleCardSelection(productId, checkbox) {
+    if (checkbox.checked) {
+        selectedCards.add(productId);
+    } else {
+        selectedCards.delete(productId);
+    }
+    updateBulkActionsBar();
+}
+
+function updateBulkActionsBar() {
+    if (selectedCards.size > 0) {
+        bulkActionsBar.classList.remove('hidden');
+        selectedCountSpan.textContent = selectedCards.size;
+    } else {
+        bulkActionsBar.classList.add('hidden');
+    }
+}
+
+function clearSelection() {
+    selectedCards.clear();
+    document.querySelectorAll('.card-checkbox').forEach(cb => cb.checked = false);
+    updateBulkActionsBar();
+}
+
+// Modal management
+function openBulkCollectionModal() {
+    document.getElementById('collectionProductIds').value = Array.from(selectedCards).join(',');
+    document.getElementById('collectionModal').classList.remove('hidden');
+}
+
+function closeCollectionModal() {
+    document.getElementById('collectionModal').classList.add('hidden');
+}
+
+function openBulkDeckModal() {
+    document.getElementById('deckModal').classList.remove('hidden');
+}
+
+function closeDeckModal() {
+    document.getElementById('deckModal').classList.add('hidden');
+}
+
+// Submit bulk collection
+async function submitBulkCollection(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    try {
+        const productIds = document.getElementById('collectionProductIds').value.split(',');
+        let successCount = 0;
+        
+        for (const productId of productIds) {
+            const data = new FormData();
+            data.append('_token', formData.get('_token'));
+            data.append('product_id', productId);
+            data.append('quantity', formData.get('quantity'));
+            if (formData.get('condition')) data.append('condition', formData.get('condition'));
+            if (formData.get('is_foil')) data.append('is_foil', '1');
+            if (formData.get('notes')) data.append('notes', formData.get('notes'));
+            
+            const response = await fetch('{{ route("collection.add") }}', {
+                method: 'POST',
+                body: data
+            });
+            
+            if (response.ok) successCount++;
+        }
+        
+        closeCollectionModal();
+        clearSelection();
+        alert(`${successCount} card(s) added to collection!`);
+    } catch (error) {
+        console.error('Error adding to collection:', error);
+        alert('Failed to add cards. Please try again.');
+    }
+}
+
+// Add to deck
+async function addToDeck(deckId) {
+    const quantity = document.getElementById('deckQuantity').value;
+    const productIds = Array.from(selectedCards);
+    
+    try {
+        let successCount = 0;
+        
+        for (const productId of productIds) {
+            const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            formData.append('product_id', productId);
+            formData.append('quantity', quantity);
+            
+            const response = await fetch(`/decks/${deckId}/cards`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) successCount++;
+        }
+        
+        closeDeckModal();
+        clearSelection();
+        alert(`${successCount} card(s) added to deck!`);
+    } catch (error) {
+        console.error('Error adding to deck:', error);
+        alert('Failed to add cards. Please try again.');
+    }
+}
 
 // Debounced search
 searchInput.addEventListener('input', (e) => {
@@ -230,15 +479,38 @@ async function loadCards(replace = true) {
 // Create card tile
 function createCardTile(card) {
     const div = document.createElement('div');
-    div.className = 'bg-[#1a1a19] border border-white/10 rounded-lg hover:border-white/30 hover:shadow-xl transition cursor-pointer overflow-hidden group';
-    div.onclick = () => {
-        window.location.href = `/tcg/cards/${card.product_id}`;
-    };
+    div.className = 'bg-[#1a1a19] border border-white/10 rounded-lg hover:border-white/30 hover:shadow-xl transition overflow-hidden group relative';
 
     const imageUrl = card.image_url || 'https://via.placeholder.com/245x342/1a1a19/666?text=No+Image';
 
     div.innerHTML = `
-        <div class="aspect-[245/342] bg-black/50 overflow-hidden">
+        <!-- Checkbox -->
+        <div class="absolute top-2 left-2 z-10">
+            <input type="checkbox" 
+                   class="card-checkbox w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded cursor-pointer" 
+                   data-product-id="${card.product_id}"
+                   onclick="event.stopPropagation(); toggleCardSelection(${card.product_id}, this)">
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onclick="event.stopPropagation(); quickAddToCollection(${card.product_id})" 
+                    class="p-1.5 bg-green-600/90 hover:bg-green-600 rounded text-white transition" 
+                    title="Add to Collection">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </button>
+            <button onclick="event.stopPropagation(); quickAddToDeck(${card.product_id})" 
+                    class="p-1.5 bg-blue-600/90 hover:bg-blue-600 rounded text-white transition" 
+                    title="Add to Deck">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="aspect-[245/342] bg-black/50 overflow-hidden cursor-pointer" onclick="window.location.href='/tcg/cards/${card.product_id}'">
             <img 
                 src="${escapeHtml(imageUrl)}" 
                 alt="${escapeHtml(card.name)}"
@@ -247,7 +519,7 @@ function createCardTile(card) {
                 onerror="this.src='https://via.placeholder.com/245x342/1a1a19/666?text=No+Image'"
             >
         </div>
-        <div class="p-2">
+        <div class="p-2 cursor-pointer" onclick="window.location.href='/tcg/cards/${card.product_id}'">
             <h3 class="text-xs font-semibold text-white truncate group-hover:text-blue-400 transition">
                 ${escapeHtml(card.name)}
             </h3>
@@ -256,6 +528,19 @@ function createCardTile(card) {
     `;
 
     return div;
+}
+
+// Quick actions for single card
+function quickAddToCollection(productId) {
+    selectedCards.clear();
+    selectedCards.add(productId);
+    openBulkCollectionModal();
+}
+
+function quickAddToDeck(productId) {
+    selectedCards.clear();
+    selectedCards.add(productId);
+    openBulkDeckModal();
 }
 
 // Escape HTML to prevent XSS

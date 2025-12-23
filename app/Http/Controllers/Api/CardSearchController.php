@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CardSearchRequest;
 use App\Models\TcgcsvProduct;
+use App\Models\UserCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Card Search API Controller
@@ -39,6 +41,7 @@ class CardSearchController extends Controller
         try {
             $query = $request->getQuery();
             $limit = $request->getLimit();
+            $collectionOnly = filter_var($request->input('collection_only', false), FILTER_VALIDATE_BOOLEAN);
 
             // Escape LIKE wildcards to prevent injection
             $escapedQuery = $this->escapeLikeWildcards($query);
@@ -54,8 +57,29 @@ class CardSearchController extends Controller
                     'tcgcsv_groups.published_on as group_published_on',
                     'tcgcsv_products.image_url',
                 ])
-                ->leftJoin('tcgcsv_groups', 'tcgcsv_products.group_id', '=', 'tcgcsv_groups.group_id')
-                ->where('tcgcsv_products.name', 'LIKE', "%{$escapedQuery}%")
+                ->leftJoin('tcgcsv_groups', 'tcgcsv_products.group_id', '=', 'tcgcsv_groups.group_id');
+            
+            // Filter by collection if requested
+            if ($collectionOnly && Auth::check()) {
+                $userId = Auth::id();
+                Log::info('Collection filter active', [
+                    'user_id' => $userId,
+                    'collection_only' => $collectionOnly,
+                    'is_authenticated' => Auth::check()
+                ]);
+                $results->whereIn('tcgcsv_products.product_id', function($query) use ($userId) {
+                    $query->select('product_id')
+                        ->from('user_collection')
+                        ->where('user_id', $userId);
+                });
+            } else {
+                Log::info('Collection filter NOT active', [
+                    'collection_only' => $collectionOnly,
+                    'is_authenticated' => Auth::check()
+                ]);
+            }
+            
+            $results->where('tcgcsv_products.name', 'LIKE', "%{$escapedQuery}%")
                 ->orderByRaw(
                     'CASE WHEN tcgcsv_products.name LIKE ? THEN 0 ELSE 1 END',
                     ["{$escapedQuery}%"]
@@ -64,16 +88,19 @@ class CardSearchController extends Controller
                 ->orderBy('tcgcsv_groups.published_on', 'DESC')
                 ->orderBy('tcgcsv_products.card_number', 'ASC')
                 ->orderBy('tcgcsv_products.id', 'ASC')
-                ->limit($limit)
-                ->get();
+                ->limit($limit);
+            
+            // Execute query
+            $cards = $results->get();
 
             // Format response
-            $formatted = $results->map(function ($card) {
+            $formatted = $cards->map(function ($card) {
                 return [
                     'product_id' => $card->product_id,
                     'name' => $card->name,
                     'card_number' => $card->card_number,
                     'group_id' => $card->group_id,
+                    'set_name' => $card->group_name, // Add set_name alias
                     'group_name' => $card->group_name,
                     'group_published_on' => $card->group_published_on 
                         ? (new \DateTime($card->group_published_on))->format('Y-m-d')

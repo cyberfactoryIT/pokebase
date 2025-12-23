@@ -3,6 +3,25 @@
 @section('content')
 <div class="bg-black min-h-screen py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+        <div class="mb-6 bg-green-500/20 border border-green-400/30 text-green-300 px-4 py-3 rounded-lg flex items-center gap-3" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>{{ session('success') }}</span>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="mb-6 bg-red-500/20 border border-red-400/30 text-red-300 px-4 py-3 rounded-lg flex items-center gap-3" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ session('error') }}</span>
+        </div>
+        @endif
+
         <!-- Back Button -->
         <div class="mb-4">
             <a href="{{ route('tcg.expansions.show', $card->group_id) }}" class="inline-flex items-center text-blue-400 hover:text-blue-300">
@@ -82,6 +101,82 @@
                                 {{ $card->rarity }}
                             </span>
                         @endif
+                    </div>
+
+                    <!-- Collection Actions -->
+                    <div class="flex gap-3 pt-4 border-t border-white/10" x-data="{ showDeckModal: false }">
+                        <form method="POST" action="{{ route('collection.add') }}" class="flex-1">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $card->product_id }}">
+                            <button type="submit" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Add to Collection
+                            </button>
+                        </form>
+                        <button type="button" @click="showDeckModal = true" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            Add to Deck
+                        </button>
+
+                        <!-- Deck Selection Modal -->
+                        <div x-show="showDeckModal" 
+                             x-cloak
+                             @click.away="showDeckModal = false"
+                             class="fixed inset-0 z-50 overflow-y-auto" 
+                             style="display: none;">
+                            <div class="flex items-center justify-center min-h-screen px-4">
+                                <div class="fixed inset-0 bg-black/75 transition-opacity" @click="showDeckModal = false"></div>
+                                
+                                <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-xl font-bold text-white">Add to Deck</h3>
+                                        <button @click="showDeckModal = false" class="text-gray-400 hover:text-white">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    @php
+                                        $userDecks = Auth::user()->decks ?? collect();
+                                    @endphp
+
+                                    @if($userDecks->isEmpty())
+                                        <p class="text-gray-400 mb-4">You don't have any decks yet.</p>
+                                        <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
+                                            Create Your First Deck
+                                        </a>
+                                    @else
+                                        <div class="space-y-2 max-h-96 overflow-y-auto">
+                                            @foreach($userDecks as $deck)
+                                                <form method="POST" action="{{ route('decks.cards.add', $deck) }}">
+                                                    @csrf
+                                                    <input type="hidden" name="product_id" value="{{ $card->product_id }}">
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <button type="submit" class="w-full text-left px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg transition group">
+                                                        <div class="flex items-center justify-between">
+                                                            <div>
+                                                                <div class="font-semibold text-white group-hover:text-blue-400">{{ $deck->name }}</div>
+                                                                @if($deck->format)
+                                                                    <div class="text-sm text-gray-400">{{ ucfirst($deck->format) }}</div>
+                                                                @endif
+                                                            </div>
+                                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </button>
+                                                </form>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

@@ -50,6 +50,59 @@
                         <!-- Results will be inserted here by JS -->
                     </div>
                 </div>
+
+                <!-- Collection Icon -->
+                <a href="{{ route('collection.index') }}" class="p-2 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition {{ request()->routeIs('collection.*') ? 'bg-white/10 text-white' : '' }}" title="My Collection">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </a>
+
+                <!-- Decks Dropdown -->
+                <div class="relative" x-data="{ decksOpen: false }">
+                    <button @click="decksOpen = !decksOpen" class="p-2 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition {{ request()->routeIs('decks.*') ? 'bg-white/10 text-white' : '' }}" title="My Decks">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <div x-show="decksOpen" @click.away="decksOpen = false" x-cloak class="absolute right-0 mt-2 w-64 bg-[#1a1a19] border border-white/20 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                        <div class="px-4 py-3 border-b border-white/10">
+                            <h3 class="text-white font-semibold text-sm">My Decks</h3>
+                        </div>
+                        @php
+                            $userDecks = Auth::user()->decks()->latest()->take(10)->get();
+                        @endphp
+                        @if($userDecks->isEmpty())
+                            <div class="px-4 py-6 text-center">
+                                <p class="text-gray-400 text-sm mb-3">No decks yet</p>
+                                <a href="{{ route('decks.create') }}" class="inline-block px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition">
+                                    Create Deck
+                                </a>
+                            </div>
+                        @else
+                            <div class="py-2">
+                                @foreach($userDecks as $deck)
+                                <a href="{{ route('decks.show', $deck) }}" class="block px-4 py-2 text-gray-300 hover:bg-white/10 hover:text-white transition">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-medium truncate">{{ $deck->name }}</div>
+                                            <div class="text-xs text-gray-400">{{ $deck->totalCards() }} cards</div>
+                                        </div>
+                                        @if($deck->format)
+                                        <span class="ml-2 px-2 py-0.5 bg-purple-500/20 text-purple-300 text-xs rounded">{{ $deck->format }}</span>
+                                        @endif
+                                    </div>
+                                </a>
+                                @endforeach
+                            </div>
+                            <div class="border-t border-white/10 px-4 py-2">
+                                <a href="{{ route('decks.index') }}" class="block text-center text-sm text-blue-400 hover:text-blue-300 transition">
+                                    View All Decks
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
                 @endif
                 
                 <div class="flex items-center gap-2">
