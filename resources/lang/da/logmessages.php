@@ -1,14 +1,18 @@
 <?php 
 return [
+
     'type' => [
         'login' => 'Login', 
         'user' => 'Brugeradministration', 
         'billing' => 'Fakturering',
         'organization' => 'Organisation',
         'subscription' => 'Abonnement',
+
+        
+        
     ],
     'action' => [
-        // Billing allerede til stede
+        // Billing già presente
         'change_plan'             => 'Skift plan',
         'reactivate_subscription' => 'Genaktiver abonnement',
         'cancel_subscription'     => 'Annuller abonnement',
@@ -17,13 +21,14 @@ return [
         'user_login'  => 'Bruger login',
         'user_logout' => 'Bruger logout',
 
-        // Brugeradministration
+        // Gestione utenti
         'create' => 'Bruger oprettet',
         'update' => 'Bruger opdateret',
         'delete' => 'Bruger slettet',
 
-        // Organisationsstyring
+        // Gestione organizzazione
         'update_organization' => 'Organisation opdateret',
+        
     ],
     'data' => [
         'user' => 'Bruger',
@@ -40,5 +45,23 @@ return [
         'subscription_end_date' => 'Abonnements slutdato',
         'subscription_renewal_date' => 'Abonnements fornyelsesdato',
         'date' => 'Dato',
+        'promotion_code' => 'Kampagnekode',
+        'promotion_end_date' => 'Kampagne slutdato',
+        'previous_promotion_code' => 'Tidligere kampagnekode',
+        'previous_promotion_end_date' => 'Tidligere kampagne slutdato',
+        'period' => 'Faktureringsperiode',
+        'coupon_code' => 'Kuponkode',
+        'new_plan_id' => 'Ny plan-ID',
+        'old_plan_id' => 'Gammel plan-ID',
+        'discount_cents' => 'Rabatbeløb (øre)',
+        /*
+        logmessages.data.period: monthly
+logmessages.data.coupon_code:
+logmessages.data.new_plan_id: Pro
+logmessages.data.old_plan_id:
+logmessages.data.discount_cents: 0
+^// Promozioni
+        
+        */
     ],
 ];
