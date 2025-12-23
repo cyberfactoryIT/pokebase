@@ -167,6 +167,7 @@ return [
 'login' => 'Login',
 'register' => 'Register',
 'profile_update' => 'Profile updated',
+'Edit_Profile' => 'Edit Profile',
 'email_updated' => 'Email updated',
 'access_performed' => 'Access performed',
 

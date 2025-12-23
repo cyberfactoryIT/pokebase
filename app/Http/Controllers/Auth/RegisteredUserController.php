@@ -32,6 +32,18 @@ class RegisteredUserController extends Controller
     {
         
 
+        if(!config('organizations.enabled')) {
+            $request->merge([
+                'organization_name' => $request->input('name') . ' Org',
+                'organization_code' => 'DEFAULT',
+                'organization_address' => 'N/A',
+                'organization_zipcode' => '00000',
+                'organization_city' => 'N/A',
+            ]);
+        }
+
+
+
         $validated = $request->validate([
             'organization_name' => ['required', 'string', 'max:191'],
             'organization_code' => ['required', 'string', 'max:191'],
@@ -53,8 +65,7 @@ class RegisteredUserController extends Controller
         }
 
         $user = \DB::transaction(function () use ($validated, $request) {
-            $organization = null;
-            if (config('organizations.enabled')) {
+            
                 // 1. Crea organizzazione
                 $organization = \App\Models\Organization::create([
                     'name' => $validated['organization_name'],
@@ -64,7 +75,7 @@ class RegisteredUserController extends Controller
                     'postcode' => $validated['organization_zipcode'] ?? null,
                     'city' => $validated['organization_city'] ?? null,
                 ]);
-            }
+            
 
             // 2. Crea utente con token di verifica
             $token = \Str::random(32);
@@ -80,7 +91,7 @@ class RegisteredUserController extends Controller
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
-                config('organizations.enabled') ? $user->organization_id : null
+                $user->organization_id 
             );
             $user->assignRole($saRole);
 

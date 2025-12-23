@@ -164,6 +164,7 @@ return [
 'profile_update' => 'Profilo aggiornato',
 'email_updated' => 'Email aggiornata',
 'access_performed' => 'Accesso effettuato',
+'Edit_Profile' => 'Modifica Profilo',
 
 'next_renew_date' => 'Prossima data di rinnovo',
 'subscription_cancelled_on' => 'Abbonamento annullato il',
