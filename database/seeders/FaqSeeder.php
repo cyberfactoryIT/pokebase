@@ -12,14 +12,14 @@ class FaqSeeder extends Seeder
         Faq::create([
             'category' => 'General',
             'question' => [
-                'en' => 'What is Evalua?',
-                'it' => 'Che cos’è Evalua?',
-                'da' => 'Hvad er Evalua?',
+                'en' => 'What is Basecard?',
+                'it' => 'Che cos’è Basecard?',
+                'da' => 'Hvad er Basecard?',
             ],
             'answer' => [
-                'en' => 'Evalua is a SaaS platform designed for companies to manage and evaluate projects efficiently.',
-                'it' => 'Evalua è una piattaforma SaaS progettata per le aziende per gestire e valutare i progetti in modo efficiente.',
-                'da' => 'Evalua er en SaaS-platform designet til virksomheder til at administrere og evaluere projekter effektivt.',
+                'en' => 'Basecard is a SaaS platform designed for companies to manage and Basecardte projects efficiently.',
+                'it' => 'Basecard è una piattaforma SaaS progettata per le aziende per gestire e valutare i progetti in modo efficiente.',
+                'da' => 'Basecard er en SaaS-platform designet til virksomheder til at administrere og evaluere projekter effektivt.',
             ],
             'is_published' => true,
             'sort_order' => 1,
@@ -63,9 +63,9 @@ class FaqSeeder extends Seeder
         Faq::create([
             'category' => 'Account',
             'question' => [
-                'en' => 'Does Evalua support two-factor authentication (2FA)?',
-                'it' => 'Evalua supporta l’autenticazione a due fattori (2FA)?',
-                'da' => 'Understøtter Evalua to-faktor-godkendelse (2FA)?',
+                'en' => 'Does Basecard support two-factor authentication (2FA)?',
+                'it' => 'Basecard supporta l’autenticazione a due fattori (2FA)?',
+                'da' => 'Understøtter Basecard to-faktor-godkendelse (2FA)?',
             ],
             'answer' => [
                 'en' => 'Yes, you can enable 2FA in your profile settings to add an extra layer of security.',
@@ -119,9 +119,9 @@ class FaqSeeder extends Seeder
                 'da' => 'Tilbyder I en gratis prøveperiode?',
             ],
             'answer' => [
-                'en' => 'Yes, Evalua offers a free trial period so you can test the platform before subscribing.',
-                'it' => 'Sì, Evalua offre un periodo di prova gratuita per testare la piattaforma prima dell’abbonamento.',
-                'da' => 'Ja, Evalua tilbyder en gratis prøveperiode, så du kan teste platformen, før du abonnerer.',
+                'en' => 'Yes, Basecard offers a free trial period so you can test the platform before subscribing.',
+                'it' => 'Sì, Basecard offre un periodo di prova gratuita per testare la piattaforma prima dell’abbonamento.',
+                'da' => 'Ja, Basecard tilbyder en gratis prøveperiode, så du kan teste platformen, før du abonnerer.',
             ],
             'is_published' => true,
             'sort_order' => 7,
@@ -148,14 +148,14 @@ class FaqSeeder extends Seeder
         Faq::create([
             'category' => 'Security',
             'question' => [
-                'en' => 'Is Evalua GDPR compliant?',
-                'it' => 'Evalua è conforme al GDPR?',
-                'da' => 'Er Evalua GDPR-kompatibel?',
+                'en' => 'Is Basecard GDPR compliant?',
+                'it' => 'Basecard è conforme al GDPR?',
+                'da' => 'Er Basecard GDPR-kompatibel?',
             ],
             'answer' => [
-                'en' => 'Yes, Evalua complies with GDPR requirements, ensuring data protection and privacy.',
-                'it' => 'Sì, Evalua è conforme al GDPR e garantisce protezione e riservatezza dei dati.',
-                'da' => 'Ja, Evalua overholder GDPR-kravene og sikrer databeskyttelse og privatliv.',
+                'en' => 'Yes, Basecard complies with GDPR requirements, ensuring data protection and privacy.',
+                'it' => 'Sì, Basecard è conforme al GDPR e garantisce protezione e riservatezza dei dati.',
+                'da' => 'Ja, Basecard overholder GDPR-kravene og sikrer databeskyttelse og privatliv.',
             ],
             'is_published' => true,
             'sort_order' => 9,
@@ -165,9 +165,9 @@ class FaqSeeder extends Seeder
         Faq::create([
             'category' => 'Security',
             'question' => [
-                'en' => 'How does Evalua protect my data?',
-                'it' => 'Come protegge Evalua i miei dati?',
-                'da' => 'Hvordan beskytter Evalua mine data?',
+                'en' => 'How does Basecard protect my data?',
+                'it' => 'Come protegge Basecard i miei dati?',
+                'da' => 'Hvordan beskytter Basecard mine data?',
             ],
             'answer' => [
                 'en' => 'All data is encrypted in transit and at rest, with daily backups and disaster recovery procedures.',
@@ -182,14 +182,14 @@ class FaqSeeder extends Seeder
         Faq::create([
             'category' => 'Integration',
             'question' => [
-                'en' => 'Can I integrate Evalua with other tools?',
-                'it' => 'Posso integrare Evalua con altri strumenti?',
-                'da' => 'Kan jeg integrere Evalua med andre værktøjer?',
+                'en' => 'Can I integrate Basecard with other tools?',
+                'it' => 'Posso integrare Basecard con altri strumenti?',
+                'da' => 'Kan jeg integrere Basecard med andre værktøjer?',
             ],
             'answer' => [
-                'en' => 'Yes, Evalua provides an API and webhooks for integration with external systems like CRM or ERP. Contact customer support for more information.',
-                'it' => 'Sì, Evalua offre un’API e webhook per l’integrazione con sistemi esterni come CRM o ERP. Contatta il supporto clienti per ulteriori informazioni.',
-                'da' => 'Ja, Evalua leverer en API og webhooks til integration med eksterne systemer som CRM eller ERP. Kontakt kundesupport for mere information.',
+                'en' => 'Yes, Basecard provides an API and webhooks for integration with external systems like CRM or ERP. Contact customer support for more information.',
+                'it' => 'Sì, Basecard offre un’API e webhook per l’integrazione con sistemi esterni come CRM o ERP. Contatta il supporto clienti per ulteriori informazioni.',
+                'da' => 'Ja, Basecard leverer en API og webhooks til integration med eksterne systemer som CRM eller ERP. Kontakt kundesupport for mere information.',
             ],
             'is_published' => true,
             'sort_order' => 11,

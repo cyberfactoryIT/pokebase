@@ -65,6 +65,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Theme preference
+    Route::post('/user/theme', [\App\Http\Controllers\ProfileController::class, 'updateTheme'])->name('user.theme.update');
+
     // Billing
     Route::get('/billing', [\App\Http\Controllers\BillingController::class,'index'])->name('billing.index');
     Route::post('/billing/change-plan', [\App\Http\Controllers\BillingController::class,'changePlan'])->name('billing.changePlan');

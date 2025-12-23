@@ -12,7 +12,7 @@ return [
         'invalid' => 'The access should be verified. Please check your email for the verification link.',
         'resend' => 'Click here to request another verification email.',
         'farewell' => 'Regards,',
-        'team' => 'The Evalua Team',
+        'team' => 'The Basecard Team',
         'support' => 'If you need help, contact us at :email',
         'check_mail_verification' => 'Please check your email and click the verification link to activate your account.'
     ],

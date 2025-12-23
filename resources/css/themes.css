@@ -1,0 +1,196 @@
+/* Theme System - CSS Variables */
+/* Default theme variables (fallback) */
+:root {
+    --bg: #000000;
+    --surface: #161615;
+    --text: #ffffff;
+    --text-muted: #9ca3af;
+    --border: rgba(255, 255, 255, 0.15);
+    --primary: #0D8ABC;
+    --primary-hover: #0a6d96;
+    --link: #60a5fa;
+    --link-hover: #93c5fd;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --input-bg: rgba(0, 0, 0, 0.5);
+    --dropdown-bg: #1a1a19;
+    --dropdown-hover: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark Theme (current default) */
+html[data-theme="dark"] {
+    --bg: #000000;
+    --surface: #161615;
+    --text: #ffffff;
+    --text-muted: #9ca3af;
+    --border: rgba(255, 255, 255, 0.15);
+    --primary: #0D8ABC;
+    --primary-hover: #0a6d96;
+    --link: #60a5fa;
+    --link-hover: #93c5fd;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --input-bg: rgba(0, 0, 0, 0.5);
+    --dropdown-bg: #1a1a19;
+    --dropdown-hover: rgba(255, 255, 255, 0.1);
+}
+
+/* Light Theme */
+html[data-theme="light"] {
+    --bg: #f9fafb;
+    --surface: #ffffff;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --border: rgba(0, 0, 0, 0.1);
+    --primary: #0D8ABC;
+    --primary-hover: #0a6d96;
+    --link: #2563eb;
+    --link-hover: #1d4ed8;
+    --danger: #dc2626;
+    --success: #059669;
+    --warning: #d97706;
+    --input-bg: #ffffff;
+    --dropdown-bg: #ffffff;
+    --dropdown-hover: rgba(0, 0, 0, 0.05);
+}
+
+
+html[data-theme="pokemon"] {
+    /* Base surfaces */
+    --bg: #1a1a2e;
+    --surface: #16213e;
+
+    /* Text */
+    --text: #eee;
+    --text-muted: #a8b2d1;
+
+    /* Borders */
+    --border: rgba(255, 203, 5, 0.2);
+
+    /* Brand Pokémon */
+    --primary: #ffcb05;          /* Pokémon Yellow */
+    --primary-hover: #e6b804;    /* Darker Yellow */
+    --link: #2a75bb;             /* Pokémon Blue */
+    --link-hover: #3c5aa6;       /* Deep Pokémon Blue */
+
+    /* Accents */
+    --danger: #ee1515;           /* Poké Ball Red (classic) */
+    --success: #66bb6a;
+    --warning: #ffa726;
+
+    /* UI elements */
+    --input-bg: rgba(255, 203, 5, 0.05);
+    --dropdown-bg: #0f1419;
+    --dropdown-hover: rgba(255, 203, 5, 0.1);
+}
+
+html[data-theme="pokemon-light"] {
+    --bg: #F0F0F8;
+    --surface: #FFFFFF;
+    --text: #1a1a2e;
+    --text-muted: #6B7280;
+    --border: #D1D5DB;
+
+    /* Brand accents */
+    --primary: #2A75BB;
+    --primary-hover: #1F5A8C;
+    --link: #2A75BB;
+    --link-hover: #244F93;
+
+    --danger: #EE1515;   /* rosso Poké Ball */
+    --success: #66BB6A;
+    --warning: #FFA726;
+
+    --input-bg: #FFFFFF;
+    --dropdown-bg: #F8F8FC;
+    --dropdown-hover: #E5E7EB;
+}
+
+
+html[data-theme="gameboy"] {
+    --bg: #9bbc0f;
+    --surface: #8bac0f;
+
+    --text: #0f380f;
+    --text-muted: #306230;
+
+    --border: #0f380f;
+
+    --primary: #306230;
+    --primary-hover: #0f380f;
+
+    --link: #0f380f;
+    --link-hover: #000000;
+
+    --danger: #8b0000;
+    --success: #0f380f;
+    --warning: #665500;
+
+    --input-bg: #9bbc0f;
+    --dropdown-bg: #8bac0f;
+    --dropdown-hover: #7f9f0f;
+}
+
+
+/* Apply theme variables to key elements */
+body {
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+.bg-black {
+    background-color: var(--bg) !important;
+}
+
+.bg-\[\#161615\] {
+    background-color: var(--surface) !important;
+}
+
+.text-white {
+    color: var(--text) !important;
+}
+
+.text-gray-300 {
+    color: var(--text-muted) !important;
+}
+
+.border-white\/15 {
+    border-color: var(--border) !important;
+}
+
+.border-white\/20 {
+    border-color: var(--border) !important;
+}
+
+.bg-white\/10 {
+    background-color: var(--dropdown-hover) !important;
+}
+
+.bg-white\/20 {
+    background-color: var(--dropdown-hover) !important;
+}
+
+.bg-\[1a1a19\],
+.bg-\[\#1a1a19\] {
+    background-color: var(--dropdown-bg) !important;
+}
+
+.bg-black\/50 {
+    background-color: var(--input-bg) !important;
+}
+
+/* Link colors */
+a:hover {
+    color: var(--link-hover);
+}
+
+/* Primary button colors */
+.bg-blue-600 {
+    background-color: var(--primary) !important;
+}
+
+.hover\:bg-blue-700:hover {
+    background-color: var(--primary-hover) !important;
+}

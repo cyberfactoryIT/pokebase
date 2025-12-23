@@ -554,11 +554,11 @@
                             class="w-full flex justify-between items-center px-5 py-4 text-lg font-semibold text-white focus:outline-none"
                             onclick="toggleFaq(0)"
                         >
-                            {{ __('welcome.faq_evalua_q') }}
+                            {{ __('welcome.faq_Basecard_q') }}
                             <span id="faq-arrow-0" class="transition-transform ml-4">&#9660;</span>
                         </button>
                         <div id="faq-content-0" class="text-gray-300 px-5 pb-4 hidden text-base leading-relaxed">
-                            {{ __('welcome.faq_evalua_a') }}
+                            {{ __('welcome.faq_Basecard_a') }}
                         </div>
                     </div>
 

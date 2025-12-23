@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -66,5 +68,24 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Update the user's theme preference.
+     */
+    public function updateTheme(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'theme' => ['required', 'string', Rule::in(['dark', 'light', 'pokemon', 'pokemon-light', 'gameboy'])],
+        ]);
+
+        $user = $request->user();
+        $user->theme = $validated['theme'];
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'theme' => $validated['theme'],
+        ]);
     }
 }

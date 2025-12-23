@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'organization_id',
         'locale',
+        'theme',
         'email_verification_token',
         'email_verification_expires_at',
     ];

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,16 +15,19 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-white antialiased bg-black">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-black">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-400" />
-                </a>
-            </div>
+        <div class="min-h-screen flex flex-col">
+            <div class="flex-1 flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
+                <div>
+                    <a href="/">
+                        <x-application-logo class="w-20 h-20 fill-current text-gray-400" />
+                    </a>
+                </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-[#161615] border border-white/15 shadow-xl overflow-hidden sm:rounded-2xl">
-                {{ $slot }}
+                <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-[#161615] border border-white/15 shadow-xl overflow-hidden sm:rounded-2xl">
+                    {{ $slot }}
+                </div>
             </div>
+            @include('layouts.footer')
         </div>
     </body>
 </html>

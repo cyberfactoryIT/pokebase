@@ -35,7 +35,7 @@ return [
     'support_sent' => 'Din besked er sendt. Vi svarer hurtigst muligt.',
     'have_questions' => 'Har Du Spørgsmål?',
     'we_have_answers' => 'Vi har svarene (i hvert fald de fleste gange!)',
-    'intro' => "Nedenfor finder du svar på de mest almindelige spørgsmål om Evalua & Online Evaluering. Du kan også se vores Guider & Akademi. Hvis du stadig ikke kan finde svaret, er du velkommen til at <a href='/support' class='underline text-blue-700'>kontakte os!</a>",
+    'intro' => "Nedenfor finder du svar på de mest almindelige spørgsmål om Basecard & Online Evaluering. Du kan også se vores Guider & Akademi. Hvis du stadig ikke kan finde svaret, er du velkommen til at <a href='/support' class='underline text-blue-700'>kontakte os!</a>",
     'helper' => [
         'title' => 'Hjælpeindlæg',
         'new' => 'Ny',

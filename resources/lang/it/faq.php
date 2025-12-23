@@ -35,7 +35,7 @@ return [
     'support_sent' => 'Il tuo messaggio è stato inviato. Ti risponderemo al più presto.',
     'have_questions' => 'Hai Domande?',
     'we_have_answers' => 'Abbiamo le risposte (beh, quasi sempre!)',
-    'intro' => "Di seguito troverai le risposte alle domande più comuni su Evalua & Valutazione Online. Puoi anche consultare le nostre Guide & Academy. Se non trovi quello che cerchi, <a href='/support' class='underline text-blue-700'>contattaci!</a>",
+    'intro' => "Di seguito troverai le risposte alle domande più comuni su Basecard & Valutazione Online. Puoi anche consultare le nostre Guide & Academy. Se non trovi quello che cerchi, <a href='/support' class='underline text-blue-700'>contattaci!</a>",
     'helper' => [
         'title' => 'Voci di aiuto',
         'new' => 'Nuovo',

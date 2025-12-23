@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ auth()->check() ? (auth()->user()->theme ?? 'dark') : 'dark' }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,18 +20,18 @@
             @include('layouts.navigation')
             <!-- Main Content -->
             <main class="flex-1 p-8 bg-black">
-                    @isset($header)
-                        <header class="bg-[#161615] border border-white/15 shadow-xl rounded-2xl mb-6 p-6">
-                            <div class="max-w-7xl mx-auto text-white">
-                                {{ $header }}
-                            </div>
-                        </header>
-                    @endisset
-                    <div class="main-section">
-                        @yield('content')
-                    </div>
-                </main>
-            </div>
+                @isset($header)
+                    <header class="bg-[#161615] border border-white/15 shadow-xl rounded-2xl mb-6 p-6">
+                        <div class="max-w-7xl mx-auto text-white">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
+                <div class="main-section">
+                    @yield('content')
+                </div>
+            </main>
+            @include('layouts.footer')
         </div>
     </body>
 </html>

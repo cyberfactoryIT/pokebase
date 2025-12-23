@@ -23,8 +23,8 @@ return [
 
     'faqs_general' => 'Frequently asked questions',
 
-    'faq_evalua_q' => 'What is basecard.dk?',
-    'faq_evalua_a' => 'basecard.dk is a tool for collectors that gives you a complete overview of your cards and how their value changes over time. Create decks, track price movements, and see the total value of your collection.',
+    'faq_Basecard_q' => 'What is basecard.dk?',
+    'faq_Basecard_a' => 'basecard.dk is a tool for collectors that gives you a complete overview of your cards and how their value changes over time. Create decks, track price movements, and see the total value of your collection.',
 
     'faq_start_q' => 'How do I get started?',
     'faq_start_a' => 'Create a free account, sign in, and start adding your cards. Search the database, choose set, condition, language, and save them into your collection or decks.',

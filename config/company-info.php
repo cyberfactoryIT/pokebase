@@ -58,7 +58,7 @@ return [
             'query_param' => env('COMPANY_INFO_CVRAPI_QUERY_PARAM', 'search'),
             // Optional headers for the HTTP request
             'headers' => [
-                'User-Agent' => env('COMPANY_INFO_CVRAPI_USER_AGENT', 'Evalua/1.0'),
+                'User-Agent' => env('COMPANY_INFO_CVRAPI_USER_AGENT', 'Basecard/1.0'),
                 'Accept' => 'application/json',
             ],
         ],

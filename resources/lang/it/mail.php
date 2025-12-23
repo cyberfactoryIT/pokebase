@@ -13,7 +13,7 @@ return [
         'check_mail_verification' => 'Controlla la tua email e clicca sul link di verifica per attivare il tuo account.',
         'resend' => 'Clicca qui per richiedere un\'altra email di verifica.',
         'farewell' => 'Saluti,',
-        'team' => 'Il Team di Evalua',
+        'team' => 'Il Team di Basecard',
         'support' => 'Se hai bisogno di aiuto, contattaci a :email',
         
     ],

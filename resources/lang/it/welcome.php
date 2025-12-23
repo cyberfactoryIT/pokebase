@@ -23,8 +23,8 @@ return [
 
     'faqs_general' => 'Domande frequenti',
 
-    'faq_evalua_q' => 'Che cos’è basecard.dk?',
-    'faq_evalua_a' => 'basecard.dk è uno strumento per collezionisti che offre una panoramica completa delle tue carte e dell’evoluzione del loro valore nel tempo. Puoi creare deck, monitorare l’andamento dei prezzi e visualizzare il valore totale della tua collezione.',
+    'faq_Basecard_q' => 'Che cos’è basecard.dk?',
+    'faq_Basecard_a' => 'basecard.dk è uno strumento per collezionisti che offre una panoramica completa delle tue carte e dell’evoluzione del loro valore nel tempo. Puoi creare deck, monitorare l’andamento dei prezzi e visualizzare il valore totale della tua collezione.',
 
     'faq_start_q' => 'Come posso iniziare?',
     'faq_start_a' => 'Crea un account gratuito, accedi e inizia ad aggiungere le tue carte. Puoi cercarle nel database, selezionare set, lingua e condizione, e salvarle nella tua collezione o nei tuoi deck.',

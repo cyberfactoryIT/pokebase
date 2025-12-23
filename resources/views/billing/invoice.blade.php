@@ -7,7 +7,7 @@
     <div class="bg-white rounded-lg shadow p-6 mb-8">
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-4" vertical-align="top">
-                <img src="/img/logo.png" alt="Logo" class="h-12 w-auto">
+                <img src="/images/logo_basecard.jpg" alt="Logo" class="h-12 w-auto">
                 <div>
                     <h2 class="text-2xl font-bold">{{ env('INVOICE_BILLER_NAME') }}</h2>
                     <div class="text-sm text-gray-600">{{ env('INVOICE_BILLER_ADDRESS') }}</div>

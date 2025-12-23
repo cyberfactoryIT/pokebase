@@ -62,7 +62,7 @@ class CompanyInfoController extends Controller
                     $url = $base.$path.'?'.$queryParam.'='.urlencode($cvr);
 
                     $client = \Illuminate\Support\Facades\Http::withHeaders(array_merge([
-                        'User-Agent' => 'Evalua/1.0',
+                        'User-Agent' => 'Basecard/1.0',
                         'Accept' => 'application/json',
                     ], $provider['headers'] ?? []))->timeout(6)->get($url);
 
@@ -70,7 +70,7 @@ class CompanyInfoController extends Controller
                     if (! $client->successful() && ($providerKey === 'cvrapi')) {
                         $url2 = $url.'&country=dk';
                         $client = \Illuminate\Support\Facades\Http::withHeaders(array_merge([
-                            'User-Agent' => 'Evalua/1.0',
+                            'User-Agent' => 'Basecard/1.0',
                             'Accept' => 'application/json',
                         ], $provider['headers'] ?? []))->timeout(6)->get($url2);
                     }
@@ -79,7 +79,7 @@ class CompanyInfoController extends Controller
                     if (! $client->successful() && ($providerKey === 'cvrapi')) {
                         $url3 = rtrim($provider['base_url'] ?? '', '/').'?'.($provider['query_param'] ?? 'search').'='.urlencode($cvr).'&country=dk';
                         $client = \Illuminate\Support\Facades\Http::withHeaders(array_merge([
-                            'User-Agent' => 'Evalua/1.0',
+                            'User-Agent' => 'Basecard/1.0',
                             'Accept' => 'application/json',
                         ], $provider['headers'] ?? []))->timeout(6)->get($url3);
                     }

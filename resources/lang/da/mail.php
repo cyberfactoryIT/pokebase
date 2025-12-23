@@ -13,7 +13,7 @@ return [
         'check_mail_verification' => 'Tjek venligst din e-mail og klik på bekræftelseslinket for at aktivere din konto.',
         'resend' => 'Klik her for at anmode om en ny bekræftelses-e-mail.',
         'farewell' => 'Venlig hilsen,',
-        'team' => 'Evalua Teamet',
+        'team' => 'Basecard Teamet',
         'support' => 'Hvis du har brug for hjælp, kontakt os på :email',    
         
     ],

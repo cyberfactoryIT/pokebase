@@ -35,7 +35,7 @@ return [
     'support_sent' => 'Your message has been sent. We will reply as soon as possible.',
     'have_questions' => 'Do You Have Questions?',
     'we_have_answers' => 'We have answers (well, most of the times!)',
-    'intro' => "Below you’ll find answers to the most common questions you may have on Evalua & Online Evaluation. Also, please feel free to check out our Guides & Academy. If you still can’t find the answer you’re looking for, just <a href='/support' class='underline text-blue-700'>Contact us!</a>",
+    'intro' => "Below you’ll find answers to the most common questions you may have on Basecard & Online Basecardtion. Also, please feel free to check out our Guides & Academy. If you still can’t find the answer you’re looking for, just <a href='/support' class='underline text-blue-700'>Contact us!</a>",
     'helper' => [
         'title' => 'Help entries',
         'new' => 'New',

@@ -19,8 +19,8 @@ return [
 
 'faqs_general' => 'Ofte stillede spørgsmål',
 
-'faq_evalua_q' => 'Hvad er basecard.dk?',
-'faq_evalua_a' => 'basecard.dk er et værktøj til samlere, der giver dig et klart overblik over dine kort og deres værdi over tid. Du kan oprette decks, følge prisudviklingen og se den samlede værdi af din samling.',
+'faq_Basecard_q' => 'Hvad er basecard.dk?',
+'faq_Basecard_a' => 'basecard.dk er et værktøj til samlere, der giver dig et klart overblik over dine kort og deres værdi over tid. Du kan oprette decks, følge prisudviklingen og se den samlede værdi af din samling.',
 
 'faq_start_q' => 'Hvordan kommer jeg i gang?',
 'faq_start_a' => 'Opret en gratis konto, log ind og begynd at tilføje dine kort. Du kan søge i databasen, vælge sæt, tilstand og sprog og gemme dem i din samling eller i specifikke decks.',
