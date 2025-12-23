@@ -1,4 +1,5 @@
 import './bootstrap';
+import './cardSearch';
 
 import Alpine from 'alpinejs';
 

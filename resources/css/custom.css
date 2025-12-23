@@ -11,3 +11,21 @@
 }
 
 /* Add your custom styles below */
+
+/* Global Card Search */
+#search-dropdown {
+  background-color: var(--dropdown-bg);
+  color: var(--text);
+}
+
+#search-dropdown a:hover {
+  background-color: var(--dropdown-hover);
+}
+
+#global-card-search::placeholder {
+  color: var(--text-muted);
+}
+
+#global-card-search:focus {
+  border-color: var(--border);
+}

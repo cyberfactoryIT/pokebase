@@ -46,7 +46,7 @@ class CardSearchController extends Controller
             // Build search query with prefix/contains ranking
             $results = TcgcsvProduct::query()
                 ->select([
-                    'tcgcsv_products.id as product_id',
+                    'tcgcsv_products.product_id',
                     'tcgcsv_products.name',
                     'tcgcsv_products.card_number',
                     'tcgcsv_products.group_id',

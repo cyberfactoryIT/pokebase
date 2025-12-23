@@ -36,6 +36,21 @@
             </div>
             
             <div class="hidden md:flex items-center gap-4">
+                <!-- Global Card Search -->
+                @if(! auth()->user()->hasRole('superadmin'))
+                <div class="relative" x-data="{ searchOpen: false }" @click.away="searchOpen = false">
+                    <input 
+                        type="text" 
+                        id="global-card-search" 
+                        placeholder="Search cards..."
+                        class="px-3 py-1.5 w-64 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-white/40 text-sm"
+                        @focus="searchOpen = true"
+                    >
+                    <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 mt-1 bg-[#1a1a19] border border-white/20 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
+                        <!-- Results will be inserted here by JS -->
+                    </div>
+                </div>
+                @endif
                 
                 <div class="flex items-center gap-2">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff&size=32" alt="Avatar" class="h-8 w-8 rounded-full">
