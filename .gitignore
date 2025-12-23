@@ -24,6 +24,7 @@ Homestead.json
 
 
 /storage/pail
+/storage/app/poke*.*
 .env.backup
 .env.production
 .phpactor.json
