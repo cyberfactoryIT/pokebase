@@ -55,16 +55,6 @@
                                 <option value="it" @if(app()->getLocale() == 'it') selected @endif>{{ __('messages.italian') }}</option>
                             </select>
                         </form>
-                        <div class="px-4 py-2 border-b border-white/10">
-                            <label class="block text-xs text-gray-400 mb-1">{{ __('messages.theme') }}</label>
-                            <select id="theme-selector" class="px-2 py-1 rounded bg-black/50 border-white/20 text-white w-full">
-                                <option value="dark" @if((Auth::user()->theme ?? 'dark') == 'dark') selected @endif>{{ __('messages.dark') }}</option>
-                                <option value="light" @if((Auth::user()->theme ?? 'dark') == 'light') selected @endif>{{ __('messages.light') }}</option>
-                                <option value="pokemon" @if((Auth::user()->theme ?? 'dark') == 'pokemon') selected @endif>{{ __('messages.pokemon') }}</option>
-                                <option value="pokemon-light" @if((Auth::user()->theme ?? 'dark') == 'pokemon-light') selected @endif>{{ __('messages.pokemon_light') }}</option>
-                                <option value="gameboy" @if((Auth::user()->theme ?? 'dark') == 'gameboy') selected @endif>{{ __('messages.gameboy') }}</option>
-                            </select>
-                        </div>
                         <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-gray-300 hover:bg-white/10">{{ __('messages.Profile') }}</a>
                         @if(Auth::user()->hasRole('admin'))
                             <a href="{{ route('billing.index') }}" class="block px-4 py-2 text-gray-300 hover:bg-white/10">{{ __('messages.Billing_Plans') }}</a>
@@ -108,16 +98,6 @@
                         <option value="it" @if(app()->getLocale() == 'it') selected @endif>{{ __('messages.italian') }}</option>
                     </select>
                 </form>
-                <div class="mb-3 border-t border-white/10 pt-3">
-                    <label class="block text-xs text-gray-400 mb-1">{{ __('messages.theme') }}</label>
-                    <select id="theme-selector-mobile" class="px-2 py-1 rounded bg-black/50 border-white/20 text-white w-full">
-                        <option value="dark" @if((Auth::user()->theme ?? 'dark') == 'dark') selected @endif>{{ __('messages.dark') }}</option>
-                        <option value="light" @if((Auth::user()->theme ?? 'dark') == 'light') selected @endif>{{ __('messages.light') }}</option>
-                        <option value="pokemon" @if((Auth::user()->theme ?? 'dark') == 'pokemon') selected @endif>{{ __('messages.pokemon') }}</option>
-                        <option value="pokemon-light" @if((Auth::user()->theme ?? 'dark') == 'pokemon-light') selected @endif>{{ __('messages.pokemon_light') }}</option>
-                        <option value="gameboy" @if((Auth::user()->theme ?? 'dark') == 'gameboy') selected @endif>{{ __('messages.gameboy') }}</option>
-                    </select>
-                </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="block w-full text-left px-4 py-2 text-gray-300 hover:bg-white/10">{{ __('messages.Log_Out') }}</button>
