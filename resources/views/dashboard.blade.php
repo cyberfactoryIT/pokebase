@@ -91,7 +91,15 @@
 
             <!-- Quick Stats -->
             @if($cardsCount > 0 || $expansionsCount > 0)
-            <h3 class="font-semibold text-xl text-white mb-4">Pokemon Card <img src="/images/logos/logo_pokemon.png" alt="Pokemon" class="inline w-6 h-6 object-contain"></h3>
+            <h3 class="font-semibold text-xl text-white mb-4">
+                {{ $currentGame->name }}
+                @php
+                    $logoPath = "/images/logos/logo_{$currentGame->code}.png";
+                @endphp
+                @if(file_exists(public_path($logoPath)))
+                    <img src="{{ $logoPath }}" alt="{{ $currentGame->name }}" class="inline w-6 h-6 object-contain">
+                @endif
+            </h3>
              
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 @if($cardsCount > 0)
