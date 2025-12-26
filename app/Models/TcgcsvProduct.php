@@ -15,6 +15,7 @@ class TcgcsvProduct extends Model
         'game_id',
         'group_id',
         'product_id',
+        'language',
         'name',
         'clean_name',
         'image_url',

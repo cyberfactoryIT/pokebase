@@ -53,6 +53,14 @@ class Game extends Model
     }
 
     /**
+     * Get all articles for this game
+     */
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class);
+    }
+
+    /**
      * Get TCGCSV groups for this game
      */
     public function tcgcsvGroups()

@@ -133,6 +133,16 @@ Route::prefix('superadmin')->middleware(['auth'])->group(function () {
     Route::get('/superadmin/billing/invoices/export', [\App\Http\Controllers\SuperAdminBillingController::class, 'exportInvoices'])->name('superadmin.billing.invoices.export');
     Route::resource('helps', HelpController::class)->except(['show']);
     
+    // Articles management (SuperAdmin only)
+    Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)->names([
+        'index' => 'admin.articles.index',
+        'create' => 'admin.articles.create',
+        'store' => 'admin.articles.store',
+        'show' => 'admin.articles.show',
+        'edit' => 'admin.articles.edit',
+        'update' => 'admin.articles.update',
+        'destroy' => 'admin.articles.destroy',
+    ]);
 });
 
 Route::get('/faq', [\App\Http\Controllers\FaqController::class, 'index'])->name('faq.index');

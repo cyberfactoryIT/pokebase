@@ -82,6 +82,9 @@
                 <a href="{{ route('superadmin.plans.index') }}" class="px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('superadmin.plans.index') ? 'text-white font-semibold' : '' }}">
                     {{ __('messages.nav.pricing_plans') }}
                 </a>
+                <a href="{{ route('admin.articles.index') }}" class="px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('admin.articles.*') ? 'text-white font-semibold' : '' }}">
+                    Articles
+                </a>
                 @endif
                 
                 @if(auth()->user()->hasRole('admin'))

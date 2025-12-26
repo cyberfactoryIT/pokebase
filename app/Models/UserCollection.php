@@ -12,6 +12,7 @@ class UserCollection extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'language',
         'quantity',
         'condition',
         'is_foil',

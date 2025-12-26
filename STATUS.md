@@ -23,6 +23,19 @@
 - [x] Composite unique indexes: `(group_id, category_id)` on groups
 - [x] Foreign key relationships maintained
 - [x] GamesSeeder for automatic population
+- [x] `articles` table for informational content per game
+
+#### ✅ Informational Articles System - NEW! 🆕
+- [x] Articles table with game_id, category, markdown content
+- [x] Admin CRUD interface (SuperAdmin only)
+- [x] Category filtering on dashboard
+- [x] HTML5 native accordion (details/summary)
+- [x] Markdown to HTML conversion (XSS-safe)
+- [x] Image upload support (max 1MB, decorative)
+- [x] External URL linking
+- [x] Sort order and publish scheduling
+- [x] 12 seed articles (4 per game)
+- [x] Responsive 3-column grid layout
 
 #### ✅ Automatic Game Scoping
 - [x] `SetCurrentGame` middleware - validates and sets game context
@@ -116,6 +129,17 @@ php artisan tcgcsv:import --game=pokemon --only=all
 php artisan tcgcsv:import --game=mtg --only=groups
 php artisan tcgcsv:import --game=yugioh --groupId=5 --only=products
 php artisan db:seed --class=GamesSeeder
+php artisan db:seed --class=ArticlesSeeder
+```
+
+### Admin Routes (SuperAdmin Only)
+```php
+GET  /superadmin/articles         → admin.articles.index (list)
+GET  /superadmin/articles/create  → admin.articles.create
+POST /superadmin/articles         → admin.articles.store
+GET  /superadmin/articles/{id}/edit → admin.articles.edit
+PUT  /superadmin/articles/{id}    → admin.articles.update
+DELETE /superadmin/articles/{id}  → admin.articles.destroy
 ```
 
 ---
@@ -126,14 +150,23 @@ php artisan db:seed --class=GamesSeeder
 ```
 app/Http/Controllers/CurrentGameController.php
 app/Http/Middleware/SetCurrentGame.php
+app/Http/Middleware/EnsureSuperAdmin.php (NEW)
 app/Services/CurrentGameContext.php
 app/Console/Commands/TcgcsvImport.php (modified from Pokemon-specific)
+app/Models/Article.php (NEW)
+app/Http/Controllers/Admin/ArticleController.php (NEW)
 database/seeders/GamesSeeder.php
+database/seeders/ArticlesSeeder.php (NEW)
 database/migrations/2025_12_26_*.php (4 files)
+database/migrations/2025_12_26_190409_create_articles_table.php (NEW)
 resources/views/profile/game-management.blade.php
+resources/views/admin/articles/index.blade.php (NEW)
+resources/views/admin/articles/create.blade.php (NEW)
+resources/views/admin/articles/edit.blade.php (NEW)
 deploy.sh
 DEPLOYMENT.md
 STATUS.md (this file)
+PROJECT_SNAPSHOT.md
 ```
 
 ### Modified Files
@@ -141,19 +174,19 @@ STATUS.md (this file)
 app/Models/TcgcsvGroup.php (+ game_id in fillable)
 app/Models/TcgcsvProduct.php (+ game_id in fillable)
 app/Models/TcgcsvPrice.php (+ game_id in fillable)
-app/Models/Game.php (relationships added)
+app/Models/Game.php (relationships added + articles())
 app/Models/User.php (games() relationship)
-app/Http/Controllers/DashboardController.php (game scoping)
+app/Http/Controllers/DashboardController.php (game scoping + articles + category filter)
 app/Http/Controllers/TcgExpansionController.php (game scoping)
 app/Http/Controllers/CollectionController.php (game scoping)
 app/Services/Tcgcsv/TcgcsvClient.php (dynamic category_id)
 app/Services/Tcgcsv/TcgcsvImportService.php (dynamic game_id)
 bootstrap/app.php (middleware registration)
-database/seeders/DatabaseSeeder.php (+ GamesSeeder)
+database/seeders/DatabaseSeeder.php (+ GamesSeeder + ArticlesSeeder)
 resources/views/layouts/navigation.blade.php (game dropdown)
-resources/views/dashboard.blade.php (dynamic game name/logo)
+resources/views/dashboard.blade.php (dynamic game name/logo + articles section + category filter)
 resources/views/profile/edit.blade.php (game management section)
-routes/web.php (+ current-game route)
+routes/web.php (+ current-game route + admin articles routes)
 composer.json (helpers autoload)
 ```
 
@@ -192,6 +225,15 @@ composer.json (helpers autoload)
 - [ ] Import Pokemon data on production
 - [ ] Associate existing users with Pokemon game
 - [ ] Test multi-game functionality on production
+
+### Multi-Language Cards System
+- [x] Add `language` column to `tcgcsv_products` (default: 'en')
+- [x] Add `language` column to `user_collection` (default: 'en')
+- [x] Update unique constraint to include language
+- [ ] Find data source for non-English cards (Pokemon/MTG/YuGiOh)
+- [ ] UI: Language filter in collection view
+- [ ] UI: Language selector when adding card to collection
+- [ ] Import cards in multiple languages (pending data source)
 
 ### Future Enhancements
 - [ ] Admin panel for game management

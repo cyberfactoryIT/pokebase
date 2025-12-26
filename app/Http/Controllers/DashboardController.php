@@ -6,6 +6,7 @@ use App\Models\TcgcsvProduct;
 use App\Models\TcgcsvGroup;
 use App\Models\Deck;
 use App\Models\UserCollection;
+use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -51,12 +52,42 @@ class DashboardController extends Controller
             })
             ->count();
         
+        // Get user's locale preference
+        $userLocale = Auth::check() && Auth::user()->locale 
+            ? Auth::user()->locale 
+            : app()->getLocale();
+        
+        // Get articles for current game
+        $articlesQuery = Article::published()
+            ->where('game_id', $currentGame->id);
+        
+        // Filter by category if specified
+        if ($request->has('article_category') && $request->article_category) {
+            $articlesQuery->where('category', $request->article_category);
+        }
+        
+        $articles = $articlesQuery
+            ->orderByRaw('sort_order is null, sort_order asc')
+            ->orderByDesc('published_at')
+            ->limit(9)
+            ->get();
+        
+        // Get available categories for this game
+        $articleCategories = Article::published()
+            ->where('game_id', $currentGame->id)
+            ->distinct()
+            ->pluck('category')
+            ->sort();
+        
         return view('dashboard', [
             'cardsCount' => $cardsCount,
             'expansionsCount' => $expansionsCount,
             'userDecksCount' => $userDecksCount,
             'userCollectionCount' => $userCollectionCount,
             'uniqueCardsCount' => $uniqueCardsCount,
+            'articles' => $articles,
+            'articleCategories' => $articleCategories,
+            'userLocale' => $userLocale,
         ]);
     }
 }
