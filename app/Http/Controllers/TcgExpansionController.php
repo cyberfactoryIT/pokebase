@@ -12,7 +12,7 @@ class TcgExpansionController extends Controller
     /**
      * Display expansions index page
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         return view('tcg.expansions.index');
     }
@@ -22,12 +22,28 @@ class TcgExpansionController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
+        $currentGame = $request->attributes->get('currentGame');
+        
+        // If no current game, return empty
+        if (!$currentGame) {
+            return response()->json([
+                'data' => [],
+                'meta' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => 25,
+                    'total' => 0,
+                ],
+            ]);
+        }
+
         $validated = $request->validate([
             'query' => 'nullable|string|max:100',
             'page' => 'integer|min:1',
         ]);
 
         $query = TcgcsvGroup::query()
+            ->where('game_id', $currentGame->id)
             ->withCount('products');
 
         // Search filter
@@ -68,9 +84,12 @@ class TcgExpansionController extends Controller
     /**
      * Show expansion detail with cards
      */
-    public function show(int $groupId): View
+    public function show(Request $request, int $groupId): View
     {
+        $currentGame = $request->attributes->get('currentGame');
+        
         $expansion = TcgcsvGroup::where('group_id', $groupId)
+            ->where('game_id', $currentGame ? $currentGame->id : null)
             ->withCount('products')
             ->firstOrFail();
 
@@ -82,15 +101,19 @@ class TcgExpansionController extends Controller
      */
     public function cardsSearch(Request $request, int $groupId): JsonResponse
     {
+        $currentGame = $request->attributes->get('currentGame');
+        
         $validated = $request->validate([
             'query' => 'nullable|string|max:100',
             'page' => 'integer|min:1',
         ]);
 
-        // Verify expansion exists
-        $expansion = TcgcsvGroup::where('group_id', $groupId)->firstOrFail();
+        // Verify expansion exists and belongs to current game
+        $expansion = TcgcsvGroup::where('group_id', $groupId)
+            ->where('game_id', $currentGame ? $currentGame->id : null)
+            ->firstOrFail();
 
-        $query = $expansion->products();
+        $query = $expansion->products()->where('game_id', $currentGame->id);
 
         // Search filter
         if (!empty($validated['query'])) {

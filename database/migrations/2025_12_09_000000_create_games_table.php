@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');      // es. "Pokémon TCG"
             $table->string('code')->unique(); // es. "pokemon"
+            $table->string('slug')->unique(); // es. "pokemon-tcg"
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

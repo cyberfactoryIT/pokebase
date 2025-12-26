@@ -12,10 +12,10 @@ class TcgcsvClient
     protected int $timeout;
     protected array $retryConfig;
     
-    public function __construct()
+    public function __construct(?int $categoryId = null)
     {
         $this->baseUrl = config('tcgcsv.base_url');
-        $this->categoryId = config('tcgcsv.category_id');
+        $this->categoryId = $categoryId ?? config('tcgcsv.category_id');
         $this->timeout = config('tcgcsv.timeout');
         $this->retryConfig = config('tcgcsv.retry');
     }
@@ -121,5 +121,13 @@ class TcgcsvClient
     protected function shouldRetry(int $status): bool
     {
         return in_array($status, [408, 429, 500, 502, 503, 504]);
+    }
+    
+    /**
+     * Get the category ID being used
+     */
+    public function getCategoryId(): int
+    {
+        return $this->categoryId;
     }
 }

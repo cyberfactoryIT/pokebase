@@ -12,6 +12,7 @@ class TcgcsvProduct extends Model
     
     protected $fillable = [
         'category_id',
+        'game_id',
         'group_id',
         'product_id',
         'name',

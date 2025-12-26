@@ -14,13 +14,15 @@ class TcgcsvImportService
 {
     protected TcgcsvClient $client;
     protected int $categoryId;
+    protected int $gameId;
     protected string $runId;
     protected ?TcgcsvImportLog $importLog = null;
     
-    public function __construct(TcgcsvClient $client)
+    public function __construct(TcgcsvClient $client, ?int $gameId = null)
     {
         $this->client = $client;
-        $this->categoryId = config('tcgcsv.category_id');
+        $this->categoryId = $client->getCategoryId(); // Get from client
+        $this->gameId = $gameId ?? 1; // Default to Pokemon
         $this->runId = 'tcgcsv_' . date('Ymd_His') . '_' . Str::random(6);
     }
     
@@ -294,18 +296,25 @@ class TcgcsvImportService
             throw new \Exception('Missing groupId in group data');
         }
         
-        $existing = TcgcsvGroup::where('group_id', $groupId)->exists();
+        $existing = TcgcsvGroup::where('group_id', $groupId)
+            ->where('category_id', $this->categoryId)
+            ->exists();
+        
+        $updateData = [
+            'game_id' => $this->gameId,
+            'name' => $data['name'] ?? null,
+            'abbreviation' => $data['abbreviation'] ?? null,
+            'published_on' => isset($data['publishedOn']) ? $this->parseDate($data['publishedOn']) : null,
+            'modified_on' => isset($data['modifiedOn']) ? $this->parseDate($data['modifiedOn']) : null,
+            'raw' => $data,
+        ];
         
         TcgcsvGroup::updateOrCreate(
-            ['group_id' => $groupId],
             [
+                'group_id' => $groupId,
                 'category_id' => $this->categoryId,
-                'name' => $data['name'] ?? null,
-                'abbreviation' => $data['abbreviation'] ?? null,
-                'published_on' => isset($data['publishedOn']) ? $this->parseDate($data['publishedOn']) : null,
-                'modified_on' => isset($data['modifiedOn']) ? $this->parseDate($data['modifiedOn']) : null,
-                'raw' => $data,
-            ]
+            ],
+            $updateData
         );
         
         if ($existing) {
@@ -326,7 +335,9 @@ class TcgcsvImportService
             throw new \Exception('Missing productId in product data');
         }
         
-        $existing = TcgcsvProduct::where('product_id', $productId)->exists();
+        $existing = TcgcsvProduct::where('product_id', $productId)
+            ->where('category_id', $this->categoryId)
+            ->exists();
         
         // Parse extended data for card number and rarity
         $extendedData = $data['extendedData'] ?? [];
@@ -334,9 +345,12 @@ class TcgcsvImportService
         $rarity = $this->extractFromExtendedData($extendedData, ['rarity']);
         
         TcgcsvProduct::updateOrCreate(
-            ['product_id' => $productId],
             [
+                'product_id' => $productId,
                 'category_id' => $this->categoryId,
+            ],
+            [
+                'game_id' => $this->gameId,
                 'group_id' => $groupId,
                 'name' => $data['name'] ?? null,
                 'clean_name' => $data['cleanName'] ?? null,
@@ -386,6 +400,7 @@ class TcgcsvImportService
             ],
             [
                 'category_id' => $this->categoryId,
+                'game_id' => $this->gameId,
                 'group_id' => $groupId,
                 'market_price' => $data['marketPrice'] ?? null,
                 'low_price' => $data['lowPrice'] ?? null,

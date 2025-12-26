@@ -68,6 +68,9 @@ Route::middleware('auth')->group(function () {
     
     // Game preferences
     Route::post('/profile/games', [\App\Http\Controllers\ProfileController::class, 'updateGames'])->name('profile.games.update');
+    
+    // Current game switch
+    Route::post('/current-game', [\App\Http\Controllers\CurrentGameController::class, 'update'])->name('current-game.update');
 
     // Deck Management
     Route::resource('decks', \App\Http\Controllers\DeckController::class);

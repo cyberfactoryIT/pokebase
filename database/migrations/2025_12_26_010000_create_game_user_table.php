@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('game_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_enabled')->default(true);
             $table->timestamps();
 
             // Prevent duplicate entries

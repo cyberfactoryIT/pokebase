@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->web(\App\Http\Middleware\SetLocale::class);
     $middleware->web(\App\Http\Middleware\RequireTwoFactor::class);
     $middleware->web(\App\Http\Middleware\EnsureEmailIsVerified::class);
+    $middleware->web(\App\Http\Middleware\SetCurrentGame::class);
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
