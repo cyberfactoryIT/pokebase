@@ -48,7 +48,7 @@ class DeepLTranslationService
                     $params['source_lang'] = strtoupper($sourceLang);
                 }
 
-                $response = Http::post($this->apiUrl . '/translate', $params);
+                $response = Http::asForm()->post($this->apiUrl . '/translate', $params);
 
                 if ($response->successful()) {
                     $data = $response->json();

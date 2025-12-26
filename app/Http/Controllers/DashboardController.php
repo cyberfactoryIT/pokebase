@@ -52,10 +52,8 @@ class DashboardController extends Controller
             })
             ->count();
         
-        // Get user's locale preference
-        $userLocale = Auth::check() && Auth::user()->locale 
-            ? Auth::user()->locale 
-            : app()->getLocale();
+        // Get current locale (from session or user preference)
+        $userLocale = app()->getLocale();
         
         // Get articles for current game
         $articlesQuery = Article::published()
