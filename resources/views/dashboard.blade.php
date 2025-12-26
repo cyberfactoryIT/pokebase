@@ -11,7 +11,7 @@
                     {{ __('messages.Dashboard') }}
                 </h2>
                 <p class="text-gray-400">
-                    Explore the card catalog and browse through expansions.
+                    {{ __('dashboard.subtitle') }}
                 </p>
             </div>
 
@@ -23,7 +23,7 @@
 
             <!-- Quick Actions -->
             <div class="mb-8">
-                <h3 class="font-semibold text-xl text-white mb-4">Quick Actions</h3>
+                <h3 class="font-semibold text-xl text-white mb-4">{{ __('dashboard.quick_actions') }}</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- My Collection -->
@@ -35,8 +35,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h4 class="text-white font-semibold mb-1">My Collection</h4>
-                                <p class="text-gray-400 text-sm">{{ $userCollectionCount }} card{{ $userCollectionCount != 1 ? 's' : '' }} ({{ $uniqueCardsCount }} unique)</p>
+                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.my_collection') }}</h4>
+                                <p class="text-gray-400 text-sm">{{ trans_choice('dashboard.my_collection_count', $userCollectionCount, ['count' => $userCollectionCount]) }} ({{ trans_choice('dashboard.unique_count', $uniqueCardsCount, ['count' => $uniqueCardsCount]) }})</p>
                             </div>
                         </div>
                     </a>
@@ -50,8 +50,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h4 class="text-white font-semibold mb-1">My Decks</h4>
-                                <p class="text-gray-400 text-sm">{{ $userDecksCount }} deck{{ $userDecksCount != 1 ? 's' : '' }}</p>
+                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.my_decks') }}</h4>
+                                <p class="text-gray-400 text-sm">{{ trans_choice('dashboard.my_decks_count', $userDecksCount, ['count' => $userDecksCount]) }}</p>
                             </div>
                         </div>
                     </a>
@@ -63,8 +63,8 @@
                                 <img src="/images/logos/logo_pokemon.png" alt="Pokemon" class="w-8 h-8 object-contain">
                             </div>
                             <div>
-                                <h4 class="text-white font-semibold mb-1">Browse Expansions</h4>
-                                <p class="text-gray-400 text-sm">Explore all card sets</p>
+                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.browse_expansions') }}</h4>
+                                <p class="text-gray-400 text-sm">{{ __('dashboard.browse_expansions_subtitle') }}</p>
                             </div>
                         </div>
                     </a>
@@ -79,8 +79,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h4 class="text-white font-semibold mb-1">Search Cards</h4>
-                                <p class="text-gray-400 text-sm">Use search bar above</p>
+                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.search_cards') }}</h4>
+                                <p class="text-gray-400 text-sm">{{ __('dashboard.search_cards_subtitle') }}</p>
                             </div>
                         </div>
                     </div>
@@ -111,7 +111,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-400 text-sm">Total Cards</p>
+                            <p class="text-gray-400 text-sm">{{ __('dashboard.total_cards') }}</p>
                             <p class="text-white text-2xl font-bold">{{ number_format($cardsCount) }}</p>
                         </div>
                     </div>
@@ -127,7 +127,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-400 text-sm">Total Expansions</p>
+                            <p class="text-gray-400 text-sm">{{ __('dashboard.total_expansions') }}</p>
                             <p class="text-white text-2xl font-bold">{{ number_format($expansionsCount) }}</p>
                         </div>
                     </div>
@@ -140,15 +140,15 @@
             @if($articles && $articles->isNotEmpty())
             <div class="mt-8">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-semibold text-xl text-white">Informational Articles</h3>
+                    <h3 class="font-semibold text-xl text-white">{{ __('dashboard.articles_section') }}</h3>
                     
                     <!-- Category Filter -->
                     @if($articleCategories && $articleCategories->isNotEmpty())
                     <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-2">
-                        <label class="text-sm text-gray-400">Filter:</label>
+                        <label class="text-sm text-gray-400">{{ __('messages.filter') }}:</label>
                         <select name="article_category" onchange="this.form.submit()" 
                             class="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-sm text-white focus:border-white/20">
-                            <option value="">All Categories</option>
+                            <option value="">{{ __('dashboard.all_categories') }}</option>
                             @foreach($articleCategories as $cat)
                                 <option value="{{ $cat }}" {{ request('article_category') == $cat ? 'selected' : '' }}>
                                     {{ $cat }}
@@ -198,7 +198,7 @@
                             <!-- Accordion Toggle (HTML5 details/summary) -->
                             <details class="group">
                                 <summary class="cursor-pointer text-blue-400 hover:text-blue-300 font-semibold text-sm flex items-center gap-2 list-none">
-                                    <span>Read more</span>
+                                    <span>{{ __('dashboard.read_more') }}</span>
                                     <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
@@ -217,7 +217,7 @@
                                     @if($article->external_url)
                                     <div class="mt-4 pt-4 border-t border-white/10">
                                         <a href="{{ $article->external_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-semibold">
-                                            <span>Open external source</span>
+                                            <span>{{ __('dashboard.open_external') }}</span>
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                             </svg>

@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'back_to_decks' => 'Torna ai Deck',
+    'edit_deck' => 'Modifica Deck',
+    'browse_cards' => 'Sfoglia Carte',
+    'title' => 'Dettagli Deck',
+    'total_cards' => 'Carte Totali',
+    'add_from_collection' => 'Aggiungi dalla Collezione',
+    'add_from_catalog' => 'Aggiungi dal Catalogo',
+    'search_collection_placeholder' => 'Cerca nella tua collezione...',
+    'search_catalog_placeholder' => 'Cerca tutte le carte...',
+    'empty_state_title' => 'Deck Vuoto',
+    'empty_state_text' => 'Inizia ad aggiungere carte cercandole con la barra di ricerca sopra',
+    'qty_label' => 'Qtà',
+    'confirm_remove' => 'Rimuovere questa carta dal deck?',
+    'no_cards_found_collection' => 'Nessuna carta trovata nella tua collezione',
+    'no_cards_found' => 'Nessuna carta trovata',
+    'not_in_collection' => 'Non in Collezione',
+    'add_to_collection_btn' => 'Collezione',
+    'add_to_deck_btn' => 'Deck',
+    'added_to_collection' => 'aggiunta alla collezione!',
+    'failed_add_collection' => 'Impossibile aggiungere la carta alla collezione',
+    'failed_add_deck' => 'Impossibile aggiungere la carta al deck',
+];

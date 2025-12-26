@@ -8,13 +8,13 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                Back to Decks
+                {{ __('decks/create.back_to_decks') }}
             </a>
         </div>
 
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Create New Deck</h1>
-            <p class="text-gray-400 mb-8">Build a new deck for your collection</p>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ __('decks/create.title') }}</h1>
+            <p class="text-gray-400 mb-8">{{ __('decks/create.subtitle') }}</p>
 
             <form method="POST" action="{{ route('decks.store') }}">
                 @csrf
@@ -22,7 +22,7 @@
                 <!-- Deck Name -->
                 <div class="mb-6">
                     <label for="name" class="block text-white font-medium mb-2">
-                        Deck Name <span class="text-red-400">*</span>
+                        {{ __('decks/create.deck_name') }} <span class="text-red-400">{{ __('decks/create.required') }}</span>
                     </label>
                     <input 
                         type="text" 
@@ -31,7 +31,7 @@
                         value="{{ old('name') }}"
                         required
                         class="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
-                        placeholder="e.g., Charizard Deck"
+                        placeholder="{{ __('decks/create.placeholder_name') }}"
                     >
                     @error('name')
                         <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
@@ -41,7 +41,7 @@
                 <!-- Format -->
                 <div class="mb-6">
                     <label for="format" class="block text-white font-medium mb-2">
-                        Format
+                        {{ __('decks/create.format') }}
                     </label>
                     <input 
                         type="text" 
@@ -49,7 +49,7 @@
                         name="format" 
                         value="{{ old('format') }}"
                         class="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
-                        placeholder="e.g., Standard, Expanded, Unlimited"
+                        placeholder="{{ __('decks/create.placeholder_format') }}"
                     >
                     @error('format')
                         <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
@@ -59,14 +59,14 @@
                 <!-- Description -->
                 <div class="mb-8">
                     <label for="description" class="block text-white font-medium mb-2">
-                        Description
+                        {{ __('decks/create.description') }}
                     </label>
                     <textarea 
                         id="description" 
                         name="description" 
                         rows="4"
                         class="w-full px-4 py-3 bg-black/50 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition resize-none"
-                        placeholder="Describe your deck strategy..."
+                        placeholder="{{ __('decks/create.placeholder_description') }}"
                     >{{ old('description') }}</textarea>
                     @error('description')
                         <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
@@ -79,13 +79,13 @@
                         type="submit"
                         class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
                     >
-                        Create Deck
+                        {{ __('decks/create.create_deck') }}
                     </button>
                     <a 
                         href="{{ route('decks.index') }}"
                         class="px-6 py-3 bg-white/10 hover:bg-white/20 text-gray-300 font-medium rounded-lg transition text-center"
                     >
-                        Cancel
+                        {{ __('decks/create.cancel') }}
                     </a>
                 </div>
             </form>

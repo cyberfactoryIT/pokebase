@@ -9,7 +9,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                Back to Decks
+                {{ __('decks/show.back_to_decks') }}
             </a>
 
             <div class="flex justify-between items-start">
@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <a href="{{ route('decks.edit', $deck) }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition">
-                    Edit Deck
+                    {{ __('decks/show.edit_deck') }}
                 </a>
             </div>
 
@@ -43,12 +43,12 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Add from Collection -->
             <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl p-6">
-                <h2 class="text-lg font-semibold text-white mb-4">Add from Collection</h2>
+                <h2 class="text-lg font-semibold text-white mb-4">{{ __('decks/show.add_from_collection') }}</h2>
                 <div class="relative" x-data="{ searchOpen: false }" @click.away="searchOpen = false">
                     <input 
                         type="text" 
                         id="deck-card-search" 
-                        placeholder="Search your collection..."
+                        placeholder="{{ __('decks/show.search_collection_placeholder') }}"
                         class="w-full px-4 py-3 pl-10 bg-black/50 border border-white/20 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         @focus="searchOpen = true"
                     >
@@ -63,12 +63,12 @@
 
             <!-- Add from Catalog -->
             <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl p-6">
-                <h2 class="text-lg font-semibold text-white mb-4">Add from Catalog</h2>
+                <h2 class="text-lg font-semibold text-white mb-4">{{ __('decks/show.add_from_catalog') }}</h2>
                 <div class="relative" x-data="{ catalogSearchOpen: false }" @click.away="catalogSearchOpen = false">
                     <input 
                         type="text" 
                         id="catalog-card-search" 
-                        placeholder="Search all cards..."
+                        placeholder="{{ __('decks/show.search_catalog_placeholder') }}"
                         class="w-full px-4 py-3 pl-10 bg-black/50 border border-white/20 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                         @focus="catalogSearchOpen = true"
                     >
@@ -90,10 +90,10 @@
                 <svg class="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                 </svg>
-                <h3 class="text-white text-xl font-semibold mb-2">Empty Deck</h3>
-                <p class="text-gray-400 mb-6">Start adding cards by searching for them using the search bar above</p>
+                <h3 class="text-white text-xl font-semibold mb-2">{{ __('decks/show.empty_state_title') }}</h3>
+                <p class="text-gray-400 mb-6">{{ __('decks/show.empty_state_text') }}</p>
                 <a href="{{ route('tcg.expansions.index') }}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                    Browse Cards
+                    {{ __('decks/show.browse_cards') }}
                 </a>
             </div>
             @else
@@ -121,7 +121,7 @@
                             <h4 class="text-white font-semibold">{{ $card->name }}</h4>
                             @if(!$inCollection)
                             <span class="px-2 py-0.5 bg-orange-500/20 border border-orange-500/50 text-orange-400 text-xs rounded-full whitespace-nowrap">
-                                Not in Collection
+                                {{ __('decks/show.not_in_collection') }}
                             </span>
                             <form method="POST" action="{{ route('collection.add') }}" class="inline" onsubmit="event.preventDefault(); quickAddCardToCollection({{ $card->product_id }}, '{{ addslashes($card->name) }}', this);">
                                 @csrf
@@ -150,7 +150,7 @@
                         <form method="POST" action="{{ route('decks.cards.updateQuantity', [$deck, $deckCard]) }}" class="flex items-center gap-2">
                             @csrf
                             @method('PATCH')
-                            <label class="text-gray-400 text-sm">Qty:</label>
+                            <label class="text-gray-400 text-sm">{{ __('decks/show.qty_label') }}:</label>
                             <input 
                                 type="number" 
                                 name="quantity" 
@@ -163,7 +163,7 @@
                         </form>
 
                         <!-- Remove -->
-                        <form method="POST" action="{{ route('decks.cards.remove', [$deck, $deckCard]) }}" onsubmit="return confirm('Remove this card from the deck?');">
+                        <form method="POST" action="{{ route('decks.cards.remove', [$deck, $deckCard]) }}" onsubmit="return confirm('{{ __('decks/show.confirm_remove') }}');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="text-red-400 hover:text-red-300 transition">

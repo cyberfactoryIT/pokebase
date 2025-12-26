@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Dashboard',
+    'subtitle' => 'Udforsk kortkataloget og gennemse udvidelser.',
+    'quick_actions' => 'Hurtige Handlinger',
+    'my_collection' => 'Min Samling',
+    'my_collection_count' => ':count kort|:count kort',
+    'unique_count' => ':count unik|:count unikke',
+    'my_decks' => 'Mine Decks',
+    'my_decks_count' => ':count deck|:count decks',
+    'browse_expansions' => 'Gennemse Udvidelser',
+    'browse_expansions_subtitle' => 'Udforsk alle kortsæt',
+    'search_cards' => 'Søg Kort',
+    'search_cards_subtitle' => 'Brug søgelinjen ovenfor',
+    'quick_stats' => 'Hurtig Statistik',
+    'total_cards' => 'Samlede Kort',
+    'total_expansions' => 'Samlede Udvidelser',
+    'articles_section' => 'Artikler & Guider',
+    'articles_subtitle' => 'Tips og ressourcer til :game',
+    'all_categories' => 'Alle Kategorier',
+    'translated_badge' => ':target ← :source',
+    'read_more' => 'Læs mere',
+    'open_external' => 'Åbn ekstern kilde',
+    'no_articles' => 'Ingen artikler tilgængelige endnu.',
+];

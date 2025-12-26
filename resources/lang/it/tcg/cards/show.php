@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'back_to' => 'Torna a',
+    'expansion' => 'Espansione',
+    'released' => 'Rilasciato',
+    'cards_count' => ':count carte',
+    'additional_details' => 'Dettagli Aggiuntivi',
+    'yes' => 'Sì',
+    'no' => 'No',
+    'add_to_collection' => 'Aggiungi alla Collezione',
+    'add_to_deck' => 'Aggiungi al Mazzo',
+    'modal_deck_title' => 'Aggiungi al Mazzo',
+    'no_decks_yet' => 'Non hai ancora mazzi.',
+    'create_first_deck' => 'Crea il Tuo Primo Mazzo',
+    'pricing' => 'Prezzi',
+    'market_price' => 'Prezzo di Mercato',
+    'low_price' => 'Prezzo Basso',
+    'mid_price' => 'Prezzo Medio',
+    'high_price' => 'Prezzo Alto',
+    'printing' => 'Stampa',
+    'last_updated' => 'Ultimo aggiornamento',
+    'pricing_coming_soon' => 'Informazioni sui prezzi disponibili a breve',
+    'extended_information' => 'Informazioni Estese',
+];

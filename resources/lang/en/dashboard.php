@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Dashboard',
+    'subtitle' => 'Explore the card catalog and browse through expansions.',
+    'quick_actions' => 'Quick Actions',
+    'my_collection' => 'My Collection',
+    'my_collection_count' => ':count card|:count cards',
+    'unique_count' => ':count unique',
+    'my_decks' => 'My Decks',
+    'my_decks_count' => ':count deck|:count decks',
+    'browse_expansions' => 'Browse Expansions',
+    'browse_expansions_subtitle' => 'Explore all card sets',
+    'search_cards' => 'Search Cards',
+    'search_cards_subtitle' => 'Use search bar above',
+    'quick_stats' => 'Quick Stats',
+    'total_cards' => 'Total Cards',
+    'total_expansions' => 'Total Expansions',
+    'articles_section' => 'Articles & Guides',
+    'articles_subtitle' => 'Tips and resources for :game',
+    'all_categories' => 'All Categories',
+    'translated_badge' => ':target ← :source',
+    'read_more' => 'Read more',
+    'open_external' => 'Open external source',
+    'no_articles' => 'No articles available yet.',
+];

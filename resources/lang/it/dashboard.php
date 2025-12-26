@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Dashboard',
+    'subtitle' => 'Esplora il catalogo delle carte e sfoglia le espansioni.',
+    'quick_actions' => 'Azioni Rapide',
+    'my_collection' => 'La Mia Collezione',
+    'my_collection_count' => ':count carta|:count carte',
+    'unique_count' => ':count unica|:count uniche',
+    'my_decks' => 'I Miei Mazzi',
+    'my_decks_count' => ':count mazzo|:count mazzi',
+    'browse_expansions' => 'Esplora Espansioni',
+    'browse_expansions_subtitle' => 'Scopri tutti i set di carte',
+    'search_cards' => 'Cerca Carte',
+    'search_cards_subtitle' => 'Usa la barra di ricerca sopra',
+    'quick_stats' => 'Statistiche Rapide',
+    'total_cards' => 'Carte Totali',
+    'total_expansions' => 'Espansioni Totali',
+    'articles_section' => 'Articoli e Guide',
+    'articles_subtitle' => 'Consigli e risorse per :game',
+    'all_categories' => 'Tutte le Categorie',
+    'translated_badge' => ':target ← :source',
+    'read_more' => 'Leggi di più',
+    'open_external' => 'Apri fonte esterna',
+    'no_articles' => 'Nessun articolo disponibile al momento.',
+];

@@ -5,8 +5,8 @@
     <div class="max-w-7xl mx-auto px-6">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">My Collection</h1>
-            <p class="text-gray-400">Your personal card collection</p>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ __('collection/index.title') }}</h1>
+            <p class="text-gray-400">{{ __('collection/index.subtitle') }}</p>
         </div>
 
         @if(session('success'))
@@ -17,12 +17,12 @@
 
         <!-- Quick Add Card -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
-            <h2 class="text-lg font-semibold text-white mb-4">Quick Add Card</h2>
+            <h2 class="text-lg font-semibold text-white mb-4">{{ __('collection/index.quick_add_card') }}</h2>
             <div class="relative" x-data="{ searchOpen: false }" @click.away="searchOpen = false">
                 <input 
                     type="text" 
                     id="collection-card-search" 
-                    placeholder="Search and add cards to collection..."
+                    placeholder="{{ __('collection/index.search_placeholder') }}"
                     class="w-full px-4 py-3 pl-10 bg-black/50 border border-white/20 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     @focus="searchOpen = true"
                 >
@@ -46,8 +46,8 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">Rarity Distribution</p>
-                        <p class="text-white text-2xl font-bold">{{ $topStats['rarity_distribution']->count() }} Types</p>
+                        <p class="text-gray-400 text-sm">{{ __('collection/index.rarity_distribution') }}</p>
+                        <p class="text-white text-2xl font-bold">{{ $topStats['rarity_distribution']->count() }} {{ __('collection/index.rarity_types') }}</p>
                     </div>
                 </div>
                 @if($topStats['rarity_distribution']->isNotEmpty())
@@ -71,7 +71,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">Foil Cards</p>
+                        <p class="text-gray-400 text-sm">{{ __('collection/index.foil_cards') }}</p>
                         <p class="text-white text-2xl font-bold">{{ $topStats['foil_percentage'] }}%</p>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
                     <div class="w-full bg-gray-700 rounded-full h-2">
                         <div class="bg-yellow-400 h-2 rounded-full" style="width: {{ $topStats['foil_percentage'] }}%"></div>
                     </div>
-                    <p class="text-gray-400 text-xs mt-1">{{ number_format($topStats['foil_count']) }} of {{ number_format($topStats['total_count']) }} cards</p>
+                    <p class="text-gray-400 text-xs mt-1">{{ number_format($topStats['foil_count']) }} {{ __('collection/index.foil_of_cards', ['total' => number_format($topStats['total_count'])]) }}</p>
                 </div>
             </div>
 
@@ -92,7 +92,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">Top Set</p>
+                        <p class="text-gray-400 text-sm">{{ __('collection/index.top_set') }}</p>
                         @if($topStats['set_completion'])
                         <p class="text-white text-lg font-bold">{{ $topStats['set_completion']['percentage'] }}%</p>
                         @else
@@ -103,7 +103,7 @@
                 @if($topStats['set_completion'])
                 <div class="mt-2">
                     <p class="text-gray-300 text-sm truncate">{{ $topStats['set_completion']['name'] }}</p>
-                    <p class="text-gray-400 text-xs">{{ $topStats['set_completion']['owned'] }}/{{ $topStats['set_completion']['total'] }} cards</p>
+                    <p class="text-gray-400 text-xs">{{ __('collection/index.set_completion_cards', ['owned' => $topStats['set_completion']['owned'], 'total' => $topStats['set_completion']['total']]) }}</p>
                 </div>
                 @endif
             </div>
@@ -118,14 +118,14 @@
                         :class="activeTab === 'cards' ? 'border-blue-500 text-white' : 'border-transparent text-gray-400 hover:text-white'"
                         class="py-3 px-4 border-b-2 font-medium transition"
                     >
-                        Cards ({{ $collection->total() }})
+                        {{ __('collection/index.tab_cards') }} ({{ $collection->total() }})
                     </button>
                     <button 
                         @click="activeTab = 'statistics'"
                         :class="activeTab === 'statistics' ? 'border-blue-500 text-white' : 'border-transparent text-gray-400 hover:text-white'"
                         class="py-3 px-4 border-b-2 font-medium transition"
                     >
-                        Statistics
+                        {{ __('collection/index.tab_statistics') }}
                     </button>
                 </nav>
             </div>
@@ -138,10 +138,10 @@
             <svg class="w-20 h-20 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
             </svg>
-            <h3 class="text-white text-xl font-semibold mb-2">No Cards in Collection</h3>
-            <p class="text-gray-400 mb-6">Start building your collection by browsing cards and adding them</p>
+            <h3 class="text-white text-xl font-semibold mb-2">{{ __('collection/index.empty_title') }}</h3>
+            <p class="text-gray-400 mb-6">{{ __('collection/index.empty_text') }}</p>
             <a href="{{ route('tcg.expansions.index') }}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                Browse Cards
+                {{ __('collection/index.browse_cards') }}
             </a>
         </div>
         @else
@@ -165,13 +165,13 @@
                 <div class="p-3">
                     <h4 class="text-white text-sm font-semibold truncate">{{ $item->card->name }}</h4>
                     <div class="flex items-center justify-between mt-2">
-                        <span class="text-gray-400 text-xs">Qty: {{ $item->quantity }}</span>
+                        <span class="text-gray-400 text-xs">{{ __('collection/index.qty_label') }}: {{ $item->quantity }}</span>
                         @if($item->is_foil)
                         <span class="text-yellow-400 text-xs flex items-center gap-1">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                             </svg>
-                            Foil
+                            {{ __('collection/index.foil') }}
                         </span>
                         @endif
                     </div>
@@ -180,11 +180,11 @@
                         {{ ucfirst(str_replace('_', ' ', $item->condition)) }}
                     </span>
                     @endif
-                    <form method="POST" action="{{ route('collection.remove', $item) }}" class="mt-2" onsubmit="return confirm('Remove from collection?');">
+                    <form method="POST" action="{{ route('collection.remove', $item) }}" class="mt-2" onsubmit="return confirm('{{ __('collection/index.confirm_remove') }}');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="w-full text-xs px-2 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition">
-                            Remove
+                            {{ __('collection/index.remove') }}
                         </button>
                     </form>
                 </div>
@@ -210,7 +210,7 @@
                                 <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
                                 </svg>
-                                Rarity Distribution
+                                {{ __('collection/index.rarity_distribution') }}
                             </h3>
                             <div class="space-y-3">
                                 @forelse($topStats['rarity_distribution'] as $rarity)
@@ -227,7 +227,7 @@
                                     </div>
                                 </div>
                                 @empty
-                                <p class="text-gray-400 text-sm">No rarity data available</p>
+                                <p class="text-gray-400 text-sm">{{ __('collection/index.no_rarity_data') }}</p>
                                 @endforelse
                             </div>
                         </div>
@@ -238,7 +238,7 @@
                                 <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                Condition Distribution
+                                {{ __('collection/index.condition_distribution') }}
                             </h3>
                             <div class="space-y-3">
                                 @forelse($detailedStats['condition_distribution'] as $condition)
@@ -255,7 +255,7 @@
                                     </div>
                                 </div>
                                 @empty
-                                <p class="text-gray-400 text-sm">No condition data available</p>
+                                <p class="text-gray-400 text-sm">{{ __('collection/index.no_condition_data') }}</p>
                                 @endforelse
                             </div>
                         </div>
@@ -267,7 +267,7 @@
                             <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                             </svg>
-                            Top 5 Sets by Completion
+                            {{ __('collection/index.top_5_sets') }}
                         </h3>
                         <div class="space-y-4">
                             @forelse($detailedStats['top_sets'] as $set)
@@ -284,20 +284,20 @@
                                 </div>
                             </div>
                             @empty
-                            <p class="text-gray-400 text-sm">No set data available</p>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.no_set_data') }}</p>
                             @endforelse
                         </div>
                     </div>
 
                     <!-- Row 3: Quick Stats -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
                             <div class="bg-blue-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                                 <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400 text-sm">Different Sets</p>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.different_sets') }}</p>
                             <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['total_sets'] }}</p>
                         </div>
 
@@ -307,7 +307,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400 text-sm">With Notes</p>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.with_notes') }}</p>
                             <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['cards_with_notes'] }}</p>
                         </div>
 
@@ -317,7 +317,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400 text-sm">Duplicates</p>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.duplicates') }}</p>
                             <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['duplicate_cards'] }}</p>
                         </div>
 
@@ -327,7 +327,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400 text-sm">Avg per Set</p>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.avg_per_set') }}</p>
                             <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['total_sets'] > 0 ? round($stats['unique_cards'] / $detailedStats['total_sets'], 1) : 0 }}</p>
                         </div>
                     </div>
@@ -339,7 +339,7 @@
                             <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
-                            Collection Growth (Last 6 Months)
+                            {{ __('collection/index.collection_growth') }}
                         </h3>
                         <div class="grid grid-cols-6 gap-2">
                             @foreach($detailedStats['timeline'] as $month)
@@ -370,7 +370,7 @@
         <div class="fixed inset-0 bg-black/75 transition-opacity" onclick="closeQuickAddModal()"></div>
         <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-white" id="modalCardName">Add Card</h3>
+                <h3 class="text-xl font-bold text-white" id="modalCardName">{{ __('collection/index.modal_add_card') }}</h3>
                 <button onclick="closeQuickAddModal()" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -383,41 +383,41 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Quantity</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('collection/index.modal_quantity') }}</label>
                         <input type="number" name="quantity" value="1" min="1" max="99" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Condition</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('collection/index.modal_condition') }}</label>
                         <select name="condition" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white">
-                            <option value="">Standard</option>
-                            <option value="mint">Mint</option>
-                            <option value="near_mint">Near Mint</option>
-                            <option value="excellent">Excellent</option>
-                            <option value="good">Good</option>
-                            <option value="light_played">Light Played</option>
-                            <option value="played">Played</option>
-                            <option value="poor">Poor</option>
+                            <option value="">{{ __('collection/index.modal_condition_standard') }}</option>
+                            <option value="mint">{{ __('collection/index.modal_condition_mint') }}</option>
+                            <option value="near_mint">{{ __('collection/index.modal_condition_near_mint') }}</option>
+                            <option value="excellent">{{ __('collection/index.modal_condition_excellent') }}</option>
+                            <option value="good">{{ __('collection/index.modal_condition_good') }}</option>
+                            <option value="light_played">{{ __('collection/index.modal_condition_light_played') }}</option>
+                            <option value="played">{{ __('collection/index.modal_condition_played') }}</option>
+                            <option value="poor">{{ __('collection/index.modal_condition_poor') }}</option>
                         </select>
                     </div>
                     
                     <div class="flex items-center">
                         <input type="checkbox" name="is_foil" value="1" id="quickAddFoil" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded">
-                        <label for="quickAddFoil" class="ml-2 text-sm text-gray-300">Foil/Holo</label>
+                        <label for="quickAddFoil" class="ml-2 text-sm text-gray-300">{{ __('collection/index.modal_foil') }}</label>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Notes (optional)</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('collection/index.modal_notes') }}</label>
                         <textarea name="notes" rows="2" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white"></textarea>
                     </div>
                 </div>
                 
                 <div class="mt-6 flex gap-3">
                     <button type="button" onclick="closeQuickAddModal()" class="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition">
-                        Cancel
+                        {{ __('collection/index.modal_cancel') }}
                     </button>
                     <button type="submit" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
-                        Add to Collection
+                        {{ __('collection/index.modal_submit') }}
                     </button>
                 </div>
             </form>
@@ -459,7 +459,7 @@ async function searchCards(query) {
         const data = await response.json();
         
         if (data.length === 0) {
-            collectionSearchDropdown.innerHTML = '<div class="px-4 py-3 text-gray-400 text-sm">No cards found</div>';
+            collectionSearchDropdown.innerHTML = '<div class="px-4 py-3 text-gray-400 text-sm">{{ __('collection/index.no_cards_found') }}</div>';
             collectionSearchDropdown.classList.remove('hidden');
             return;
         }

@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'back_to_decks' => 'Back to Decks',
+    'edit_deck' => 'Edit Deck',
+    'browse_cards' => 'Browse Cards',
+    'title' => 'Deck Details',
+    'total_cards' => 'Total Cards',
+    'add_from_collection' => 'Add from Collection',
+    'add_from_catalog' => 'Add from Catalog',
+    'search_collection_placeholder' => 'Search your collection...',
+    'search_catalog_placeholder' => 'Search all cards...',
+    'empty_state_title' => 'Empty Deck',
+    'empty_state_text' => 'Start adding cards by searching for them using the search bar above',
+    'qty_label' => 'Qty',
+    'confirm_remove' => 'Remove this card from the deck?',
+    'no_cards_found_collection' => 'No cards found in your collection',
+    'no_cards_found' => 'No cards found',
+    'not_in_collection' => 'Not in Collection',
+    'add_to_collection_btn' => 'Collection',
+    'add_to_deck_btn' => 'Deck',
+    'added_to_collection' => 'added to collection!',
+    'failed_add_collection' => 'Failed to add card to collection',
+    'failed_add_deck' => 'Failed to add card to deck',
+];

@@ -28,7 +28,7 @@
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                {{ __('catalogue.back_to') }} {{ $card->group->name ?? __('catalogue.expansion') }}
+                {{ __('tcg/cards/show.back_to') }} {{ $card->group->name ?? __('tcg/cards/show.expansion') }}
             </a>
         </div>
 
@@ -58,14 +58,14 @@
                 <!-- Additional Details -->
                 @if($card->raw && is_array($card->raw))
                     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                        <h2 class="text-xl font-bold text-white mb-4">{{ __('catalogue.additional_details') }}</h2>
+                        <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.additional_details') }}</h2>
                         
                         <dl class="space-y-3">
                             @foreach($card->raw as $key => $value)
                                 @if(!is_array($value) && !is_object($value) && !in_array($key, ['raw', 'extended_data', 'extendedData']))
                                     <div class="flex justify-between py-2 border-b border-white/10">
                                         <dt class="text-sm font-medium text-gray-400 capitalize">{{ str_replace('_', ' ', $key) }}</dt>
-                                        <dd class="text-sm text-white">{{ is_bool($value) ? ($value ? 'Yes' : 'No') : $value }}</dd>
+                                        <dd class="text-sm text-white">{{ is_bool($value) ? ($value ? __('tcg/cards/show.yes') : __('tcg/cards/show.no')) : $value }}</dd>
                                     </div>
                                 @endif
                             @endforeach
@@ -112,14 +112,14 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                Add to Collection
+                                {{ __('tcg/cards/show.add_to_collection') }}
                             </button>
                         </form>
                         <button type="button" @click="showDeckModal = true" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                             </svg>
-                            Add to Deck
+                            {{ __('tcg/cards/show.add_to_deck') }}
                         </button>
 
                         <!-- Deck Selection Modal -->
@@ -133,7 +133,7 @@
                                 
                                 <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
                                     <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-xl font-bold text-white">Add to Deck</h3>
+                                        <h3 class="text-xl font-bold text-white">{{ __('tcg/cards/show.modal_deck_title') }}</h3>
                                         <button @click="showDeckModal = false" class="text-gray-400 hover:text-white">
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -146,9 +146,9 @@
                                     @endphp
 
                                     @if($userDecks->isEmpty())
-                                        <p class="text-gray-400 mb-4">You don't have any decks yet.</p>
+                                        <p class="text-gray-400 mb-4">{{ __('tcg/cards/show.no_decks_yet') }}</p>
                                         <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
-                                            Create Your First Deck
+                                            {{ __('tcg/cards/show.create_first_deck') }}
                                         </a>
                                     @else
                                         <div class="space-y-2 max-h-96 overflow-y-auto">
@@ -182,34 +182,34 @@
 
                 <!-- Pricing Section -->
                 <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-white mb-4">{{ __('catalogue.pricing') }}</h2>
+                    <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.pricing') }}</h2>
                     
                     @if($latestPrice)
                         <div class="grid grid-cols-2 gap-4">
                             @if($latestPrice->market_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                    <div class="text-xs text-gray-400 uppercase">{{ __('catalogue.market_price') }}</div>
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.market_price') }}</div>
                                     <div class="text-2xl font-bold text-white">${{ number_format($latestPrice->market_price, 2) }}</div>
                                 </div>
                             @endif
                             
                             @if($latestPrice->low_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                    <div class="text-xs text-gray-400 uppercase">{{ __('catalogue.low_price') }}</div>
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
                                     <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->low_price, 2) }}</div>
                                 </div>
                             @endif
                             
                             @if($latestPrice->mid_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                    <div class="text-xs text-gray-400 uppercase">{{ __('catalogue.mid_price') }}</div>
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.mid_price') }}</div>
                                     <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->mid_price, 2) }}</div>
                                 </div>
                             @endif
                             
                             @if($latestPrice->high_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                    <div class="text-xs text-gray-400 uppercase">{{ __('catalogue.high_price') }}</div>
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.high_price') }}</div>
                                     <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->high_price, 2) }}</div>
                                 </div>
                             @endif
@@ -217,19 +217,19 @@
                         
                         @if($latestPrice->printing)
                             <div class="mt-3 text-sm text-gray-300">
-                                <span class="font-medium">{{ __('catalogue.printing') }}:</span> {{ $latestPrice->printing }}
+                                <span class="font-medium">{{ __('tcg/cards/show.printing') }}:</span> {{ $latestPrice->printing }}
                             </div>
                         @endif
                         
                         <div class="mt-3 text-xs text-gray-400">
-                            {{ __('catalogue.last_updated') }}: {{ $latestPrice->snapshot_at->diffForHumans() }}
+                            {{ __('tcg/cards/show.last_updated') }}: {{ $latestPrice->snapshot_at->diffForHumans() }}
                         </div>
                     @else
                         <div class="text-center py-8 text-gray-400">
                             <svg class="mx-auto h-12 w-12 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <p>{{ __('catalogue.pricing_coming_soon') }}</p>
+                            <p>{{ __('tcg/cards/show.pricing_coming_soon') }}</p>
                         </div>
                     @endif
                 </div>
@@ -237,7 +237,7 @@
                 <!-- Extended Data -->
                 @if($card->extended_data && is_array($card->extended_data) && count($card->extended_data) > 0)
                     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                        <h2 class="text-xl font-bold text-white mb-4">{{ __('catalogue.extended_information') }}</h2>
+                        <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.extended_information') }}</h2>
                         
                         <dl class="space-y-3">
                             @foreach($card->extended_data as $item)

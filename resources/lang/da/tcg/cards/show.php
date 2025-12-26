@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'back_to' => 'Tilbage til',
+    'expansion' => 'Udvidelse',
+    'released' => 'Udgivet',
+    'cards_count' => ':count kort',
+    'additional_details' => 'Yderligere Detaljer',
+    'yes' => 'Ja',
+    'no' => 'Nej',
+    'add_to_collection' => 'Tilføj til Samling',
+    'add_to_deck' => 'Tilføj til Deck',
+    'modal_deck_title' => 'Tilføj til Deck',
+    'no_decks_yet' => 'Du har ingen decks endnu.',
+    'create_first_deck' => 'Opret Dit Første Deck',
+    'pricing' => 'Priser',
+    'market_price' => 'Markedspris',
+    'low_price' => 'Lav Pris',
+    'mid_price' => 'Mellemspris',
+    'high_price' => 'Høj Pris',
+    'printing' => 'Tryk',
+    'last_updated' => 'Sidst opdateret',
+    'pricing_coming_soon' => 'Prisinformation kommer snart',
+    'extended_information' => 'Udvidet Information',
+];

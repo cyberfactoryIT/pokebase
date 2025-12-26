@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'back_to' => 'Back to',
+    'expansion' => 'Expansion',
+    'released' => 'Released',
+    'cards_count' => ':count cards',
+    'additional_details' => 'Additional Details',
+    'yes' => 'Yes',
+    'no' => 'No',
+    'add_to_collection' => 'Add to Collection',
+    'add_to_deck' => 'Add to Deck',
+    'modal_deck_title' => 'Add to Deck',
+    'no_decks_yet' => 'You don\'t have any decks yet.',
+    'create_first_deck' => 'Create Your First Deck',
+    'pricing' => 'Pricing',
+    'market_price' => 'Market Price',
+    'low_price' => 'Low Price',
+    'mid_price' => 'Mid Price',
+    'high_price' => 'High Price',
+    'printing' => 'Printing',
+    'last_updated' => 'Last updated',
+    'pricing_coming_soon' => 'Pricing information coming soon',
+    'extended_information' => 'Extended Information',
+];

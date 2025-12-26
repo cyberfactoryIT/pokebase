@@ -6,14 +6,14 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">My Decks</h1>
-                <p class="text-gray-400 mt-1">Manage your card decks</p>
+                <h1 class="text-3xl font-bold text-white">{{ __('decks/index.title') }}</h1>
+                <p class="text-gray-400 mt-1">{{ __('decks/index.subtitle') }}</p>
             </div>
             <a href="{{ route('decks.create') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                New Deck
+                {{ __('decks/index.new_deck') }}
             </a>
         </div>
 
@@ -29,10 +29,10 @@
             <svg class="w-20 h-20 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
             </svg>
-            <h3 class="text-white text-xl font-semibold mb-2">No Decks Yet</h3>
-            <p class="text-gray-400 mb-6">Create your first deck to start building your collection</p>
+            <h3 class="text-white text-xl font-semibold mb-2">{{ __('decks/index.empty_title') }}</h3>
+            <p class="text-gray-400 mb-6">{{ __('decks/index.empty_body') }}</p>
             <a href="{{ route('decks.create') }}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                Create Your First Deck
+                {{ __('decks/index.create_first') }}
             </a>
         </div>
         @else
@@ -60,14 +60,14 @@
 
                     <div class="flex items-center justify-between pt-4 border-t border-white/10">
                         <div class="text-gray-400 text-sm">
-                            <span class="font-semibold text-white">{{ $deck->totalCards() }}</span> cards
+                            <span class="font-semibold text-white">{{ $deck->totalCards() }}</span> {{ __('decks/index.cards_count', ['count' => $deck->totalCards()]) }}
                         </div>
                         <div class="flex gap-2">
                             <a href="{{ route('decks.edit', $deck) }}" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 text-sm rounded transition">
-                                Edit
+                                {{ __('decks/index.edit') }}
                             </a>
                             <a href="{{ route('decks.show', $deck) }}" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition">
-                                View
+                                {{ __('decks/index.view') }}
                             </a>
                         </div>
                     </div>

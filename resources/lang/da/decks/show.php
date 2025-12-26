@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'back_to_decks' => 'Tilbage til Dæk',
+    'edit_deck' => 'Rediger Dæk',
+    'browse_cards' => 'Gennemse Kort',
+    'title' => 'Deck Detaljer',
+    'total_cards' => 'Samlede Kort',
+    'add_from_collection' => 'Tilføj fra Samling',
+    'add_from_catalog' => 'Tilføj fra Katalog',
+    'search_collection_placeholder' => 'Søg i din samling...',
+    'search_catalog_placeholder' => 'Søg alle kort...',
+    'empty_state_title' => 'Tomt Dæk',
+    'empty_state_text' => 'Begynd at tilføje kort ved at søge efter dem med søgefeltet ovenfor',
+    'qty_label' => 'Antal',
+    'confirm_remove' => 'Fjern dette kort fra decket?',
+    'no_cards_found_collection' => 'Ingen kort fundet i din samling',
+    'no_cards_found' => 'Ingen kort fundet',
+    'not_in_collection' => 'Ikke i Samling',
+    'add_to_collection_btn' => 'Samling',
+    'add_to_deck_btn' => 'Deck',
+    'added_to_collection' => 'tilføjet til samling!',
+    'failed_add_collection' => 'Kunne ikke tilføje kort til samling',
+    'failed_add_deck' => 'Kunne ikke tilføje kort til deck',
+];

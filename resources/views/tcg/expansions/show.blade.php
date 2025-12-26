@@ -9,7 +9,7 @@
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                {{ __('catalogue.back_to_expansions') }}
+                {{ __('tcg/expansions/show.back_to_expansions') }}
             </a>
         </div>
 
@@ -48,7 +48,7 @@
                     <input 
                         type="text" 
                         id="searchInput" 
-                        placeholder="{{ __('catalogue.search_cards') }}" 
+                        placeholder="{{ __('tcg/expansions/show.search_cards') }}" 
                         class="w-full px-4 py-3 pl-10 bg-black/50 border border-white/20 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                     <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,21 +62,21 @@
         <div id="bulkActionsBar" class="bg-blue-600 border border-blue-500 rounded-xl shadow-xl mb-6 p-4 hidden">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <span class="text-white font-semibold"><span id="selectedCount">0</span> cards selected</span>
-                    <button onclick="clearSelection()" class="text-blue-100 hover:text-white text-sm underline">Clear</button>
+                    <span class="text-white font-semibold"><span id="selectedCount">0</span> {{ __('tcg/expansions/show.cards_selected') }}</span>
+                    <button onclick="clearSelection()" class="text-blue-100 hover:text-white text-sm underline">{{ __('tcg/expansions/show.clear') }}</button>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="openBulkCollectionModal()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                        Add to Collection
+                        {{ __('tcg/expansions/show.add_to_collection') }}
                     </button>
                     <button onclick="openBulkDeckModal()" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
-                        Add to Deck
+                        {{ __('tcg/expansions/show.add_to_deck') }}
                     </button>
                 </div>
             </div>
@@ -88,14 +88,12 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Loading cards...
+            {{ __('tcg/expansions/show.loading_cards') }}
         </div>
 
         <!-- Cards Grid -->
         <div id="cardsSection" class="mb-8 hidden">
-            <h2 class="text-2xl font-bold text-white mb-4 px-2">{{ __('catalogue.section_cards') }}  
-
-            </h2>
+            <h2 class="text-2xl font-bold text-white mb-4 px-2">{{ __('tcg/expansions/show.section_cards') }}</h2>
             <div id="cardsGrid" class="grid gap-3 mb-6" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
                 <!-- Populated by JS -->
             </div>
@@ -103,7 +101,7 @@
 
         <!-- Others Grid -->
         <div id="othersSection" class="mb-8 hidden">
-            <h2 class="text-2xl font-bold text-white mb-4 px-2">{{ __('catalogue.section_others') }}</h2>
+            <h2 class="text-2xl font-bold text-white mb-4 px-2">{{ __('tcg/expansions/show.section_others') }}</h2>
             <div id="othersGrid" class="grid gap-3 mb-6" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
                 <!-- Populated by JS -->
             </div>
@@ -114,7 +112,7 @@
             <svg class="mx-auto h-12 w-12 text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <p class="text-lg">No cards found</p>
+            <p class="text-lg">{{ __('tcg/expansions/show.no_results') }}</p>
         </div>
 
         <!-- Load More Button -->
@@ -123,7 +121,7 @@
                 id="loadMoreBtn" 
                 class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-lg"
             >
-                Load More Cards
+                {{ __('tcg/expansions/show.load_more') }}
             </button>
         </div>
     </div>
@@ -135,7 +133,7 @@
         <div class="fixed inset-0 bg-black/75 transition-opacity" onclick="closeCollectionModal()"></div>
         <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-white">Add to Collection</h3>
+                <h3 class="text-xl font-bold text-white">{{ __('tcg/expansions/show.modal_collection_title') }}</h3>
                 <button onclick="closeCollectionModal()" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -148,41 +146,41 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Quantity per card</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('tcg/expansions/show.quantity_per_card') }}</label>
                         <input type="number" name="quantity" value="1" min="1" max="99" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Condition</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('tcg/expansions/show.condition') }}</label>
                         <select name="condition" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white">
-                            <option value="">Standard</option>
-                            <option value="mint">Mint</option>
-                            <option value="near_mint">Near Mint</option>
-                            <option value="excellent">Excellent</option>
-                            <option value="good">Good</option>
-                            <option value="light_played">Light Played</option>
-                            <option value="played">Played</option>
-                            <option value="poor">Poor</option>
+                            <option value="">{{ __('tcg/expansions/show.condition_standard') }}</option>
+                            <option value="mint">{{ __('tcg/expansions/show.condition_mint') }}</option>
+                            <option value="near_mint">{{ __('tcg/expansions/show.condition_near_mint') }}</option>
+                            <option value="excellent">{{ __('tcg/expansions/show.condition_excellent') }}</option>
+                            <option value="good">{{ __('tcg/expansions/show.condition_good') }}</option>
+                            <option value="light_played">{{ __('tcg/expansions/show.condition_light_played') }}</option>
+                            <option value="played">{{ __('tcg/expansions/show.condition_played') }}</option>
+                            <option value="poor">{{ __('tcg/expansions/show.condition_poor') }}</option>
                         </select>
                     </div>
                     
                     <div class="flex items-center">
                         <input type="checkbox" name="is_foil" value="1" id="isFoil" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded">
-                        <label for="isFoil" class="ml-2 text-sm text-gray-300">Foil/Holo</label>
+                        <label for="isFoil" class="ml-2 text-sm text-gray-300">{{ __('tcg/expansions/show.foil_holo') }}</label>
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Notes (optional)</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('tcg/expansions/show.notes_optional') }}</label>
                         <textarea name="notes" rows="2" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white"></textarea>
                     </div>
                 </div>
                 
                 <div class="mt-6 flex gap-3">
                     <button type="button" onclick="closeCollectionModal()" class="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition">
-                        Cancel
+                        {{ __('tcg/expansions/show.cancel') }}
                     </button>
                     <button type="submit" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
-                        Add to Collection
+                        {{ __('tcg/expansions/show.add_to_collection') }}
                     </button>
                 </div>
             </form>
@@ -196,7 +194,7 @@
         <div class="fixed inset-0 bg-black/75 transition-opacity" onclick="closeDeckModal()"></div>
         <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-white">Add to Deck</h3>
+                <h3 class="text-xl font-bold text-white">{{ __('tcg/expansions/show.modal_deck_title') }}</h3>
                 <button onclick="closeDeckModal()" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -209,13 +207,13 @@
             @endphp
             
             @if($userDecks->isEmpty())
-                <p class="text-gray-400 mb-4">You don't have any decks yet.</p>
+                <p class="text-gray-400 mb-4">{{ __('tcg/expansions/show.no_decks_yet') }}</p>
                 <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
-                    Create Your First Deck
+                    {{ __('tcg/expansions/show.create_first_deck') }}
                 </a>
             @else
                 <div class="space-y-2 mb-4">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Quantity per card</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('tcg/expansions/show.quantity_per_card') }}</label>
                     <input type="number" id="deckQuantity" value="1" min="1" max="4" class="w-full px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white mb-4">
                 </div>
                 
