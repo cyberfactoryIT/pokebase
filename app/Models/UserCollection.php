@@ -32,6 +32,14 @@ class UserCollection extends Model
     }
 
     /**
+     * Get the game this collection item belongs to
+     */
+    public function game(): BelongsTo
+    {
+        return $this->belongsTo(Game::class);
+    }
+
+    /**
      * Get the card from TCGCSV products
      */
     public function card(): BelongsTo

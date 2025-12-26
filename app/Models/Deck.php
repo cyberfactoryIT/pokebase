@@ -25,6 +25,14 @@ class Deck extends Model
     }
 
     /**
+     * Get the game this deck belongs to
+     */
+    public function game(): BelongsTo
+    {
+        return $this->belongsTo(Game::class);
+    }
+
+    /**
      * Get the cards in this deck
      */
     public function deckCards(): HasMany

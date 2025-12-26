@@ -115,6 +115,31 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\UserCollection::class);
     }
 
+    /**
+     * Get all games enabled for this user
+     */
+    public function games()
+    {
+        return $this->belongsToMany(\App\Models\Game::class, 'game_user')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user has a specific game enabled
+     */
+    public function hasGame($gameCode): bool
+    {
+        return $this->games()->where('code', $gameCode)->exists();
+    }
+
+    /**
+     * Check if user has any games enabled
+     */
+    public function hasAnyGames(): bool
+    {
+        return $this->games()->count() > 0;
+    }
+
     
      /**
      * Override default email verification notification to use custom template.

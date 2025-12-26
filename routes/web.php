@@ -65,6 +65,9 @@ Route::middleware('auth')->group(function () {
 
     // Theme preference
     Route::post('/user/theme', [\App\Http\Controllers\ProfileController::class, 'updateTheme'])->name('user.theme.update');
+    
+    // Game preferences
+    Route::post('/profile/games', [\App\Http\Controllers\ProfileController::class, 'updateGames'])->name('profile.games.update');
 
     // Deck Management
     Route::resource('decks', \App\Http\Controllers\DeckController::class);

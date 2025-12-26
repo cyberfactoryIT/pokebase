@@ -18,8 +18,13 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $allGames = \App\Models\Game::where('is_active', true)->orderBy('name')->get();
+        $userGames = $request->user()->games()->pluck('games.id')->toArray();
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'allGames' => $allGames,
+            'userGames' => $userGames,
         ]);
     }
 
@@ -87,5 +92,21 @@ class ProfileController extends Controller
             'success' => true,
             'theme' => $validated['theme'],
         ]);
+    }
+
+    /**
+     * Update the user's game preferences.
+     */
+    public function updateGames(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'games' => ['nullable', 'array'],
+            'games.*' => ['exists:games,id'],
+        ]);
+
+        $gameIds = $validated['games'] ?? [];
+        $request->user()->games()->sync($gameIds);
+
+        return Redirect::route('profile.edit')->with('status', 'games-updated');
     }
 }
