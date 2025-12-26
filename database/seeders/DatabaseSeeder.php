@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             HelpSeeder::class,
             PlansAndFeaturesSeeder::class,
             PromotionsSeeder::class,
+            GamesSeeder::class,
             GameSeeder::class,
             
         ]);

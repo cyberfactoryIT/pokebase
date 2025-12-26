@@ -205,7 +205,6 @@ class TcgcsvImport extends Command
         
         if (isset($stats['products'])) {
             $this->line("\n<fg=bright-blue>Products:</>");
-            $this->line("Groups processed: {$stats['products']['groups_processed']}");
             $this->table(
                 ['Metric', 'Value'],
                 [
@@ -219,7 +218,6 @@ class TcgcsvImport extends Command
         
         if (isset($stats['prices'])) {
             $this->line("\n<fg=bright-blue>Prices:</>");
-            $this->line("Groups processed: {$stats['prices']['groups_processed']}");
             $this->table(
                 ['Metric', 'Value'],
                 [
