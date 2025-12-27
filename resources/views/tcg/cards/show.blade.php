@@ -62,10 +62,23 @@
                         
                         <dl class="space-y-3">
                             @foreach($card->raw as $key => $value)
-                                @if(!is_array($value) && !is_object($value) && !in_array($key, ['raw', 'extended_data', 'extendedData']))
+                                @if(!is_array($value) && !is_object($value) && !in_array($key, ['raw', 'extended_data', 'extendedData', 'imageUrl', 'image_url', 'productId', 'categoryId', 'imageCount', 'modifiedOn']))
                                     <div class="flex justify-between py-2 border-b border-white/10">
                                         <dt class="text-sm font-medium text-gray-400 capitalize">{{ str_replace('_', ' ', $key) }}</dt>
-                                        <dd class="text-sm text-white">{{ is_bool($value) ? ($value ? __('tcg/cards/show.yes') : __('tcg/cards/show.no')) : $value }}</dd>
+                                        <dd class="text-sm text-white">
+                                            @if(is_bool($value))
+                                                {{ $value ? __('tcg/cards/show.yes') : __('tcg/cards/show.no') }}
+                                            @elseif(filter_var($value, FILTER_VALIDATE_URL))
+                                                <a href="{{ $value }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition">
+                                                    <span><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                                    </svg>
+                                                </a>
+                                            @else
+                                                {{ $value }}
+                                            @endif
+                                        </dd>
                                     </div>
                                 @endif
                             @endforeach
@@ -244,7 +257,7 @@
                                 @if(isset($item['name']) && isset($item['value']))
                                     <div class="flex justify-between py-2 border-b border-white/10">
                                         <dt class="text-sm font-medium text-gray-400">{{ $item['name'] }}</dt>
-                                        <dd class="text-sm text-white">{{ $item['value'] }}</dd>
+                                        <dd class="text-sm text-white">{!! nl2br(strip_tags($item['value'], '<br>')) !!}</dd>
                                     </div>
                                 @endif
                             @endforeach
