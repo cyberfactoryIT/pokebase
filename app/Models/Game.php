@@ -28,14 +28,6 @@ class Game extends Model
     }
 
     /**
-     * Get all cards for this game
-     */
-    public function cardCatalog(): HasMany
-    {
-        return $this->hasMany(CardCatalog::class);
-    }
-
-    /**
      * Get all user cards for this game
      */
     public function userCards(): HasMany
