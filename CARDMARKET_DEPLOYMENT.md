@@ -80,11 +80,14 @@ echo 'Cardmarket Expansions: ' . App\Models\CardmarketExpansion::count() . PHP_E
 # Download JSON files da S3 Cardmarket
 php artisan cardmarket:download
 
+# Nota: il comando usa la cache se i file sono già stati scaricati oggi
+# Per forzare un nuovo download: php artisan cardmarket:download --force
+
 # Verifica files scaricati
-ls -lh storage/app/private/cardmarket/
+ls -lh storage/app/private/cardmarket/raw/
 # Dovresti vedere:
-# - products_singles_6_YYYYMMDD.json (~50-100MB)
-# - price_guide_6_YYYYMMDD.json (~50-100MB)
+# - pokemon_products_YYYYMMDD_HHMMSS.json (~11MB)
+# - pokemon_prices_YYYYMMDD_HHMMSS.json (~13MB)
 ```
 
 ### 7️⃣ Import Cardmarket (Products + Prices)
