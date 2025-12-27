@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "createdAt": "2024-12-27T10:00:00Z",
+  "priceGuides": [
+    {
+      "idProduct": 123456,
+      "idCategory": 6,
+      "avg": 45.99,
+      "low": 30.00,
+      "trend": 50.00,
+      "avg-holo": 120.00,
+      "low-holo": 90.00,
+      "trend-holo": 130.00,
+      "avg1": 46.50,
+      "avg7": 47.20,
+      "avg30": 44.80
+    },
+    {
+      "idProduct": 123457,
+      "idCategory": 6,
+      "avg": 5.50,
+      "low": 3.00,
+      "trend": 6.00,
+      "avg-holo": 15.00,
+      "low-holo": 10.00,
+      "trend-holo": 16.00,
+      "avg1": 5.60,
+      "avg7": 5.45,
+      "avg30": 5.30
+    },
+    {
+      "idProduct": 123458,
+      "idCategory": 6,
+      "avg": 80.00,
+      "low": 60.00,
+      "trend": 85.00,
+      "avg-holo": null,
+      "low-holo": null,
+      "trend-holo": null,
+      "avg1": 81.00,
+      "avg7": 79.50,
+      "avg30": 78.00
+    },
+    {
+      "idProduct": 123459,
+      "idCategory": 6,
+      "avg": 25.00,
+      "low": 18.00,
+      "trend": 27.00,
+      "avg-holo": 55.00,
+      "low-holo": 40.00,
+      "trend-holo": 58.00,
+      "avg1": 25.50,
+      "avg7": 24.80,
+      "avg30": 26.00
+    },
+    {
+      "idProduct": 123460,
+      "idCategory": 6,
+      "avg": 28.00,
+      "low": 20.00,
+      "trend": 30.00,
+      "avg-holo": 60.00,
+      "low-holo": 45.00,
+      "trend-holo": 62.00,
+      "avg1": 28.20,
+      "avg7": 27.80,
+      "avg30": 27.50
+    }
+  ]
+}

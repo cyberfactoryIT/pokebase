@@ -118,6 +118,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'cardmarket' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/cardmarket.log'),
+            'level' => env('CARDMARKET_LOG_LEVEL', 'info'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,

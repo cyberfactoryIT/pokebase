@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "createdAt": "2024-12-27T10:00:00Z",
+  "products": [
+    {
+      "idProduct": 123456,
+      "name": "Charizard",
+      "idCategory": 6,
+      "categoryName": "Pokémon Singles",
+      "idExpansion": 789,
+      "idMetacard": 101112,
+      "dateAdded": "2024-01-15"
+    },
+    {
+      "idProduct": 123457,
+      "name": "Pikachu",
+      "idCategory": 6,
+      "categoryName": "Pokémon Singles",
+      "idExpansion": 789,
+      "idMetacard": 101113,
+      "dateAdded": "2024-01-16"
+    },
+    {
+      "idProduct": 123458,
+      "name": "Mewtwo",
+      "idCategory": 6,
+      "categoryName": "Pokémon Singles",
+      "idExpansion": 790,
+      "idMetacard": 101114,
+      "dateAdded": "2024-02-10"
+    },
+    {
+      "idProduct": 123459,
+      "name": "Blastoise",
+      "idCategory": 6,
+      "categoryName": "Pokémon Singles",
+      "idExpansion": 789,
+      "idMetacard": null,
+      "dateAdded": "2024-01-20"
+    },
+    {
+      "idProduct": 123460,
+      "name": "Venusaur",
+      "idCategory": 6,
+      "categoryName": "Pokémon Singles",
+      "idExpansion": 789,
+      "idMetacard": 101115,
+      "dateAdded": "2024-01-22"
+    }
+  ]
+}
