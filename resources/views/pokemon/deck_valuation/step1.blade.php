@@ -5,8 +5,8 @@
     <div class="max-w-7xl mx-auto px-6">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Pokémon Deck Valuation</h1>
-            <p class="text-gray-400">Add your cards to get a value estimate</p>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ __('deckvaluation.step1_title') }}</h1>
+            <p class="text-gray-400">{{ __('deckvaluation.step1_subtitle') }}</p>
         </div>
 
         @if(session('success'))
@@ -33,20 +33,20 @@
                 </div>
             </div>
             <div class="flex justify-between max-w-md mx-auto mt-2">
-                <span class="text-blue-400 font-semibold text-sm">Add Cards</span>
-                <span class="text-gray-500 text-sm">Your Info</span>
-                <span class="text-gray-500 text-sm">Valuation</span>
+                <span class="text-blue-400 font-semibold text-sm">{{ __('deckvaluation.progress_step1') }}</span>
+                <span class="text-gray-500 text-sm">{{ __('deckvaluation.progress_step2') }}</span>
+                <span class="text-gray-500 text-sm">{{ __('deckvaluation.progress_step3') }}</span>
             </div>
         </div>
 
         <!-- Search Card -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
-            <h2 class="text-lg font-semibold text-white mb-4">Search and Add Cards</h2>
+            <h2 class="text-lg font-semibold text-white mb-4">{{ __('deckvaluation.step1_search_title') }}</h2>
             <div class="relative" x-data="{ searchOpen: false }" @click.away="searchOpen = false">
                 <input 
                     type="text" 
                     id="valuation-card-search" 
-                    placeholder="Search by card name or number (e.g. Pikachu or 25/102)"
+                    placeholder="{{ __('deckvaluation.step1_search_placeholder') }}"
                     class="w-full px-4 py-3 pl-10 bg-black/50 border border-white/20 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     @focus="searchOpen = true"
                 >
@@ -62,10 +62,10 @@
         <!-- Current Deck -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-white">Your Deck ({{ $itemsWithDetails->count() }} cards)</h2>
+                <h2 class="text-lg font-semibold text-white">{{ __('deckvaluation.step1_deck_title', ['count' => $itemsWithDetails->count()]) }}</h2>
                 @if($itemsWithDetails->count() > 0)
                 <a href="{{ route('pokemon.deck-valuation.step2') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-                    Continue →
+                    {{ __('deckvaluation.step1_continue') }} →
                 </a>
                 @endif
             </div>
@@ -75,7 +75,7 @@
                 <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                 </svg>
-                <p class="text-gray-400">No cards added yet. Search and add cards above.</p>
+                <p class="text-gray-400">{{ __('deckvaluation.step1_no_cards') }}</p>
             </div>
             @else
             <div class="space-y-3">

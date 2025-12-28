@@ -16,10 +16,12 @@ class GuestDeck extends Model
         'name',
         'payload',
         'status',
+        'expires_at',
     ];
 
     protected $casts = [
         'payload' => 'array',
+        'expires_at' => 'datetime',
     ];
 
     protected static function boot()

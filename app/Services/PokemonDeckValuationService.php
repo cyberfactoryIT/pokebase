@@ -69,6 +69,7 @@ class PokemonDeckValuationService
             'game_id' => $this->pokemonGameId,
             'status' => 'draft',
             'payload' => [],
+            'expires_at' => now()->addDays(30),
         ]);
     }
 

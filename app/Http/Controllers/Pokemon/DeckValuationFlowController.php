@@ -87,7 +87,7 @@ class DeckValuationFlowController extends Controller
         $request->session()->put('valuation_items', $items);
         $this->service->syncGuestDeckPayload($guestDeck, $items);
 
-        return back()->with('success', 'Card added to deck!');
+        return back()->with('success', __('deckvaluation.success_card_added'));
     }
 
     /**
@@ -108,7 +108,7 @@ class DeckValuationFlowController extends Controller
         $request->session()->put('valuation_items', $items);
         $this->service->syncGuestDeckPayload($guestDeck, $items);
 
-        return back()->with('success', 'Card removed from deck!');
+        return back()->with('success', __('deckvaluation.success_card_removed'));
     }
 
     /**
@@ -120,7 +120,7 @@ class DeckValuationFlowController extends Controller
         
         if (empty($items)) {
             return redirect()->route('pokemon.deck-valuation.step1')
-                ->with('error', 'Please add at least one card to your deck first.');
+                ->with('error', __('deckvaluation.error_empty_deck'));
         }
 
         $sessionUuid = $request->session()->get('valuation_deck_uuid');
@@ -132,7 +132,7 @@ class DeckValuationFlowController extends Controller
     /**
      * Step 2: Submit identity and create lead
      */
-    public function step2Submit(Request $request): RedirectResponse
+    public function step2Submit(Request $request): View
     {
         $validated = $request->validate([
             'deck_name' => 'required|string|max:255',
@@ -159,10 +159,25 @@ class DeckValuationFlowController extends Controller
             $items
         );
 
-        // Clear session items (keep uuid for step 3)
+        // Send email with valuation link
+        try {
+            \Mail::to($validated['email'])->send(
+                new \App\Mail\DeckValuationMail($guestDeck, $valuation, $validated['deck_name'])
+            );
+        } catch (\Exception $e) {
+            \Log::error('Failed to send deck valuation email: ' . $e->getMessage());
+        }
+
+        // Clear session items
         $request->session()->forget('valuation_items');
 
-        return redirect()->route('pokemon.deck-valuation.step3', $guestDeck->uuid);
+        // Show thank you page
+        return view('pokemon.deck_valuation.thank-you', [
+            'email' => $validated['email'],
+            'deckName' => $validated['deck_name'],
+            'guestDeck' => $guestDeck,
+            'quickAccessLink' => route('pokemon.deck-valuation.step3', $guestDeck->uuid),
+        ]);
     }
 
     /**
@@ -171,6 +186,11 @@ class DeckValuationFlowController extends Controller
     public function step3Show(Request $request, string $uuid): View
     {
         $guestDeck = GuestDeck::where('uuid', $uuid)->firstOrFail();
+        
+        // Check if expired
+        if ($guestDeck->expires_at && $guestDeck->expires_at->isPast()) {
+            abort(410, __('deckvaluation.error_expired'));
+        }
         
         // Get the valuation
         $valuation = $guestDeck->deckValuations()->latest()->first();
@@ -207,6 +227,6 @@ class DeckValuationFlowController extends Controller
 
         $this->service->attachToUser($valuation, Auth::id());
 
-        return back()->with('success', 'Deck valuation saved to your account!');
+        return back()->with('success', __('deckvaluation.success_valuation_saved'));
     }
 }

@@ -5,8 +5,8 @@
     <div class="max-w-3xl mx-auto px-6">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Pokémon Deck Valuation</h1>
-            <p class="text-gray-400">Get your deck valuation results</p>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ __('deckvaluation.step2_title') }}</h1>
+            <p class="text-gray-400">{{ __('deckvaluation.step2_subtitle') }}</p>
         </div>
 
         <!-- Progress indicator -->
@@ -25,17 +25,17 @@
                 </div>
             </div>
             <div class="flex justify-between max-w-md mx-auto mt-2">
-                <span class="text-green-400 text-sm">Add Cards</span>
-                <span class="text-blue-400 font-semibold text-sm">Your Info</span>
-                <span class="text-gray-500 text-sm">Valuation</span>
+                <span class="text-green-400 text-sm">{{ __('deckvaluation.progress_step1') }}</span>
+                <span class="text-blue-400 font-semibold text-sm">{{ __('deckvaluation.progress_step2') }}</span>
+                <span class="text-gray-500 text-sm">{{ __('deckvaluation.progress_step3') }}</span>
             </div>
         </div>
 
         <!-- Lead Capture Form -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl p-8">
             <div class="mb-6">
-                <h2 class="text-2xl font-bold text-white mb-2">Almost there!</h2>
-                <p class="text-gray-400">Enter your information to receive your deck valuation.</p>
+                <h2 class="text-2xl font-bold text-white mb-2">{{ __('deckvaluation.step2_almost_there') }}</h2>
+                <p class="text-gray-400">{{ __('deckvaluation.step2_enter_info') }}</p>
             </div>
 
             <form method="POST" action="{{ route('pokemon.deck-valuation.submit') }}" class="space-y-6">
@@ -44,7 +44,7 @@
                 <!-- Deck Name -->
                 <div>
                     <label for="deck_name" class="block text-sm font-medium text-gray-300 mb-2">
-                        Deck Name <span class="text-red-400">*</span>
+                        {{ __('deckvaluation.step2_deck_name_label') }} <span class="text-red-400">*</span>
                     </label>
                     <input 
                         type="text" 
@@ -52,7 +52,7 @@
                         name="deck_name" 
                         required
                         value="{{ old('deck_name') }}"
-                        placeholder="My Pikachu Deck"
+                        placeholder="{{ __('deckvaluation.step2_deck_name_placeholder') }}"
                         class="w-full px-4 py-3 bg-black/50 border border-white/20 text-white placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                     @error('deck_name')
@@ -63,7 +63,7 @@
                 <!-- Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
-                        Email Address <span class="text-red-400">*</span>
+                        {{ __('deckvaluation.step2_email_label') }} <span class="text-red-400">*</span>
                     </label>
                     <input 
                         type="email" 
@@ -71,7 +71,7 @@
                         name="email" 
                         required
                         value="{{ old('email') }}"
-                        placeholder="your@email.com"
+                        placeholder="{{ __('deckvaluation.step2_email_placeholder') }}"
                         class="w-full px-4 py-3 bg-black/50 border border-white/20 text-white placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                     @error('email')
@@ -90,7 +90,7 @@
                         class="mt-1 h-4 w-4 bg-black/50 border-white/20 rounded text-blue-600 focus:ring-2 focus:ring-blue-500"
                     >
                     <label for="consent_marketing" class="ml-3 text-sm text-gray-300">
-                        I'd like to receive updates, tips, and exclusive offers about Pokémon card collecting
+                        {{ __('deckvaluation.step2_consent_label') }}
                     </label>
                 </div>
 
@@ -100,8 +100,8 @@
                         <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
-                        Your information is secure and will never be shared with third parties. 
-                        <a href="{{ route('privacy') }}" class="underline hover:text-blue-100">Privacy Policy</a>
+                        {{ __('deckvaluation.step2_privacy_notice') }}
+                        <a href="{{ route('privacy') }}" class="underline hover:text-blue-100">{{ __('deckvaluation.step2_privacy_link') }}</a>
                     </p>
                 </div>
 
@@ -111,13 +111,13 @@
                         href="{{ route('pokemon.deck-valuation.step1') }}" 
                         class="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition text-center"
                     >
-                        ← Back
+                        ← {{ __('deckvaluation.step2_back') }}
                     </a>
                     <button 
                         type="submit" 
                         class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition"
                     >
-                        Get My Valuation →
+                        {{ __('deckvaluation.step2_submit') }} →
                     </button>
                 </div>
             </form>

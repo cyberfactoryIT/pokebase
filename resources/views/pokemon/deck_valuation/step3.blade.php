@@ -5,7 +5,7 @@
     <div class="max-w-7xl mx-auto px-6">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Your Deck Valuation</h1>
+            <h1 class="text-3xl font-bold text-white mb-2">{{ __('deckvaluation.step3_title') }}</h1>
             <p class="text-gray-400">{{ $valuation->name }}</p>
         </div>
 
@@ -35,29 +35,14 @@
                 </div>
             </div>
             <div class="flex justify-between max-w-md mx-auto mt-2">
-                <span class="text-green-400 text-sm">Add Cards</span>
-                <span class="text-green-400 text-sm">Your Info</span>
-                <span class="text-blue-400 font-semibold text-sm">Valuation</span>
+                <span class="text-green-400 text-sm">{{ __('deckvaluation.progress_step1') }}</span>
+                <span class="text-green-400 text-sm">{{ __('deckvaluation.progress_step2') }}</span>
+                <span class="text-blue-400 font-semibold text-sm">{{ __('deckvaluation.progress_step3') }}</span>
             </div>
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Total Cards -->
-            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-500/20 p-3 rounded-lg">
-                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-gray-400 text-sm">Total Cards</p>
-                        <p class="text-white text-2xl font-bold">{{ number_format($stats['total_cards']) }}</p>
-                    </div>
-                </div>
-            </div>
-
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <!-- Unique Cards -->
             <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
                 <div class="flex items-center gap-4">
@@ -67,7 +52,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">Unique Cards</p>
+                        <p class="text-gray-400 text-sm">{{ __('deckvaluation.step3_unique_cards') }}</p>
                         <p class="text-white text-2xl font-bold">{{ number_format($stats['unique_cards']) }}</p>
                     </div>
                 </div>
@@ -82,7 +67,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">Est. Total Value</p>
+                        <p class="text-gray-400 text-sm">{{ __('deckvaluation.step3_total_value') }}</p>
                         <p class="text-white text-2xl font-bold">${{ number_format($stats['total_value'], 2) }}</p>
                     </div>
                 </div>
@@ -91,7 +76,7 @@
 
         <!-- Card List -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl p-6 mb-8">
-            <h2 class="text-xl font-semibold text-white mb-4">Card Details</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{{ __('deckvaluation.step3_card_details') }}</h2>
             <div class="space-y-3">
                 @foreach($valuation->items as $item)
                 <div class="bg-black/30 border border-white/10 rounded-lg p-4 flex items-center gap-4">
@@ -136,12 +121,12 @@
                     </svg>
                 </div>
                 <div class="flex-1">
-                    <h3 class="text-white font-semibold mb-2">Save This Valuation</h3>
-                    <p class="text-blue-200 text-sm mb-4">You're logged in! Save this deck valuation to your account to access it anytime.</p>
+                    <h3 class="text-white font-semibold mb-2">{{ __('deckvaluation.step3_save_title') }}</h3>
+                    <p class="text-blue-200 text-sm mb-4">{{ __('deckvaluation.step3_save_description') }}</p>
                     <form method="POST" action="{{ route('pokemon.deck-valuation.attach', $guestDeck->uuid) }}">
                         @csrf
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-                            Save to My Account
+                            {{ __('deckvaluation.step3_save_button') }}
                         </button>
                     </form>
                 </div>
@@ -152,11 +137,11 @@
         <!-- Actions -->
         <div class="flex gap-4">
             <a href="{{ route('pokemon.deck-valuation.step1') }}" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition text-center">
-                Value Another Deck
+                {{ __('deckvaluation.step3_value_another') }}
             </a>
             @guest
             <a href="{{ route('register') }}" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition text-center">
-                Create Account
+                {{ __('deckvaluation.step3_create_account') }}
             </a>
             @endguest
         </div>
