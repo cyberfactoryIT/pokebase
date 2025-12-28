@@ -1,5 +1,32 @@
 # 📊 Pokebase - Project Status
-*Last Updated: 27 December 2025*
+*Last Updated: 28 December 2025*
+
+---
+
+## 🆕 Latest Updates - December 28, 2025
+
+### ✅ Pokemon Deck Valuation System (Lead Generation)
+Complete 3-step guest deck valuation flow with email delivery:
+- **Step 1**: Card search and deck building interface (Alpine.js)
+- **Step 2**: Lead capture form (email + marketing consent)
+- **Step 3**: Full deck valuation with pricing breakdown
+- **Features**:
+  - UUID-based guest deck persistence with 30-day expiration
+  - Email delivery system with responsive HTML template
+  - Option to attach valuation to user account
+  - Complete internationalization (EN/IT/DA)
+  - Database: `guest_decks`, `leads`, `deck_valuations`, `deck_valuation_items`
+
+### ✅ Cardmarket Variants UI Enhancement
+Comprehensive European pricing display with multiple price types:
+- **Variant Badge Component**: Colorized badges for variant types (1st Edition, Reverse Holo, Promo, etc.)
+- **Cardmarket Variants Component**: 
+  - Regular prices (avg, low, trend)
+  - Foil/Holo section (avg_holo, low_holo, trend_holo) with ✨ icon
+  - Historical averages (7-day, 30-day trends)
+- **Price Toggle**: US (TCGCSV) ↔ EU (Cardmarket) with Alpine.js + localStorage persistence
+- **Full Internationalization**: All variant labels translated (EN/IT/DA)
+- **Helper Functions**: `formatCardmarketPrice()`, `comparePrice()`, `convertUsdToEur()`
 
 ---
 
