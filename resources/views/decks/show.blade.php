@@ -39,6 +39,96 @@
         </div>
         @endif
 
+        <!-- Deck Statistics -->
+        @if(!$deck->deckCards->isEmpty())
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Total Cards -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Cards</p>
+                        <p class="text-3xl font-bold text-white mt-1">{{ $stats['total_cards'] }}</p>
+                    </div>
+                    <div class="bg-blue-500/20 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unique Cards -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Unique Cards</p>
+                        <p class="text-3xl font-bold text-white mt-1">{{ $stats['unique_cards'] }}</p>
+                    </div>
+                    <div class="bg-purple-500/20 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deck Value -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Estimated Value</p>
+                        @if($topStats['total_value'])
+                            <p class="text-3xl font-bold text-white mt-1">${{ number_format($topStats['total_value'], 2) }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ $topStats['cards_with_prices'] }} cards priced</p>
+                        @else
+                            <p class="text-xl text-gray-500 mt-1">No prices</p>
+                        @endif
+                    </div>
+                    <div class="bg-green-500/20 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rarity & Set Distribution -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Rarity Distribution -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Rarity Distribution</h3>
+                <div class="space-y-3">
+                    @foreach($topStats['rarity_distribution'] as $rarity => $data)
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-300">{{ $rarity }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-white font-semibold">{{ $data['total_quantity'] }}</span>
+                                <span class="text-gray-500 text-sm">({{ $data['count'] }} unique)</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Set Distribution -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Top Sets</h3>
+                <div class="space-y-3">
+                    @foreach($topStats['set_distribution'] as $set)
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-300 truncate flex-1 mr-2">{{ $set['set_name'] }}</span>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <span class="text-white font-semibold">{{ $set['total_quantity'] }}</span>
+                                <span class="text-gray-500 text-sm">({{ $set['count'] }} unique)</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Quick Add Cards - Two Columns -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Add from Collection -->

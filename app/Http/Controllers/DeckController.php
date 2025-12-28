@@ -68,9 +68,18 @@ class DeckController extends Controller
             abort(403, 'Unauthorized access to this deck.');
         }
 
-        $deck->load(['deckCards.card']);
+        $deck->load([
+            'deckCards.card.group',
+            'deckCards.card.prices' => function($query) {
+                $query->latest('snapshot_at')->limit(1);
+            }
+        ]);
 
-        return view('decks.show', compact('deck'));
+        // Calculate deck statistics
+        $stats = $this->getDeckStats($deck);
+        $topStats = $this->getDeckTopStats($deck);
+
+        return view('decks.show', compact('deck', 'stats', 'topStats'));
     }
 
     /**
@@ -192,5 +201,67 @@ class DeckController extends Controller
         $deckCard->update(['quantity' => $validated['quantity']]);
 
         return back()->with('success', 'Card quantity updated!');
+    }
+
+    /**
+     * Get basic deck statistics
+     */
+    private function getDeckStats(Deck $deck): array
+    {
+        $totalCards = $deck->deckCards->sum('quantity');
+        $uniqueCards = $deck->deckCards->count();
+        
+        return [
+            'total_cards' => $totalCards,
+            'unique_cards' => $uniqueCards,
+        ];
+    }
+
+    /**
+     * Get top deck statistics for display
+     */
+    private function getDeckTopStats(Deck $deck): array
+    {
+        // 1. Rarity distribution
+        $rarityDistribution = $deck->deckCards
+            ->groupBy(fn($dc) => $dc->card->rarity ?? 'Unknown')
+            ->map(fn($group) => [
+                'count' => $group->count(),
+                'total_quantity' => $group->sum('quantity')
+            ])
+            ->sortByDesc('count');
+
+        // 2. Set distribution
+        $setDistribution = $deck->deckCards
+            ->groupBy(fn($dc) => $dc->card->group->name ?? 'Unknown')
+            ->map(fn($group) => [
+                'set_name' => $group->first()->card->group->name ?? 'Unknown',
+                'count' => $group->count(),
+                'total_quantity' => $group->sum('quantity')
+            ])
+            ->sortByDesc('count')
+            ->take(5);
+
+        // 3. Average card value (if prices available)
+        $cardsWithPrices = $deck->deckCards->filter(function($deckCard) {
+            return $deckCard->card->prices->isNotEmpty();
+        });
+        
+        $totalValue = 0;
+        $priceCount = 0;
+        foreach ($cardsWithPrices as $deckCard) {
+            $latestPrice = $deckCard->card->prices->first();
+            if ($latestPrice && $latestPrice->market_price) {
+                $totalValue += $latestPrice->market_price * $deckCard->quantity;
+                $priceCount++;
+            }
+        }
+
+        return [
+            'rarity_distribution' => $rarityDistribution,
+            'set_distribution' => $setDistribution,
+            'total_value' => $priceCount > 0 ? $totalValue : null,
+            'cards_with_prices' => $priceCount,
+        ];
     }
 }
