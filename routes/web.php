@@ -166,6 +166,18 @@ Route::prefix('tcg')->group(function () {
     Route::get('/cards/{productId}', [\App\Http\Controllers\TcgCardController::class, 'show'])->name('tcg.cards.show');
 });
 
+// Pokemon Deck Valuation Flow (guest lead capture)
+Route::prefix('pokemon')->group(function () {
+    Route::get('/deck-valuation', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Show'])->name('pokemon.deck-valuation.step1');
+    Route::get('/deck-valuation/search', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Search'])->name('pokemon.deck-valuation.search');
+    Route::post('/deck-valuation/add', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Add'])->name('pokemon.deck-valuation.add');
+    Route::post('/deck-valuation/remove', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Remove'])->name('pokemon.deck-valuation.remove');
+    Route::get('/deck-valuation/identity', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step2Show'])->name('pokemon.deck-valuation.step2');
+    Route::post('/deck-valuation/identity', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step2Submit'])->name('pokemon.deck-valuation.submit');
+    Route::get('/deck-valuation/{uuid}', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step3Show'])->name('pokemon.deck-valuation.step3');
+    Route::post('/deck-valuation/{uuid}/attach', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'attachToUser'])->name('pokemon.deck-valuation.attach');
+});
+
 // Locale switch route
 Route::post('/language-change', [\App\Http\Controllers\LocaleController::class, 'switch'])->name('language.change');
 Route::post('/locale-switch', [\App\Http\Controllers\LocaleController::class, 'switch'])->name('locale.switch');
