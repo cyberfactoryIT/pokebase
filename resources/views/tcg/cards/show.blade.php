@@ -205,14 +205,14 @@
                                 :class="activeTab === 'us' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
                                 class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5">
                                 <span>🇺🇸</span>
-                                <span>US Prices</span>
+                                <span>{{ __('variants.tcgcsv_prices') }}</span>
                             </button>
                             <button 
                                 @click="activeTab = 'eu'; localStorage.setItem('priceTab', 'eu')"
                                 :class="activeTab === 'eu' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
                                 class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5">
                                 <span>🇪🇺</span>
-                                <span>EU Prices</span>
+                                <span>{{ __('variants.eu_prices') }}</span>
                             </button>
                         </div>
                     </div>

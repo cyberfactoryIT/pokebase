@@ -5,8 +5,8 @@
 @endphp
 
 @if($variantsByType->isEmpty())
-    <div class="text-sm text-gray-500 italic">
-        No EU prices available
+    <div class="text-sm text-gray-400 italic">
+        {{ __('variants.no_eu_prices') }}
     </div>
 @else
     <div class="space-y-4">
@@ -36,16 +36,16 @@
                                 @if($priceQuote)
                                     <div class="flex flex-wrap items-center gap-3 @if($compact) text-sm @endif">
                                         <div>
-                                            <span class="text-gray-600">Avg:</span>
-                                            <span class="font-semibold text-green-700">€{{ number_format($priceQuote->avg, 2) }}</span>
+                                            <span class="text-gray-400">{{ __('variants.avg_price') }}:</span>
+                                            <span class="font-semibold text-green-400">€{{ number_format($priceQuote->avg, 2) }}</span>
                                         </div>
                                         <div>
-                                            <span class="text-gray-600">Low:</span>
-                                            <span class="font-semibold text-blue-700">€{{ number_format($priceQuote->low, 2) }}</span>
+                                            <span class="text-gray-400">{{ __('variants.low_price') }}:</span>
+                                            <span class="font-semibold text-blue-400">€{{ number_format($priceQuote->low, 2) }}</span>
                                         </div>
                                         <div>
-                                            <span class="text-gray-600">Trend:</span>
-                                            <span class="font-semibold text-purple-700">€{{ number_format($priceQuote->trend, 2) }}</span>
+                                            <span class="text-gray-400">{{ __('variants.trend_price') }}:</span>
+                                            <span class="font-semibold text-purple-400">€{{ number_format($priceQuote->trend, 2) }}</span>
                                         </div>
                                     </div>
                                     
@@ -53,16 +53,16 @@
                                         <a href="{{ $variant->url }}" 
                                            target="_blank" 
                                            rel="noopener noreferrer"
-                                           class="inline-flex items-center mt-2 text-xs text-blue-600 hover:text-blue-800">
-                                            View on Cardmarket
+                                           class="inline-flex items-center mt-2 text-xs text-blue-400 hover:text-blue-300">
+                                            {{ __('variants.view_on_cardmarket') }}
                                             <svg class="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                             </svg>
                                         </a>
                                     @endif
                                 @else
-                                    <div class="text-sm text-gray-500 italic">
-                                        Price not available
+                                    <div class="text-sm text-gray-400 italic">
+                                        {{ __('variants.price_not_available') }}
                                     </div>
                                 @endif
                             </div>
@@ -73,12 +73,12 @@
         @endforeach
         
         @if(!$compact)
-            <div class="pt-2 border-t">
+            <div class="pt-2 border-t border-white/10">
                 <a href="https://www.cardmarket.com/en/Pokemon" 
                    target="_blank" 
                    rel="noopener noreferrer"
-                   class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium">
-                    View all on Cardmarket →
+                   class="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 font-medium">
+                    {{ __('variants.view_all_variants') }} →
                 </a>
             </div>
         @endif

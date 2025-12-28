@@ -5,31 +5,31 @@
     
     // Determine badge type and styling
     if (str_contains($name, '1st edition') || str_contains($name, '1. edition')) {
-        $type = '1st Edition';
-        $classes = 'bg-yellow-100 text-yellow-800 border-yellow-300';
-        $icon = '🥇';
+        $type = 'first_edition';
+        $classes = 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+        $icon = '1st';
     } elseif (str_contains($name, 'reverse') || str_contains($name, 'holo')) {
-        $type = 'Reverse Holo';
-        $classes = 'bg-purple-100 text-purple-800 border-purple-300';
+        $type = 'reverse_holo';
+        $classes = 'bg-purple-500/20 text-purple-300 border-purple-500/30';
         $icon = '✨';
     } elseif (str_contains($name, 'promo')) {
-        $type = 'Promo';
-        $classes = 'bg-red-100 text-red-800 border-red-300';
+        $type = 'promo';
+        $classes = 'bg-red-500/20 text-red-300 border-red-500/30';
         $icon = '🎁';
     } elseif (str_contains($name, 'unlimited')) {
-        $type = 'Unlimited';
-        $classes = 'bg-gray-100 text-gray-800 border-gray-300';
+        $type = 'unlimited';
+        $classes = 'bg-gray-500/20 text-gray-300 border-gray-500/30';
         $icon = '';
     } else {
-        $type = 'Normal';
-        $classes = 'bg-blue-100 text-blue-800 border-blue-300';
+        $type = 'normal';
+        $classes = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
         $icon = '';
     }
 @endphp
 
-<span {{ $attributes->merge(['class' => 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ' . $classes]) }}>
+<span {{ $attributes->merge(['class' => 'inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border ' . $classes]) }}>
     @if($icon)
-        <span class="mr-1">{{ $icon }}</span>
+        <span>{{ $icon }}</span>
     @endif
-    {{ $type }}
+    {{ __('variants.' . $type) }}
 </span>
