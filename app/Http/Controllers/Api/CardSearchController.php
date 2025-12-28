@@ -79,10 +79,19 @@ class CardSearchController extends Controller
                 ]);
             }
             
-            $results->where('tcgcsv_products.name', 'LIKE', "%{$escapedQuery}%")
+            // Search by name OR card_number
+            $results->where(function($q) use ($escapedQuery) {
+                    $q->where('tcgcsv_products.name', 'LIKE', "%{$escapedQuery}%")
+                      ->orWhere('tcgcsv_products.card_number', 'LIKE', "%{$escapedQuery}%");
+                })
                 ->orderByRaw(
-                    'CASE WHEN tcgcsv_products.name LIKE ? THEN 0 ELSE 1 END',
-                    ["{$escapedQuery}%"]
+                    'CASE 
+                        WHEN tcgcsv_products.card_number = ? THEN 0
+                        WHEN tcgcsv_products.name LIKE ? THEN 1 
+                        WHEN tcgcsv_products.card_number LIKE ? THEN 2
+                        ELSE 3 
+                    END',
+                    [$escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%"]
                 )
                 ->orderByRaw('tcgcsv_groups.published_on IS NULL')
                 ->orderBy('tcgcsv_groups.published_on', 'DESC')
