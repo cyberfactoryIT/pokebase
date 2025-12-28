@@ -21,5 +21,6 @@ return [
     'printing' => 'Stampa',
     'last_updated' => 'Ultimo aggiornamento',
     'pricing_coming_soon' => 'Informazioni sui prezzi disponibili a breve',
+    'no_eu_prices' => 'Prezzi europei non disponibili per questa carta',
     'extended_information' => 'Informazioni Estese',
 ];

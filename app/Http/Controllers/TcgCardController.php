@@ -13,10 +13,15 @@ class TcgCardController extends Controller
     public function show(int $productId): View
     {
         $card = TcgcsvProduct::where('product_id', $productId)
-            ->with(['group', 'prices' => function($query) {
-                // Get latest price snapshot
-                $query->latest('snapshot_at')->limit(1);
-            }])
+            ->with([
+                'group', 
+                'prices' => function($query) {
+                    // Get latest price snapshot
+                    $query->latest('snapshot_at')->limit(1);
+                },
+                'cardmarketMapping',
+                'cardmarketVariants.latestPriceQuote'
+            ])
             ->firstOrFail();
 
         // Get card image with fallbacks

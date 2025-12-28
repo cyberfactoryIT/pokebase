@@ -138,3 +138,78 @@ if (! function_exists('help_render')) {
         return (string) view('components.help', $data)->render();
     }
 }
+
+// ============================================================================
+// Cardmarket Price Formatting Helpers
+// ============================================================================
+
+if (! function_exists('formatCardmarketPrice')) {
+    /**
+     * Format a Cardmarket price with Euro symbol and 2 decimals
+     *
+     * @param  float|null  $amount
+     * @return string
+     */
+    function formatCardmarketPrice(?float $amount): string
+    {
+        if ($amount === null || $amount <= 0) {
+            return '—';
+        }
+        
+        return '€' . number_format($amount, 2, '.', ',');
+    }
+}
+
+if (! function_exists('comparePrice')) {
+    /**
+     * Compare TCGCSV (USD) and Cardmarket (EUR) prices
+     * Returns array with difference percentage and which is cheaper
+     *
+     * @param  float|null  $tcgcsvPrice  Price in USD
+     * @param  float|null  $cardmarketPrice  Price in EUR
+     * @param  float  $exchangeRate  USD to EUR conversion rate (default ~0.92)
+     * @return array{difference: float|null, cheaper: string|null, tcgcsv_eur: float|null}
+     */
+    function comparePrice(?float $tcgcsvPrice, ?float $cardmarketPrice, float $exchangeRate = 0.92): array
+    {
+        if ($tcgcsvPrice === null || $cardmarketPrice === null || $tcgcsvPrice <= 0 || $cardmarketPrice <= 0) {
+            return [
+                'difference' => null,
+                'cheaper' => null,
+                'tcgcsv_eur' => null,
+            ];
+        }
+        
+        // Convert USD to EUR for comparison
+        $tcgcsvInEur = $tcgcsvPrice * $exchangeRate;
+        
+        // Calculate percentage difference
+        $difference = (($cardmarketPrice - $tcgcsvInEur) / $tcgcsvInEur) * 100;
+        
+        // Determine which is cheaper (only if difference > 10%)
+        $cheaper = null;
+        if (abs($difference) > 10) {
+            $cheaper = $difference < 0 ? 'cardmarket' : 'tcgcsv';
+        }
+        
+        return [
+            'difference' => round($difference, 1),
+            'cheaper' => $cheaper,
+            'tcgcsv_eur' => round($tcgcsvInEur, 2),
+        ];
+    }
+}
+
+if (! function_exists('convertUsdToEur')) {
+    /**
+     * Convert USD to EUR using approximate exchange rate
+     *
+     * @param  float  $amount  Amount in USD
+     * @param  float  $rate  Exchange rate (default ~0.92)
+     * @return float  Amount in EUR
+     */
+    function convertUsdToEur(float $amount, float $rate = 0.92): float
+    {
+        return round($amount * $rate, 2);
+    }
+}

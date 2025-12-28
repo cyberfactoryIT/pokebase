@@ -67,4 +67,120 @@ class TcgcsvProduct extends Model
             'cardmarket_metacard_id' // Local key on mapping table
         );
     }
+    
+    /**
+     * Check if this product has Cardmarket variants
+     */
+    public function hasCardmarketVariants(): bool
+    {
+        return $this->cardmarketMapping()->exists() 
+            && $this->cardmarketVariants()->exists();
+    }
+    
+    /**
+     * Get Cardmarket variants grouped by type
+     * Extracts type from name (Normal, Reverse, 1st Edition, etc.)
+     */
+    public function getCardmarketVariantsByType()
+    {
+        return $this->cardmarketVariants()
+            ->with('latestPriceQuote')
+            ->get()
+            ->groupBy(function ($variant) {
+                $name = strtolower($variant->name ?? '');
+                
+                if (str_contains($name, '1st edition') || str_contains($name, '1. edition')) {
+                    return '1st Edition';
+                }
+                if (str_contains($name, 'reverse') || str_contains($name, 'holo')) {
+                    return 'Reverse Holo';
+                }
+                if (str_contains($name, 'promo')) {
+                    return 'Promo';
+                }
+                if (str_contains($name, 'unlimited')) {
+                    return 'Unlimited';
+                }
+                
+                return 'Normal';
+            });
+    }
+    
+    /**
+     * Get price range across all Cardmarket variants
+     * Returns array with min, max, and average prices
+     */
+    public function getCardmarketPriceRange(): array
+    {
+        $variants = $this->cardmarketVariants()
+            ->with('latestPriceQuote')
+            ->get();
+        
+        if ($variants->isEmpty()) {
+            return [
+                'min' => null,
+                'max' => null,
+                'avg' => null,
+            ];
+        }
+        
+        $prices = $variants
+            ->filter(fn($variant) => $variant->latestPriceQuote !== null)
+            ->map(fn($variant) => $variant->latestPriceQuote->avg ?? 0)
+            ->filter(fn($price) => $price > 0);
+        
+        if ($prices->isEmpty()) {
+            return [
+                'min' => null,
+                'max' => null,
+                'avg' => null,
+            ];
+        }
+        
+        return [
+            'min' => $prices->min(),
+            'max' => $prices->max(),
+            'avg' => round($prices->avg(), 2),
+        ];
+    }
+    
+    /**
+     * Get the default Cardmarket variant to display
+     * Prioritizes: Normal > Unlimited > first available
+     */
+    public function getDefaultCardmarketVariant()
+    {
+        $variants = $this->cardmarketVariants()
+            ->with('latestPriceQuote')
+            ->get();
+        
+        if ($variants->isEmpty()) {
+            return null;
+        }
+        
+        // Try to find Normal variant
+        $normal = $variants->first(function ($variant) {
+            $name = strtolower($variant->name ?? '');
+            return !str_contains($name, 'reverse') 
+                && !str_contains($name, '1st') 
+                && !str_contains($name, 'promo');
+        });
+        
+        if ($normal) {
+            return $normal;
+        }
+        
+        // Try to find Unlimited variant
+        $unlimited = $variants->first(function ($variant) {
+            $name = strtolower($variant->name ?? '');
+            return str_contains($name, 'unlimited');
+        });
+        
+        if ($unlimited) {
+            return $unlimited;
+        }
+        
+        // Return first variant
+        return $variants->first();
+    }
 }

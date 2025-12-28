@@ -194,8 +194,31 @@
                 </div>
 
                 <!-- Pricing Section -->
-                <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.pricing') }}</h2>
+                <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6" x-data="{ activeTab: localStorage.getItem('priceTab') || 'us' }">
+                    <!-- Price Toggle Tabs -->
+                    <div class="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
+                        <h2 class="text-xl font-bold text-white">{{ __('tcg/cards/show.pricing') }}</h2>
+                        
+                        <div class="flex rounded-lg bg-black/50 p-1">
+                            <button 
+                                @click="activeTab = 'us'; localStorage.setItem('priceTab', 'us')"
+                                :class="activeTab === 'us' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                                class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5">
+                                <span>🇺🇸</span>
+                                <span>US Prices</span>
+                            </button>
+                            <button 
+                                @click="activeTab = 'eu'; localStorage.setItem('priceTab', 'eu')"
+                                :class="activeTab === 'eu' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                                class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5">
+                                <span>🇪🇺</span>
+                                <span>EU Prices</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- US Prices (TCGCSV) -->
+                    <div x-show="activeTab === 'us'" x-transition>
                     
                     @if($latestPrice)
                         <div class="grid grid-cols-2 gap-4">
@@ -245,6 +268,21 @@
                             <p>{{ __('tcg/cards/show.pricing_coming_soon') }}</p>
                         </div>
                     @endif
+                    </div>
+                    
+                    <!-- EU Prices (Cardmarket) -->
+                    <div x-show="activeTab === 'eu'" x-transition x-cloak>
+                        @if($card->hasCardmarketVariants())
+                            <x-cardmarket-variants :product="$card" />
+                        @else
+                            <div class="text-center py-8 text-gray-400">
+                                <svg class="mx-auto h-12 w-12 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p>{{ __('tcg/cards/show.no_eu_prices') }}</p>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Extended Data -->

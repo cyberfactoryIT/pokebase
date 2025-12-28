@@ -21,5 +21,6 @@ return [
     'printing' => 'Printing',
     'last_updated' => 'Last updated',
     'pricing_coming_soon' => 'Pricing information coming soon',
+    'no_eu_prices' => 'No European prices available for this card',
     'extended_information' => 'Extended Information',
 ];
