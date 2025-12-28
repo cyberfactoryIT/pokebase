@@ -465,8 +465,9 @@ async function searchCards(query) {
         }
         
         const resultsHTML = data.map(card => `
-            <div class="px-4 py-3 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0 flex items-center gap-3"
-                 onclick="openQuickAddModal(${card.product_id}, '${escapeHtml(card.name)}')">
+            <div class="px-4 py-3 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0 flex items-center gap-3 search-card-result"
+                 data-product-id="${card.product_id}"
+                 data-card-name="${escapeHtml(card.name)}">
                 <div class="flex-shrink-0 w-12 h-16 bg-black/50 rounded overflow-hidden">
                     ${card.image_url ? `<img src="${card.image_url}" alt="${escapeHtml(card.name)}" class="w-full h-full object-cover">` : ''}
                 </div>
@@ -482,6 +483,15 @@ async function searchCards(query) {
         
         collectionSearchDropdown.innerHTML = resultsHTML;
         collectionSearchDropdown.classList.remove('hidden');
+        
+        // Add click event listeners to search results
+        document.querySelectorAll('.search-card-result').forEach(element => {
+            element.addEventListener('click', function() {
+                const productId = parseInt(this.dataset.productId);
+                const cardName = this.dataset.cardName;
+                openQuickAddModal(productId, cardName);
+            });
+        });
     } catch (error) {
         console.error('Search error:', error);
     }
