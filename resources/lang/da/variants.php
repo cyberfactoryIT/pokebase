@@ -21,6 +21,10 @@ return [
     'market_price' => 'Marked',
     'from' => 'Fra',
     'to' => 'Til',
+    'foil_holo' => 'Foil/Holo',
+    'regular' => 'Normal',
+    'avg_7d' => 'Gns. 7d',
+    'avg_30d' => 'Gns. 30d',
     
     // Actions
     'view_on_cardmarket' => 'Se på Cardmarket',
@@ -40,4 +44,10 @@ return [
     // Tooltips
     'eu_flag_tooltip' => 'Europæiske priser i EUR (€)',
     'us_flag_tooltip' => 'US priser i USD ($)',
+    
+    // TCGCSV Variants
+    'other_printings' => 'Andre Tryk',
+    'tcgcsv_variants' => 'US Marked',
+    'no_other_printings' => 'Ingen andre tryk tilgængelige',
+    'product_id' => 'Produkt ID',
 ];

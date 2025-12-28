@@ -183,4 +183,45 @@ class TcgcsvProduct extends Model
         // Return first variant
         return $variants->first();
     }
+    
+    /**
+     * Get other TCGCSV variants of the same card (same card number in same set, different printing)
+     * More reliable than matching by name since TCGCSV includes printing info in the name itself
+     */
+    public function getTcgcsvVariants()
+    {
+        // Se non ha card_number, fallback al nome
+        if (empty($this->card_number)) {
+            return self::where('name', $this->name)
+                ->where('group_id', $this->group_id)
+                ->where('product_id', '!=', $this->product_id)
+                ->with('prices')
+                ->get();
+        }
+        
+        // Usa card_number + group_id per trovare varianti (Normal, Reverse Holo, ecc.)
+        return self::where('card_number', $this->card_number)
+            ->where('group_id', $this->group_id)
+            ->where('product_id', '!=', $this->product_id)
+            ->with('prices')
+            ->get();
+    }
+    
+    /**
+     * Check if this product has other TCGCSV variants
+     */
+    public function hasTcgcsvVariants(): bool
+    {
+        if (empty($this->card_number)) {
+            return self::where('name', $this->name)
+                ->where('group_id', $this->group_id)
+                ->where('product_id', '!=', $this->product_id)
+                ->exists();
+        }
+        
+        return self::where('card_number', $this->card_number)
+            ->where('group_id', $this->group_id)
+            ->where('product_id', '!=', $this->product_id)
+            ->exists();
+    }
 }

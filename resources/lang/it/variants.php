@@ -21,6 +21,10 @@ return [
     'market_price' => 'Mercato',
     'from' => 'Da',
     'to' => 'A',
+    'foil_holo' => 'Foil/Holo',
+    'regular' => 'Normale',
+    'avg_7d' => 'Media 7gg',
+    'avg_30d' => 'Media 30gg',
     
     // Actions
     'view_on_cardmarket' => 'Vedi su Cardmarket',
@@ -40,4 +44,10 @@ return [
     // Tooltips
     'eu_flag_tooltip' => 'Prezzi europei in EUR (€)',
     'us_flag_tooltip' => 'Prezzi USA in USD ($)',
+    
+    // TCGCSV Variants
+    'other_printings' => 'Altre Stampe',
+    'tcgcsv_variants' => 'Mercato USA',
+    'no_other_printings' => 'Nessun’altra stampa disponibile',
+    'product_id' => 'ID Prodotto',
 ];

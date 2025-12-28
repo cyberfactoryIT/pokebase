@@ -34,20 +34,76 @@
                                 @endif
                                 
                                 @if($priceQuote)
-                                    <div class="flex flex-wrap items-center gap-3 @if($compact) text-sm @endif">
-                                        <div>
-                                            <span class="text-gray-400">{{ __('variants.avg_price') }}:</span>
-                                            <span class="font-semibold text-green-400">€{{ number_format($priceQuote->avg, 2) }}</span>
+                                    <!-- Regular Prices -->
+                                    <div class="mb-3">
+                                        <div class="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                                            <span>{{ __('variants.regular') }}</span>
                                         </div>
-                                        <div>
-                                            <span class="text-gray-400">{{ __('variants.low_price') }}:</span>
-                                            <span class="font-semibold text-blue-400">€{{ number_format($priceQuote->low, 2) }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="text-gray-400">{{ __('variants.trend_price') }}:</span>
-                                            <span class="font-semibold text-purple-400">€{{ number_format($priceQuote->trend, 2) }}</span>
+                                        <div class="flex flex-wrap items-center gap-3 @if($compact) text-sm @endif">
+                                            <div>
+                                                <span class="text-gray-400">{{ __('variants.avg_price') }}:</span>
+                                                <span class="font-semibold text-green-400">€{{ number_format($priceQuote->avg, 2) }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-400">{{ __('variants.low_price') }}:</span>
+                                                <span class="font-semibold text-blue-400">€{{ number_format($priceQuote->low, 2) }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-400">{{ __('variants.trend_price') }}:</span>
+                                                <span class="font-semibold text-purple-400">€{{ number_format($priceQuote->trend, 2) }}</span>
+                                            </div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Foil/Holo Prices (if available) -->
+                                    @if($priceQuote->avg_holo || $priceQuote->low_holo || $priceQuote->trend_holo)
+                                    <div class="mb-3 pt-2 border-t border-white/5">
+                                        <div class="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                                            <span>✨</span>
+                                            <span>{{ __('variants.foil_holo') }}</span>
+                                        </div>
+                                        <div class="flex flex-wrap items-center gap-3 @if($compact) text-sm @endif">
+                                            @if($priceQuote->avg_holo)
+                                            <div>
+                                                <span class="text-gray-400">{{ __('variants.avg_price') }}:</span>
+                                                <span class="font-semibold text-green-400">€{{ number_format($priceQuote->avg_holo, 2) }}</span>
+                                            </div>
+                                            @endif
+                                            @if($priceQuote->low_holo)
+                                            <div>
+                                                <span class="text-gray-400">{{ __('variants.low_price') }}:</span>
+                                                <span class="font-semibold text-blue-400">€{{ number_format($priceQuote->low_holo, 2) }}</span>
+                                            </div>
+                                            @endif
+                                            @if($priceQuote->trend_holo)
+                                            <div>
+                                                <span class="text-gray-400">{{ __('variants.trend_price') }}:</span>
+                                                <span class="font-semibold text-purple-400">€{{ number_format($priceQuote->trend_holo, 2) }}</span>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    <!-- Historical Averages (if available) -->
+                                    @if($priceQuote->avg7 || $priceQuote->avg30)
+                                    <div class="pt-2 border-t border-white/5">
+                                        <div class="flex flex-wrap items-center gap-3 text-xs">
+                                            @if($priceQuote->avg7)
+                                            <div class="text-gray-400">
+                                                <span>{{ __('variants.avg_7d') }}:</span>
+                                                <span class="text-gray-300">€{{ number_format($priceQuote->avg7, 2) }}</span>
+                                            </div>
+                                            @endif
+                                            @if($priceQuote->avg30)
+                                            <div class="text-gray-400">
+                                                <span>{{ __('variants.avg_30d') }}:</span>
+                                                <span class="text-gray-300">€{{ number_format($priceQuote->avg30, 2) }}</span>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @endif
                                     
                                     @if(!$compact && $variant->url)
                                         <a href="{{ $variant->url }}" 
