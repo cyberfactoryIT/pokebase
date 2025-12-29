@@ -25,6 +25,12 @@ return [
     'regular' => 'Regular',
     'avg_7d' => '7-day avg',
     'avg_30d' => '30-day avg',
+    'price_range' => 'Price Range',
+    'variant' => 'variant',
+    'variants' => 'variants',
+    'price_range' => 'Price Range',
+    'variant' => 'variant',
+    'variants' => 'variants',
     
     // Actions
     'view_on_cardmarket' => 'View on Cardmarket',

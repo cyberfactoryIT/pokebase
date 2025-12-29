@@ -479,7 +479,9 @@ function createCardTile(card) {
     const div = document.createElement('div');
     div.className = 'bg-[#1a1a19] border border-white/10 rounded-lg hover:border-white/30 hover:shadow-xl transition overflow-hidden group relative';
 
-    const imageUrl = card.image_url || 'https://via.placeholder.com/245x342/1a1a19/666?text=No+Image';
+    // Usa immagine HD se disponibile, altrimenti fallback su standard
+    const imageUrl = card.hd_image_url || card.image_url || 'https://via.placeholder.com/245x342/1a1a19/666?text=No+Image';
+    const hasHdImage = !!card.hd_image_url;
 
     div.innerHTML = `
         <!-- Checkbox -->
@@ -508,20 +510,32 @@ function createCardTile(card) {
             </button>
         </div>
         
+        ${hasHdImage ? `
+        <!-- HD Badge -->
+        <div class="absolute top-2 right-2 z-[5] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-blue-500/90 text-white rounded">
+                HD
+            </span>
+        </div>
+        ` : ''}
+        
         <div class="aspect-[245/342] bg-black/50 overflow-hidden cursor-pointer" onclick="window.location.href='/tcg/cards/${card.product_id}'">
             <img 
                 src="${escapeHtml(imageUrl)}" 
                 alt="${escapeHtml(card.name)}"
                 class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                 loading="lazy"
-                onerror="this.src='https://via.placeholder.com/245x342/1a1a19/666?text=No+Image'"
+                onerror="this.src='${escapeHtml(card.image_url || 'https://via.placeholder.com/245x342/1a1a19/666?text=No+Image')}'"
             >
         </div>
         <div class="p-2 cursor-pointer" onclick="window.location.href='/tcg/cards/${card.product_id}'">
             <h3 class="text-xs font-semibold text-white truncate group-hover:text-blue-400 transition">
                 ${escapeHtml(card.name)}
             </h3>
-            ${card.card_number ? `<p class="text-xs text-gray-400 mt-0.5">#${escapeHtml(card.card_number)}</p>` : ''}
+            <div class="flex items-center justify-between mt-0.5">
+                ${card.card_number ? `<p class="text-xs text-gray-400">#${escapeHtml(card.card_number)}</p>` : '<span></span>'}
+                ${card.hp ? `<span class="text-xs text-red-400 font-semibold">${escapeHtml(card.hp)} HP</span>` : ''}
+            </div>
         </div>
     `;
 

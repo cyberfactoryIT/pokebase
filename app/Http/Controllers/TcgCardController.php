@@ -20,7 +20,8 @@ class TcgCardController extends Controller
                     $query->latest('snapshot_at')->limit(1);
                 },
                 'cardmarketMapping',
-                'cardmarketVariants.latestPriceQuote'
+                'cardmarketVariants.latestPriceQuote',
+                'rapidapiCard'
             ])
             ->firstOrFail();
 

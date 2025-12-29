@@ -62,6 +62,13 @@ return [
     'modal_cancel' => 'Cancel',
     'modal_submit' => 'Add to Collection',
     
+    // Valuation
+    'collection_value' => 'Collection Value',
+    'original_price' => 'Original price',
+    'cards_with_prices' => 'cards with prices',
+    'prices_from_cardmarket' => 'Prices from Cardmarket (EUR)',
+    'prices_from_tcgplayer' => 'Prices from TCGPlayer (USD)',
+    
     // Search
     'no_cards_found' => 'No cards found',
 ];

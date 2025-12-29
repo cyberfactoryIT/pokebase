@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pokemon;
 
 use App\Http\Controllers\Controller;
 use App\Services\PokemonDeckValuationService;
+use App\Services\DeckEvaluationEntitlementService;
 use App\Models\GuestDeck;
 use App\Models\DeckValuation;
 use Illuminate\Http\Request;
@@ -15,10 +16,15 @@ use Illuminate\Support\Facades\Auth;
 class DeckValuationFlowController extends Controller
 {
     private PokemonDeckValuationService $service;
+    private DeckEvaluationEntitlementService $entitlementService;
 
-    public function __construct(PokemonDeckValuationService $service)
+    public function __construct(
+        PokemonDeckValuationService $service,
+        DeckEvaluationEntitlementService $entitlementService
+    )
     {
         $this->service = $service;
+        $this->entitlementService = $entitlementService;
     }
 
     /**
@@ -49,7 +55,12 @@ class DeckValuationFlowController extends Controller
             ] : null;
         })->filter();
 
-        return view('pokemon.deck_valuation.step1', compact('guestDeck', 'itemsWithDetails'));
+        // Get entitlement summary for display
+        $userId = auth()->id();
+        $guestToken = $request->cookie('deck_eval_guest_token');
+        $entitlement = $this->entitlementService->getEntitlementSummary($userId, $guestToken);
+
+        return view('pokemon.deck_valuation.step1', compact('guestDeck', 'itemsWithDetails', 'entitlement'));
     }
 
     /**
@@ -150,6 +161,23 @@ class DeckValuationFlowController extends Controller
         $sessionUuid = $request->session()->get('valuation_deck_uuid');
         $guestDeck = $this->service->getOrCreateGuestDeck($sessionUuid);
 
+        // Check entitlement BEFORE evaluation
+        $cardIds = collect($items)->pluck('product_id')->toArray();
+        $userId = auth()->id();
+        $guestToken = $request->cookie('deck_eval_guest_token');
+        
+        $canEvaluate = $this->entitlementService->canEvaluate(
+            count($cardIds),
+            $userId,
+            $guestToken
+        );
+        
+        if (!$canEvaluate['allowed']) {
+            return redirect()
+                ->route('deck-evaluation.packages.index')
+                ->with('error', __('deck_evaluation.entitlement.' . $canEvaluate['reason']));
+        }
+
         // Create lead and valuation
         $valuation = $this->service->createLeadAndValuation(
             $guestDeck,
@@ -157,6 +185,22 @@ class DeckValuationFlowController extends Controller
             $validated['deck_name'],
             $validated['consent_marketing'] ?? false,
             $items
+        );
+
+        // Record evaluation for entitlement tracking
+        $sessionId = $this->entitlementService->getOrCreateSession($userId, $guestToken)->id;
+        $this->entitlementService->recordEvaluation(
+            $sessionId,
+            $cardIds,
+            $canEvaluate['purchase_id']
+        );
+
+        // Record evaluation for entitlement tracking
+        $sessionId = $this->entitlementService->getOrCreateSession($userId, $guestToken)->id;
+        $this->entitlementService->recordEvaluation(
+            $sessionId,
+            $cardIds,
+            $canEvaluate['purchase_id']
         );
 
         // Send email with valuation link

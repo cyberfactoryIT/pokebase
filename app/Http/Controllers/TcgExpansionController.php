@@ -113,7 +113,9 @@ class TcgExpansionController extends Controller
             ->where('game_id', $currentGame ? $currentGame->id : null)
             ->firstOrFail();
 
-        $query = $expansion->products()->where('game_id', $currentGame->id);
+        $query = $expansion->products()
+            ->where('game_id', $currentGame->id)
+            ->with('rapidapiCard');
 
         // Search filter
         if (!empty($validated['query'])) {
@@ -141,11 +143,18 @@ class TcgExpansionController extends Controller
 
         return response()->json([
             'data' => $cards->map(function($card) {
+                // Get HD image URL from RapidAPI if available
+                $hdImageUrl = $card->rapidapiCard && $card->rapidapiCard->image_url 
+                    ? $card->rapidapiCard->image_url 
+                    : $card->hd_image_url;
+                    
                 return [
                     'product_id' => $card->product_id,
                     'name' => $card->name,
                     'card_number' => $card->card_number,
                     'image_url' => $this->getCardImage($card),
+                    'hd_image_url' => $hdImageUrl,
+                    'hp' => $card->hp,
                 ];
             }),
             'meta' => [

@@ -155,42 +155,64 @@ class PokemonDeckValuationService
      */
     public function computeDeckStats(DeckValuation $valuation): array
     {
-        $items = $valuation->items()->with(['tcgcsvProduct.prices' => function($q) {
-            $q->latest('snapshot_at')->limit(1);
-        }])->get();
+        $items = $valuation->items()->with([
+            'tcgcsvProduct.prices' => function($q) {
+                $q->latest('snapshot_at')->limit(1);
+            },
+            'tcgcsvProduct.rapidapiCard'
+        ])->get();
 
         $totalCards = $items->sum('quantity');
         $uniqueCards = $items->count();
-        $totalValue = 0;
-        $cardsWithPrices = 0;
+        $totalValueUsd = 0;
+        $totalValueEur = 0;
+        $cardsWithPricesUsd = 0;
+        $cardsWithPricesEur = 0;
 
-        $itemsData = $items->map(function($item) use (&$totalValue, &$cardsWithPrices) {
+        $itemsData = $items->map(function($item) use (&$totalValueUsd, &$totalValueEur, &$cardsWithPricesUsd, &$cardsWithPricesEur) {
+            // USD price from TCGPlayer
             $latestPrice = $item->tcgcsvProduct->prices->first();
-            $marketPrice = $latestPrice?->market_price ?? 0;
+            $marketPriceUsd = $latestPrice?->market_price ?? 0;
             
-            if ($marketPrice > 0) {
-                $cardsWithPrices++;
+            if ($marketPriceUsd > 0) {
+                $cardsWithPricesUsd++;
             }
 
-            $lineTotal = $marketPrice * $item->quantity;
-            $totalValue += $lineTotal;
+            // EUR price from RapidAPI Cardmarket data
+            $marketPriceEur = 0;
+            $rapidapiCard = $item->tcgcsvProduct->rapidapiCard;
+            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                if ($marketPriceEur > 0) {
+                    $cardsWithPricesEur++;
+                }
+            }
+
+            $lineTotalUsd = $marketPriceUsd * $item->quantity;
+            $lineTotalEur = $marketPriceEur * $item->quantity;
+            $totalValueUsd += $lineTotalUsd;
+            $totalValueEur += $lineTotalEur;
 
             return [
                 'card' => $item->tcgcsvProduct,
                 'quantity' => $item->quantity,
-                'market_price' => $marketPrice,
-                'line_total' => $lineTotal,
+                'market_price_usd' => $marketPriceUsd,
+                'market_price_eur' => $marketPriceEur,
+                'line_total_usd' => $lineTotalUsd,
+                'line_total_eur' => $lineTotalEur,
             ];
         });
 
-        // Sort by line_total descending and get top 10
-        $top10 = $itemsData->sortByDesc('line_total')->take(10)->values();
+        // Sort by EUR line_total descending and get top 10
+        $top10 = $itemsData->sortByDesc('line_total_eur')->take(10)->values();
 
         return [
             'total_cards' => $totalCards,
             'unique_cards' => $uniqueCards,
-            'total_value' => round($totalValue, 2),
-            'cards_with_prices' => $cardsWithPrices,
+            'total_value_usd' => round($totalValueUsd, 2),
+            'total_value_eur' => round($totalValueEur, 2),
+            'cards_with_prices_usd' => $cardsWithPricesUsd,
+            'cards_with_prices_eur' => $cardsWithPricesEur,
             'top_10_cards' => $top10,
             'all_items' => $itemsData,
         ];

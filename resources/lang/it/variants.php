@@ -25,6 +25,9 @@ return [
     'regular' => 'Normale',
     'avg_7d' => 'Media 7gg',
     'avg_30d' => 'Media 30gg',
+    'price_range' => 'Range Prezzi',
+    'variant' => 'variante',
+    'variants' => 'varianti',
     
     // Actions
     'view_on_cardmarket' => 'Vedi su Cardmarket',

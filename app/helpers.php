@@ -213,3 +213,43 @@ if (! function_exists('convertUsdToEur')) {
         return round($amount * $rate, 2);
     }
 }
+
+if (! function_exists('formatPrice')) {
+    /**
+     * Format price with optional currency conversion based on user preference
+     *
+     * @param  float  $amount  Original amount
+     * @param  string  $originalCurrency  Original currency (EUR, USD, etc.)
+     * @param  \App\Models\User|null  $user  User with currency preference
+     * @return string  Formatted price, e.g. "74 DKK (original price 10 €)"
+     */
+    function formatPrice(float $amount, string $originalCurrency, ?\App\Models\User $user = null): string
+    {
+        // Get user's preferred currency or use original
+        $preferredCurrency = $user?->preferred_currency;
+        
+        return \App\Services\CurrencyService::formatPrice(
+            $amount,
+            $originalCurrency,
+            $preferredCurrency
+        );
+    }
+}
+
+if (! function_exists('getUserCurrency')) {
+    /**
+     * Get user's preferred currency or default based on context
+     *
+     * @param  \App\Models\User|null  $user
+     * @param  string  $defaultSource  Default source ('cardmarket' or 'tcgplayer')
+     * @return string  Currency code (EUR, USD, etc.)
+     */
+    function getUserCurrency(?\App\Models\User $user = null, string $defaultSource = 'cardmarket'): string
+    {
+        if ($user?->preferred_currency) {
+            return $user->preferred_currency;
+        }
+
+        return \App\Services\CurrencyService::getDefaultCurrency($defaultSource);
+    }
+}

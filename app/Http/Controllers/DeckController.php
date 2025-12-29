@@ -72,7 +72,8 @@ class DeckController extends Controller
             'deckCards.card.group',
             'deckCards.card.prices' => function($query) {
                 $query->latest('snapshot_at')->limit(1);
-            }
+            },
+            'deckCards.card.rapidapiCard'
         ]);
 
         // Calculate deck statistics
@@ -242,26 +243,38 @@ class DeckController extends Controller
             ->sortByDesc('count')
             ->take(5);
 
-        // 3. Average card value (if prices available)
-        $cardsWithPrices = $deck->deckCards->filter(function($deckCard) {
-            return $deckCard->card->prices->isNotEmpty();
-        });
+        // 3. Card values (USD from TCGPlayer, EUR from Cardmarket/RapidAPI)
+        $totalValueUsd = 0;
+        $totalValueEur = 0;
+        $cardsWithPricesUsd = 0;
+        $cardsWithPricesEur = 0;
         
-        $totalValue = 0;
-        $priceCount = 0;
-        foreach ($cardsWithPrices as $deckCard) {
+        foreach ($deck->deckCards as $deckCard) {
+            // USD price from TCGPlayer
             $latestPrice = $deckCard->card->prices->first();
-            if ($latestPrice && $latestPrice->market_price) {
-                $totalValue += $latestPrice->market_price * $deckCard->quantity;
-                $priceCount++;
+            if ($latestPrice && $latestPrice->market_price > 0) {
+                $totalValueUsd += $latestPrice->market_price * $deckCard->quantity;
+                $cardsWithPricesUsd++;
+            }
+            
+            // EUR price from RapidAPI Cardmarket data
+            $rapidapiCard = $deckCard->card->rapidapiCard;
+            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                if ($marketPriceEur > 0) {
+                    $totalValueEur += $marketPriceEur * $deckCard->quantity;
+                    $cardsWithPricesEur++;
+                }
             }
         }
 
         return [
             'rarity_distribution' => $rarityDistribution,
             'set_distribution' => $setDistribution,
-            'total_value' => $priceCount > 0 ? $totalValue : null,
-            'cards_with_prices' => $priceCount,
+            'total_value_usd' => round($totalValueUsd, 2),
+            'total_value_eur' => round($totalValueEur, 2),
+            'cards_with_prices_usd' => $cardsWithPricesUsd,
+            'cards_with_prices_eur' => $cardsWithPricesEur,
         ];
     }
 }

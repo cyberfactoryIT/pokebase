@@ -73,21 +73,115 @@
             </div>
 
             <!-- Deck Value -->
-            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-400 text-sm">Estimated Value</p>
-                        @if($topStats['total_value'])
-                            <p class="text-3xl font-bold text-white mt-1">${{ number_format($topStats['total_value'], 2) }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ $topStats['cards_with_prices'] }} cards priced</p>
+            @php
+                $user = auth()->user();
+                $preferredCurrency = $user->preferred_currency;
+                $defaultCurrency = $preferredCurrency ?: 'EUR';
+                
+                // If user has a preferred currency, convert the prices
+                if ($preferredCurrency) {
+                    $displayValueEur = \App\Services\CurrencyService::convert($topStats['total_value_eur'], 'EUR', $preferredCurrency);
+                    $displayValueUsd = \App\Services\CurrencyService::convert($topStats['total_value_usd'], 'USD', $preferredCurrency);
+                } else {
+                    $displayValueEur = $topStats['total_value_eur'];
+                    $displayValueUsd = $topStats['total_value_usd'];
+                }
+            @endphp
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6" x-data="{ 
+                currency: localStorage.getItem('deckCurrency') || '{{ $defaultCurrency }}',
+                preferredCurrency: '{{ $preferredCurrency }}',
+                setCurrency(curr) {
+                    this.currency = curr;
+                    localStorage.setItem('deckCurrency', curr);
+                }
+            }">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex-1">
+                        <p class="text-gray-400 text-sm mb-2">Estimated Value</p>
+                        
+                        @if($preferredCurrency)
+                            <!-- User has preferred currency - show converted price with original -->
+                            <div x-show="currency === 'EUR'">
+                                @if($topStats['total_value_eur'] > 0)
+                                    <p class="text-3xl font-bold text-white">
+                                        @php
+                                            $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                            $formatted = number_format($displayValueEur, 2);
+                                            if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                echo "{$symbol}{$formatted}";
+                                            } else {
+                                                echo "{$formatted} {$symbol}";
+                                            }
+                                        @endphp
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ __('collection/index.original_price') }}: €{{ number_format($topStats['total_value_eur'], 2) }}</p>
+                                    <p class="text-xs text-gray-500">{{ $topStats['cards_with_prices_eur'] }} cards priced</p>
+                                @else
+                                    <p class="text-xl text-gray-500">No EUR prices</p>
+                                @endif
+                            </div>
+                            <div x-show="currency === 'USD'">
+                                @if($topStats['total_value_usd'] > 0)
+                                    <p class="text-3xl font-bold text-white">
+                                        @php
+                                            $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                            $formatted = number_format($displayValueUsd, 2);
+                                            if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                echo "{$symbol}{$formatted}";
+                                            } else {
+                                                echo "{$formatted} {$symbol}";
+                                            }
+                                        @endphp
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ __('collection/index.original_price') }}: ${{ number_format($topStats['total_value_usd'], 2) }}</p>
+                                    <p class="text-xs text-gray-500">{{ $topStats['cards_with_prices_usd'] }} cards priced</p>
+                                @else
+                                    <p class="text-xl text-gray-500">No USD prices</p>
+                                @endif
+                            </div>
                         @else
-                            <p class="text-xl text-gray-500 mt-1">No prices</p>
+                            <!-- No preferred currency - show default EUR/USD -->
+                            <div x-show="currency === 'EUR'">
+                                @if($topStats['total_value_eur'] > 0)
+                                    <p class="text-3xl font-bold text-white">€{{ number_format($topStats['total_value_eur'], 2) }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ $topStats['cards_with_prices_eur'] }} cards priced</p>
+                                @else
+                                    <p class="text-xl text-gray-500">No EUR prices</p>
+                                @endif
+                            </div>
+                            <div x-show="currency === 'USD'">
+                                @if($topStats['total_value_usd'] > 0)
+                                    <p class="text-3xl font-bold text-white">${{ number_format($topStats['total_value_usd'], 2) }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ $topStats['cards_with_prices_usd'] }} cards priced</p>
+                                @else
+                                    <p class="text-xl text-gray-500">No USD prices</p>
+                                @endif
+                            </div>
                         @endif
                     </div>
-                    <div class="bg-green-500/20 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <div class="flex flex-col items-end gap-3">
+                        <div class="bg-green-500/20 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <!-- Currency Toggle -->
+                        <div class="inline-flex bg-black/50 border border-white/15 rounded-lg p-1">
+                            <button 
+                                @click="setCurrency('EUR')"
+                                :class="currency === 'EUR' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                                class="px-3 py-1 rounded-md text-xs font-medium transition"
+                            >
+                                EUR
+                            </button>
+                            <button 
+                                @click="setCurrency('USD')"
+                                :class="currency === 'USD' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                                class="px-3 py-1 rounded-md text-xs font-medium transition"
+                            >
+                                USD
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -187,81 +281,164 @@
                 </a>
             </div>
             @else
-            <!-- Card List -->
-            <div class="space-y-3">
+            <!-- Card Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 @foreach($deck->deckCards as $deckCard)
                 @php
                     $card = $deckCard->card;
                     $inCollection = $card ? auth()->user()->collection()->where('product_id', $card->product_id)->exists() : false;
+                    $displayImage = $card->hd_image_url ?? $card->image_url;
                 @endphp
                 @if($card)
-                <div class="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition">
-                    <div class="flex-shrink-0 w-16 h-16 bg-black/50 rounded flex items-center justify-center">
-                        @if($card->image_url)
-                        <img src="{{ $card->image_url }}" alt="{{ $card->name }}" class="w-full h-full object-cover rounded">
-                        @else
-                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        @endif
+                <div class="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition overflow-hidden group relative">
+                    <!-- Quantity Badge -->
+                    <div class="absolute top-2 left-2 z-10 bg-blue-600/90 text-white px-2 py-1 rounded text-sm font-semibold">
+                        x{{ $deckCard->quantity }}
                     </div>
                     
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <h4 class="text-white font-semibold">{{ $card->name }}</h4>
-                            @if(!$inCollection)
-                            <span class="px-2 py-0.5 bg-orange-500/20 border border-orange-500/50 text-orange-400 text-xs rounded-full whitespace-nowrap">
-                                {{ __('decks/show.not_in_collection') }}
-                            </span>
-                            <form method="POST" action="{{ route('collection.add') }}" class="inline" onsubmit="event.preventDefault(); quickAddCardToCollection({{ $card->product_id }}, '{{ addslashes($card->name) }}', this);">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $card->product_id }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" 
-                                    class="inline-flex items-center justify-center w-5 h-5 bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors"
-                                    title="Add to Collection">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                </button>
-                            </form>
-                            @endif
-                        </div>
-                        <p class="text-gray-400 text-sm">
-                            {{ $card->group->name ?? 'Unknown Set' }}
-                            @if($card->number)
-                            · #{{ $card->number }}
-                            @endif
-                        </p>
-                    </div>
-
-                    <div class="flex items-center gap-4">
-                        <!-- Quantity -->
-                        <form method="POST" action="{{ route('decks.cards.updateQuantity', [$deck, $deckCard]) }}" class="flex items-center gap-2">
+                    <!-- Not in Collection Badge -->
+                    @if(!$inCollection)
+                    <div class="absolute top-2 right-2 z-10">
+                        <form method="POST" action="{{ route('collection.add') }}" class="inline" onsubmit="event.preventDefault(); quickAddCardToCollection({{ $card->product_id }}, '{{ addslashes($card->name) }}', this);">
                             @csrf
-                            @method('PATCH')
-                            <label class="text-gray-400 text-sm">{{ __('decks/show.qty_label') }}:</label>
-                            <input 
-                                type="number" 
-                                name="quantity" 
-                                value="{{ $deckCard->quantity }}" 
-                                min="1" 
-                                max="4"
-                                class="w-16 px-2 py-1 bg-black/50 border border-white/20 rounded text-white text-center"
-                                onchange="this.form.submit()"
-                            >
-                        </form>
-
-                        <!-- Remove -->
-                        <form method="POST" action="{{ route('decks.cards.remove', [$deck, $deckCard]) }}" onsubmit="return confirm('{{ __('decks/show.confirm_remove') }}');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-400 hover:text-red-300 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            <input type="hidden" name="product_id" value="{{ $card->product_id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" 
+                                class="p-1.5 bg-orange-600/90 hover:bg-orange-600 rounded text-white transition"
+                                title="{{ __('decks/show.not_in_collection') }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
                                 </svg>
                             </button>
                         </form>
+                    </div>
+                    @endif
+                    
+                    <!-- Card Image -->
+                    <div class="aspect-[245/342] bg-black/50 overflow-hidden cursor-pointer" onclick="window.location.href='/tcg/cards/{{ $card->product_id }}'">
+                        @if($displayImage)
+                        <img src="{{ $displayImage }}" alt="{{ $card->name }}" class="w-full h-full object-cover group-hover:scale-105 transition">
+                        @else
+                        <div class="w-full h-full flex items-center justify-center">
+                            <svg class="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        @endif
+                    </div>
+                    
+                    <!-- Card Info -->
+                    <div class="p-3">
+                        <h4 class="text-white font-semibold text-sm truncate group-hover:text-blue-400 transition cursor-pointer" onclick="window.location.href='/tcg/cards/{{ $card->product_id }}'">
+                            {{ $card->name }}
+                        </h4>
+                        <p class="text-gray-400 text-xs truncate mt-1">
+                            {{ $card->group->name ?? 'Unknown Set' }}
+                            @if($card->card_number)
+                            · #{{ $card->card_number }}
+                            @endif
+                        </p>
+                        
+                        <!-- Price Display with Currency Toggle -->
+                        @php
+                            $tcgPrice = $card->prices->first();
+                            $marketPriceUsd = $tcgPrice?->market_price ?? 0;
+                            
+                            // EUR price from RapidAPI Cardmarket data
+                            $marketPriceEur = 0;
+                            $rapidapiCard = $card->rapidapiCard;
+                            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                            }
+                            
+                            // Convert to preferred currency if set
+                            if ($preferredCurrency) {
+                                $convertedPriceEur = $marketPriceEur > 0 ? \App\Services\CurrencyService::convert($marketPriceEur, 'EUR', $preferredCurrency) : 0;
+                                $convertedPriceUsd = $marketPriceUsd > 0 ? \App\Services\CurrencyService::convert($marketPriceUsd, 'USD', $preferredCurrency) : 0;
+                            }
+                        @endphp
+                        
+                        <div class="mt-2" x-data="{ currency: localStorage.getItem('deckCurrency') || '{{ $defaultCurrency }}' }">
+                            <!-- EUR Price -->
+                            <div x-show="currency === 'EUR'">
+                                @if($marketPriceEur > 0)
+                                    @if($preferredCurrency)
+                                        <p class="text-green-400 text-xs font-semibold">
+                                            @php
+                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                $totalConverted = $convertedPriceEur * $deckCard->quantity;
+                                                $formatted = number_format($totalConverted, 2);
+                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                    echo "{$symbol}{$formatted}";
+                                                } else {
+                                                    echo "{$formatted} {$symbol}";
+                                                }
+                                            @endphp
+                                        </p>
+                                        <p class="text-gray-500 text-xs">(€{{ number_format($marketPriceEur * $deckCard->quantity, 2) }})</p>
+                                    @else
+                                        <p class="text-green-400 text-xs font-semibold">€{{ number_format($marketPriceEur * $deckCard->quantity, 2) }}</p>
+                                    @endif
+                                @else
+                                    <p class="text-gray-500 text-xs">No EUR price</p>
+                                @endif
+                            </div>
+                            
+                            <!-- USD Price -->
+                            <div x-show="currency === 'USD'">
+                                @if($marketPriceUsd > 0)
+                                    @if($preferredCurrency)
+                                        <p class="text-green-400 text-xs font-semibold">
+                                            @php
+                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                $totalConverted = $convertedPriceUsd * $deckCard->quantity;
+                                                $formatted = number_format($totalConverted, 2);
+                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                    echo "{$symbol}{$formatted}";
+                                                } else {
+                                                    echo "{$formatted} {$symbol}";
+                                                }
+                                            @endphp
+                                        </p>
+                                        <p class="text-gray-500 text-xs">(${{ number_format($marketPriceUsd * $deckCard->quantity, 2) }})</p>
+                                    @else
+                                        <p class="text-green-400 text-xs font-semibold">${{ number_format($marketPriceUsd * $deckCard->quantity, 2) }}</p>
+                                    @endif
+                                @else
+                                    <p class="text-gray-500 text-xs">No USD price</p>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex gap-2 mt-3">
+                            <!-- Update Quantity -->
+                            <form method="POST" action="{{ route('decks.cards.updateQuantity', [$deck, $deckCard]) }}" class="flex-1 flex items-center gap-1">
+                                @csrf
+                                @method('PATCH')
+                                <input 
+                                    type="number" 
+                                    name="quantity" 
+                                    value="{{ $deckCard->quantity }}" 
+                                    min="1" 
+                                    max="4"
+                                    class="w-12 px-2 py-1 bg-black/50 border border-white/20 rounded text-white text-center text-xs"
+                                    onchange="this.form.submit()"
+                                >
+                                <button type="submit" class="hidden">Update</button>
+                            </form>
+                            
+                            <!-- Remove Button -->
+                            <form method="POST" action="{{ route('decks.cards.remove', [$deck, $deckCard]) }}" onsubmit="return confirm('{{ __('decks/show.remove_confirm') }}')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 @endif

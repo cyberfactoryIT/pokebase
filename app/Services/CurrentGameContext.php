@@ -20,17 +20,26 @@ class CurrentGameContext
         }
 
         $gameId = session('current_game_id');
-        
-        if (!$gameId) {
-            return static::getFirstAvailable();
+
+        if ($gameId) {
+            $game = static::findValidGame($gameId);
+
+            if ($game) {
+                return $game;
+            }
+
+            static::clear();
         }
 
-        return Auth::user()
-            ->games()
-            ->where('games.id', $gameId)
-            ->where('games.is_active', true)
-            ->where('game_user.is_enabled', true)
-            ->first();
+        $defaultGame = static::getDefault();
+
+        if ($defaultGame) {
+            session(['current_game_id' => $defaultGame->id]);
+
+            return $defaultGame;
+        }
+
+        return static::getFirstAvailable();
     }
 
     /**
@@ -106,5 +115,36 @@ class CurrentGameContext
             ->where('game_user.is_enabled', true)
             ->orderBy('games.name')
             ->get();
+    }
+
+    /**
+     * Get user's default game if still valid
+     */
+    protected static function getDefault(): ?Game
+    {
+        if (!Auth::check()) {
+            return null;
+        }
+
+        $user = Auth::user();
+
+        if (!$user->default_game_id) {
+            return null;
+        }
+
+        return static::findValidGame($user->default_game_id);
+    }
+
+    /**
+     * Ensure selected game is still valid for the user
+     */
+    protected static function findValidGame(int $gameId): ?Game
+    {
+        return Auth::user()
+            ->games()
+            ->where('games.id', $gameId)
+            ->where('games.is_active', true)
+            ->where('game_user.is_enabled', true)
+            ->first();
     }
 }

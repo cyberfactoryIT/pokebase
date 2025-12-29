@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('cardmarket_import_runs', function (Blueprint $table) {
             $table->id();
             $table->uuid('run_uuid')->unique();
-            $table->enum('type', ['catalogue', 'priceguide', 'full'])->index();
+            $table->enum('type', ['catalogue', 'priceguide', 'full', 'products', 'prices'])->index();
             $table->enum('status', ['running', 'success', 'failed'])->default('running')->index();
             $table->dateTime('started_at')->nullable();
             $table->dateTime('finished_at')->nullable();

@@ -38,13 +38,27 @@
             <div class="space-y-6">
                 <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
                     <div class="aspect-[245/342] max-w-md mx-auto">
-                        @if($imageUrl)
+                        @php
+                            // Usa immagine HD se disponibile, altrimenti fallback su standard
+                            $displayImage = $card->hd_image_url ?? $imageUrl;
+                        @endphp
+                        @if($displayImage)
                             <img 
-                                src="{{ $imageUrl }}" 
+                                src="{{ $displayImage }}" 
                                 alt="{{ $card->name }}"
                                 class="w-full h-full object-contain rounded-lg shadow-lg"
-                                onerror="this.src='https://via.placeholder.com/490x684/1a1a19/666?text=No+Image'"
+                                onerror="this.src='{{ $imageUrl ?? "https://via.placeholder.com/490x684/1a1a19/666?text=No+Image" }}'"
                             >
+                            @if($card->hd_image_url)
+                                <div class="mt-2 text-center">
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-500/20 text-blue-300 rounded-full">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        HD Image
+                                    </span>
+                                </div>
+                            @endif
                         @else
                             <div class="w-full h-full bg-black/50 rounded-lg flex items-center justify-center">
                                 <svg class="w-24 h-24 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,32 +69,83 @@
                     </div>
                 </div>
 
-                <!-- Additional Details -->
-                @if($card->raw && is_array($card->raw))
+                <!-- Card Details (Unified) -->
+                @php
+                    $allDetails = [];
+                    $fieldOrder = [
+                        'set_name' => 'Expansion',
+                        'card_number' => 'Number',
+                        'rarity' => 'Rarity',
+                        'rapidapi_rarity' => 'Rarity (Detailed)',
+                        'supertype' => 'Card Type',
+                        'hp' => 'HP',
+                        'artist_name' => 'Artist',
+                    ];
+                    
+                    if ($card->group && $card->group->name) $allDetails['set_name'] = $card->group->name;
+                    if ($card->card_number) $allDetails['card_number'] = $card->card_number;
+                    if ($card->rapidapi_rarity) $allDetails['rapidapi_rarity'] = $card->rapidapi_rarity;
+                    elseif ($card->rarity) $allDetails['rarity'] = $card->rarity;
+                    if ($card->supertype) $allDetails['supertype'] = $card->supertype;
+                    if ($card->hp) $allDetails['hp'] = $card->hp;
+                    if ($card->artist_name) $allDetails['artist_name'] = $card->artist_name;
+                    
+                    if ($card->raw && is_array($card->raw)) {
+                        foreach ($card->raw as $key => $value) {
+                            if (!is_array($value) && !is_object($value) && 
+                                !in_array($key, ['raw', 'extended_data', 'extendedData', 'imageUrl', 'image_url', 
+                                                 'productId', 'categoryId', 'imageCount', 'modifiedOn', 'name', 
+                                                 'groupId', 'url', 'cleanName'])) {
+                                $allDetails[$key] = $value;
+                            }
+                        }
+                    }
+                    
+                    if ($card->extended_data && is_array($card->extended_data)) {
+                        foreach ($card->extended_data as $item) {
+                            if (isset($item['name']) && isset($item['value'])) {
+                                $key = strtolower(str_replace(' ', '_', $item['name']));
+                                $allDetails[$key] = $item['value'];
+                            }
+                        }
+                    }
+                    
+                    $orderedDetails = [];
+                    foreach ($fieldOrder as $key => $label) {
+                        if (isset($allDetails[$key])) {
+                            $orderedDetails[$label] = $allDetails[$key];
+                            unset($allDetails[$key]);
+                        }
+                    }
+                    foreach ($allDetails as $key => $value) {
+                        $label = ucwords(str_replace('_', ' ', $key));
+                        $orderedDetails[$label] = $value;
+                    }
+                @endphp
+
+                @if(count($orderedDetails) > 0)
                     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                        <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.additional_details') }}</h2>
+                        <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.card_details') }}</h2>
                         
                         <dl class="space-y-3">
-                            @foreach($card->raw as $key => $value)
-                                @if(!is_array($value) && !is_object($value) && !in_array($key, ['raw', 'extended_data', 'extendedData', 'imageUrl', 'image_url', 'productId', 'categoryId', 'imageCount', 'modifiedOn']))
-                                    <div class="flex justify-between py-2 border-b border-white/10">
-                                        <dt class="text-sm font-medium text-gray-400 capitalize">{{ str_replace('_', ' ', $key) }}</dt>
-                                        <dd class="text-sm text-white">
-                                            @if(is_bool($value))
-                                                {{ $value ? __('tcg/cards/show.yes') : __('tcg/cards/show.no') }}
-                                            @elseif(filter_var($value, FILTER_VALIDATE_URL))
-                                                <a href="{{ $value }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition">
-                                                    <span><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                                    </svg>
-                                                </a>
-                                            @else
-                                                {{ $value }}
-                                            @endif
-                                        </dd>
-                                    </div>
-                                @endif
+                            @foreach($orderedDetails as $label => $value)
+                                <div class="flex justify-between py-2 border-b border-white/10">
+                                    <dt class="text-sm font-medium text-gray-400">{{ $label }}</dt>
+                                    <dd class="text-sm text-white text-right max-w-xs">
+                                        @if(is_bool($value))
+                                            {{ $value ? __('tcg/cards/show.yes') : __('tcg/cards/show.no') }}
+                                        @elseif(is_string($value) && filter_var($value, FILTER_VALIDATE_URL))
+                                            <a href="{{ $value }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition">
+                                                <span>Link</span>
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                                </svg>
+                                            </a>
+                                        @else
+                                            {!! nl2br(e($value)) !!}
+                                        @endif
+                                    </dd>
+                                </div>
                             @endforeach
                         </dl>
                     </div>
@@ -108,10 +173,38 @@
                                 #{{ $card->card_number }}
                             </span>
                         @endif
+
+                        @if($card->hp)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/20 border border-red-400/30 text-red-300">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                </svg>
+                                {{ $card->hp }} HP
+                            </span>
+                        @endif
+
+                        @if($card->supertype)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 border border-blue-400/30 text-blue-300">
+                                {{ $card->supertype }}
+                            </span>
+                        @endif
                         
-                        @if($card->rarity)
+                        @if($card->rapidapi_rarity)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/20 border border-purple-400/30 text-purple-300">
+                                {{ $card->rapidapi_rarity }}
+                            </span>
+                        @elseif($card->rarity)
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/20 border border-purple-400/30 text-purple-300">
                                 {{ $card->rarity }}
+                            </span>
+                        @endif
+
+                        @if($card->artist_name)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 border border-yellow-400/30 text-yellow-300">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                                {{ $card->artist_name }}
                             </span>
                         @endif
                     </div>
@@ -193,8 +286,73 @@
                     </div>
                 </div>
 
+                <!-- External Links -->
+                @php
+                    $tcgoUrl = $card->rapidapiCard ? $card->rapidapiCard->tcggo_url : null;
+                    $tcgplayerUrl = $card->raw && isset($card->raw['url']) ? $card->raw['url'] : null;
+                    $cardmarketUrl = $card->rapidapiCard && $card->rapidapiCard->links ? ($card->rapidapiCard->links['cardmarket'] ?? null) : null;
+                @endphp
+                @if($tcgoUrl || $tcgplayerUrl || $cardmarketUrl)
+                <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
+                    <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.external_links') }}</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        @if($tcgoUrl)
+                            <a href="{{ $tcgoUrl }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600/20 to-blue-500/20 hover:from-blue-600/30 hover:to-blue-500/30 border border-blue-400/30 rounded-lg transition group">
+                                <div class="flex-shrink-0 w-10 h-10 bg-blue-500/30 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-white group-hover:text-blue-300 transition">TCGO</div>
+                                    <div class="text-xs text-gray-400">View HD Image</div>
+                                </div>
+                                <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                        @endif
+                        @if($tcgplayerUrl)
+                            <a href="{{ $tcgplayerUrl }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600/20 to-purple-500/20 hover:from-purple-600/30 hover:to-purple-500/30 border border-purple-400/30 rounded-lg transition group">
+                                <div class="flex-shrink-0 w-10 h-10 bg-purple-500/30 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-white group-hover:text-purple-300 transition">TCGPlayer</div>
+                                    <div class="text-xs text-gray-400">Buy on TCGPlayer</div>
+                                </div>
+                                <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                        @endif
+                        @if($cardmarketUrl)
+                            <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-orange-600/20 to-orange-500/20 hover:from-orange-600/30 hover:to-orange-500/30 border border-orange-400/30 rounded-lg transition group">
+                                <div class="flex-shrink-0 w-10 h-10 bg-orange-500/30 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-white group-hover:text-orange-300 transition">Cardmarket</div>
+                                    <div class="text-xs text-gray-400">Buy on Cardmarket</div>
+                                </div>
+                                <svg class="w-5 h-5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
                 <!-- Pricing Section -->
-                <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6" x-data="{ activeTab: localStorage.getItem('priceTab') || 'us' }">
+                <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6" x-data="{ 
+                    activeTab: localStorage.getItem('priceTab') || 'us',
+                    preferredCurrency: '{{ auth()->user()?->preferred_currency }}'
+                }">
                     <!-- Price Toggle Tabs -->
                     <div class="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
                         <h2 class="text-xl font-bold text-white">{{ __('tcg/cards/show.pricing') }}</h2>
@@ -221,32 +379,109 @@
                     <div x-show="activeTab === 'us'" x-transition>
                     
                     @if($latestPrice)
+                        @php
+                            $user = auth()->user();
+                            $preferredCurrency = $user?->preferred_currency;
+                            
+                            // Convert prices if user has preferred currency
+                            $marketPriceDisplay = $latestPrice->market_price;
+                            $lowPriceDisplay = $latestPrice->low_price;
+                            $midPriceDisplay = $latestPrice->mid_price;
+                            $highPriceDisplay = $latestPrice->high_price;
+                            
+                            if ($preferredCurrency) {
+                                $marketPriceDisplay = $latestPrice->market_price ? \App\Services\CurrencyService::convert($latestPrice->market_price, 'USD', $preferredCurrency) : 0;
+                                $lowPriceDisplay = $latestPrice->low_price ? \App\Services\CurrencyService::convert($latestPrice->low_price, 'USD', $preferredCurrency) : 0;
+                                $midPriceDisplay = $latestPrice->mid_price ? \App\Services\CurrencyService::convert($latestPrice->mid_price, 'USD', $preferredCurrency) : 0;
+                                $highPriceDisplay = $latestPrice->high_price ? \App\Services\CurrencyService::convert($latestPrice->high_price, 'USD', $preferredCurrency) : 0;
+                            }
+                        @endphp
                         <div class="grid grid-cols-2 gap-4">
                             @if($latestPrice->market_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
                                     <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.market_price') }}</div>
-                                    <div class="text-2xl font-bold text-white">${{ number_format($latestPrice->market_price, 2) }}</div>
+                                    @if($preferredCurrency)
+                                        <div class="text-2xl font-bold text-white">
+                                            @php
+                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                $formatted = number_format($marketPriceDisplay, 2);
+                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                    echo "{$symbol}{$formatted}";
+                                                } else {
+                                                    echo "{$formatted} {$symbol}";
+                                                }
+                                            @endphp
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">(${{ number_format($latestPrice->market_price, 2) }})</div>
+                                    @else
+                                        <div class="text-2xl font-bold text-white">${{ number_format($latestPrice->market_price, 2) }}</div>
+                                    @endif
                                 </div>
                             @endif
                             
                             @if($latestPrice->low_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
                                     <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
-                                    <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->low_price, 2) }}</div>
+                                    @if($preferredCurrency)
+                                        <div class="text-xl font-semibold text-gray-200">
+                                            @php
+                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                $formatted = number_format($lowPriceDisplay, 2);
+                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                    echo "{$symbol}{$formatted}";
+                                                } else {
+                                                    echo "{$formatted} {$symbol}";
+                                                }
+                                            @endphp
+                                        </div>
+                                        <div class="text-xs text-gray-500">(${{ number_format($latestPrice->low_price, 2) }})</div>
+                                    @else
+                                        <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->low_price, 2) }}</div>
+                                    @endif
                                 </div>
                             @endif
                             
                             @if($latestPrice->mid_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
                                     <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.mid_price') }}</div>
-                                    <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->mid_price, 2) }}</div>
+                                    @if($preferredCurrency)
+                                        <div class="text-xl font-semibold text-gray-200">
+                                            @php
+                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                $formatted = number_format($midPriceDisplay, 2);
+                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                    echo "{$symbol}{$formatted}";
+                                                } else {
+                                                    echo "{$formatted} {$symbol}";
+                                                }
+                                            @endphp
+                                        </div>
+                                        <div class="text-xs text-gray-500">(${{ number_format($latestPrice->mid_price, 2) }})</div>
+                                    @else
+                                        <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->mid_price, 2) }}</div>
+                                    @endif
                                 </div>
                             @endif
                             
                             @if($latestPrice->high_price)
                                 <div class="border border-white/20 bg-black/30 rounded-lg p-3">
                                     <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.high_price') }}</div>
-                                    <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->high_price, 2) }}</div>
+                                    @if($preferredCurrency)
+                                        <div class="text-xl font-semibold text-gray-200">
+                                            @php
+                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                $formatted = number_format($highPriceDisplay, 2);
+                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                    echo "{$symbol}{$formatted}";
+                                                } else {
+                                                    echo "{$formatted} {$symbol}";
+                                                }
+                                            @endphp
+                                        </div>
+                                        <div class="text-xs text-gray-500">(${{ number_format($latestPrice->high_price, 2) }})</div>
+                                    @else
+                                        <div class="text-xl font-semibold text-gray-200">${{ number_format($latestPrice->high_price, 2) }}</div>
+                                    @endif
                                 </div>
                             @endif
                         </div>
@@ -272,8 +507,60 @@
                     
                     <!-- EU Prices (Cardmarket) -->
                     <div x-show="activeTab === 'eu'" x-transition x-cloak>
-                        @if($card->hasCardmarketVariants())
-                            <x-cardmarket-variants :product="$card" />
+                        @php
+                            // Get EUR price from RapidAPI Cardmarket data
+                            $marketPriceEur = 0;
+                            $rapidapiCard = $card->rapidapiCard;
+                            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                            }
+                            
+                            // Convert to preferred currency if set
+                            $marketPriceEurDisplay = $marketPriceEur;
+                            if ($preferredCurrency && $marketPriceEur > 0) {
+                                $marketPriceEurDisplay = \App\Services\CurrencyService::convert($marketPriceEur, 'EUR', $preferredCurrency);
+                            }
+                        @endphp
+                        
+                        @if($marketPriceEur > 0)
+                            <div class="mb-6">
+                                <div class="border border-emerald-400/30 bg-emerald-500/20 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.cardmarket_price') }}</div>
+                                            @if($preferredCurrency)
+                                                <div class="text-3xl font-bold text-white">
+                                                    @php
+                                                        $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                        $formatted = number_format($marketPriceEurDisplay, 2);
+                                                        if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                            echo "{$symbol}{$formatted}";
+                                                        } else {
+                                                            echo "{$formatted} {$symbol}";
+                                                        }
+                                                    @endphp
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-1">(€{{ number_format($marketPriceEur, 2) }})</div>
+                                            @else
+                                                <div class="text-3xl font-bold text-white">€{{ number_format($marketPriceEur, 2) }}</div>
+                                            @endif
+                                        </div>
+                                        @if($cardmarketUrl)
+                                            <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition flex items-center gap-2">
+                                                <span>{{ __('tcg/cards/show.buy_now') }}</span>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                                </svg>
+                                            </a>
+                                        @endif
+                                    </div>
+                                    @if($rapidapiCard && $rapidapiCard->updated_at)
+                                        <div class="mt-2 text-xs text-gray-400">
+                                            {{ __('tcg/cards/show.last_updated') }}: {{ $rapidapiCard->updated_at->diffForHumans() }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
                         @else
                             <div class="text-center py-8 text-gray-400">
                                 <svg class="mx-auto h-12 w-12 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,24 +571,6 @@
                         @endif
                     </div>
                 </div>
-
-                <!-- Extended Data -->
-                @if($card->extended_data && is_array($card->extended_data) && count($card->extended_data) > 0)
-                    <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                        <h2 class="text-xl font-bold text-white mb-4">{{ __('tcg/cards/show.extended_information') }}</h2>
-                        
-                        <dl class="space-y-3">
-                            @foreach($card->extended_data as $item)
-                                @if(isset($item['name']) && isset($item['value']))
-                                    <div class="flex justify-between py-2 border-b border-white/10">
-                                        <dt class="text-sm font-medium text-gray-400">{{ $item['name'] }}</dt>
-                                        <dd class="text-sm text-white">{!! nl2br(strip_tags($item['value'], '<br>')) !!}</dd>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </dl>
-                    </div>
-                @endif
             </div>
         </div>
     </div>

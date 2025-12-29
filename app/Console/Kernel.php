@@ -8,6 +8,7 @@ class Kernel extends ConsoleKernel
     protected function schedule($schedule)
     {
         $schedule->command('remember:purge-expired')->daily();
+        $schedule->command('deck-evaluation:mark-expired')->hourly();
     }
 
     protected function commands()

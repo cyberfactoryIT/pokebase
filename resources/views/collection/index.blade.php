@@ -109,6 +109,120 @@
             </div>
         </div>
 
+        <!-- Collection Valuation -->
+        @php
+            $user = auth()->user();
+            $preferredCurrency = $user->preferred_currency;
+            $defaultCurrency = $preferredCurrency ?: 'EUR';
+            
+            // If user has a preferred currency, convert the prices
+            if ($preferredCurrency) {
+                $displayValueEur = \App\Services\CurrencyService::convert($valuation['total_value_eur'], 'EUR', $preferredCurrency);
+                $displayValueUsd = \App\Services\CurrencyService::convert($valuation['total_value_usd'], 'USD', $preferredCurrency);
+                $currencySymbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+            } else {
+                $displayValueEur = $valuation['total_value_eur'];
+                $displayValueUsd = $valuation['total_value_usd'];
+                $currencySymbol = null;
+            }
+        @endphp
+        <div class="bg-[#161615] border border-white/15 rounded-xl p-6 mb-6" x-data="{ 
+            currency: localStorage.getItem('collectionCurrency') || '{{ $defaultCurrency }}',
+            preferredCurrency: '{{ $preferredCurrency }}',
+            setCurrency(curr) {
+                this.currency = curr;
+                localStorage.setItem('collectionCurrency', curr);
+            }
+        }">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-500/20 p-3 rounded-lg">
+                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-sm">{{ __('collection/index.collection_value') }}</p>
+                        
+                        @if($preferredCurrency)
+                            <!-- User has preferred currency - show converted price with original -->
+                            <div x-show="currency === 'EUR'">
+                                <p class="text-white text-3xl font-bold">
+                                    @php
+                                        $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                        $formatted = number_format($displayValueEur, 2);
+                                        // For EUR, USD, etc. - symbol before
+                                        if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                            echo "{$symbol}{$formatted}";
+                                        } else {
+                                            // For Nordic currencies - symbol after
+                                            echo "{$formatted} {$symbol}";
+                                        }
+                                    @endphp
+                                </p>
+                                <p class="text-gray-500 text-xs">{{ __('collection/index.original_price') }}: €{{ number_format($valuation['total_value_eur'], 2) }}</p>
+                            </div>
+                            <div x-show="currency === 'USD'">
+                                <p class="text-white text-3xl font-bold">
+                                    @php
+                                        $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                        $formatted = number_format($displayValueUsd, 2);
+                                        // For EUR, USD, etc. - symbol before
+                                        if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                            echo "{$symbol}{$formatted}";
+                                        } else {
+                                            // For Nordic currencies - symbol after
+                                            echo "{$formatted} {$symbol}";
+                                        }
+                                    @endphp
+                                </p>
+                                <p class="text-gray-500 text-xs">{{ __('collection/index.original_price') }}: ${{ number_format($valuation['total_value_usd'], 2) }}</p>
+                            </div>
+                        @else
+                            <!-- No preferred currency - show default EUR/USD -->
+                            <p class="text-white text-3xl font-bold" x-show="currency === 'EUR'">
+                                €{{ number_format($valuation['total_value_eur'], 2) }}
+                            </p>
+                            <p class="text-white text-3xl font-bold" x-show="currency === 'USD'">
+                                ${{ number_format($valuation['total_value_usd'], 2) }}
+                            </p>
+                        @endif
+                        
+                        <p class="text-gray-500 text-xs mt-1" x-show="currency === 'EUR'">
+                            {{ $valuation['cards_with_prices_eur'] }}/{{ $stats['unique_cards'] }} {{ __('collection/index.cards_with_prices') }}
+                        </p>
+                        <p class="text-gray-500 text-xs mt-1" x-show="currency === 'USD'">
+                            {{ $valuation['cards_with_prices_usd'] }}/{{ $stats['unique_cards'] }} {{ __('collection/index.cards_with_prices') }}
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Currency Toggle -->
+                <div class="inline-flex bg-black/50 border border-white/15 rounded-lg p-1">
+                    <button 
+                        @click="setCurrency('EUR')"
+                        :class="currency === 'EUR' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                        class="px-4 py-2 rounded-md font-medium transition"
+                    >
+                        EUR
+                    </button>
+                    <button 
+                        @click="setCurrency('USD')"
+                        :class="currency === 'USD' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                        class="px-4 py-2 rounded-md font-medium transition"
+                    >
+                        USD
+                    </button>
+                </div>
+            </div>
+            <div class="text-xs text-gray-500" x-show="currency === 'EUR'">
+                {{ __('collection/index.prices_from_cardmarket') }}
+            </div>
+            <div class="text-xs text-gray-500" x-show="currency === 'USD'">
+                {{ __('collection/index.prices_from_tcgplayer') }}
+            </div>
+        </div>
+
         <!-- Tabs -->
         <div class="mb-6" x-data="{ activeTab: 'cards' }">
             <div class="border-b border-white/15">
@@ -150,9 +264,19 @@
             @foreach($collection as $item)
             <div class="bg-[#161615] border border-white/15 rounded-lg overflow-hidden hover:border-white/30 transition group">
                 <a href="{{ route('tcg.cards.show', $item->product_id) }}" class="block">
-                    <div class="aspect-[245/342] bg-black/50">
-                        @if($item->card->image_url)
-                        <img src="{{ $item->card->image_url }}" alt="{{ $item->card->name }}" class="w-full h-full object-cover">
+                    <div class="aspect-[245/342] bg-black/50 relative">
+                        @php
+                            $displayImage = $item->card->hd_image_url ?? $item->card->image_url;
+                        @endphp
+                        @if($displayImage)
+                        <img src="{{ $displayImage }}" alt="{{ $item->card->name }}" class="w-full h-full object-cover" onerror="this.src='{{ $item->card->image_url }}'">
+                        @if($item->card->hd_image_url)
+                            <div class="absolute top-2 right-2">
+                                <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-blue-500/80 text-white rounded">
+                                    HD
+                                </span>
+                            </div>
+                        @endif
                         @else
                         <div class="w-full h-full flex items-center justify-center">
                             <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

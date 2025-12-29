@@ -62,6 +62,13 @@ return [
     'modal_cancel' => 'Annulla',
     'modal_submit' => 'Aggiungi alla Collezione',
     
+    // Valuation
+    'collection_value' => 'Valore Collezione',
+    'original_price' => 'Prezzo originale',
+    'cards_with_prices' => 'carte con prezzi',
+    'prices_from_cardmarket' => 'Prezzi da Cardmarket (EUR)',
+    'prices_from_tcgplayer' => 'Prezzi da TCGPlayer (USD)',
+    
     // Search
     'no_cards_found' => 'Nessuna carta trovata',
 ];

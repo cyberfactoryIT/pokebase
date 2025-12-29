@@ -1,7 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="bg-black min-h-screen py-8">
+@php
+    $user = auth()->user();
+    $preferredCurrency = $user?->preferred_currency;
+    $defaultCurrency = $preferredCurrency ?: 'EUR';
+    
+    // If user has a preferred currency, convert the prices
+    if ($preferredCurrency) {
+        $displayValueEur = \App\Services\CurrencyService::convert($stats['total_value_eur'], 'EUR', $preferredCurrency);
+        $displayValueUsd = \App\Services\CurrencyService::convert($stats['total_value_usd'], 'USD', $preferredCurrency);
+        $currencySymbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+    } else {
+        $displayValueEur = $stats['total_value_eur'];
+        $displayValueUsd = $stats['total_value_usd'];
+        $currencySymbol = null;
+    }
+@endphp
+<div class="bg-black min-h-screen py-8" x-data="{ 
+    currency: localStorage.getItem('valuationCurrency') || '{{ $defaultCurrency }}',
+    preferredCurrency: '{{ $preferredCurrency }}',
+    setCurrency(curr) {
+        this.currency = curr;
+        localStorage.setItem('valuationCurrency', curr);
+    }
+}">
     <div class="max-w-7xl mx-auto px-6">
         <!-- Header -->
         <div class="mb-8">
@@ -14,6 +37,26 @@
             <p class="text-green-200">{{ session('success') }}</p>
         </div>
         @endif
+
+        <!-- Currency Toggle -->
+        <div class="mb-6 flex justify-end">
+            <div class="inline-flex bg-[#161615] border border-white/15 rounded-lg p-1">
+                <button 
+                    @click="setCurrency('EUR')"
+                    :class="currency === 'EUR' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                    class="px-4 py-2 rounded-md font-medium transition"
+                >
+                    EUR (Cardmarket)
+                </button>
+                <button 
+                    @click="setCurrency('USD')"
+                    :class="currency === 'USD' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
+                    class="px-4 py-2 rounded-md font-medium transition"
+                >
+                    USD (TCGPlayer)
+                </button>
+            </div>
+        </div>
 
         <!-- Progress indicator -->
         <div class="mb-8">
@@ -68,7 +111,46 @@
                     </div>
                     <div>
                         <p class="text-gray-400 text-sm">{{ __('deckvaluation.step3_total_value') }}</p>
-                        <p class="text-white text-2xl font-bold">${{ number_format($stats['total_value'], 2) }}</p>
+                        
+                        @if($preferredCurrency)
+                            <!-- User has preferred currency - show converted price with original -->
+                            <div x-show="currency === 'EUR'">
+                                <p class="text-white text-2xl font-bold">
+                                    @php
+                                        $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                        $formatted = number_format($displayValueEur, 2);
+                                        if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                            echo "{$symbol}{$formatted}";
+                                        } else {
+                                            echo "{$formatted} {$symbol}";
+                                        }
+                                    @endphp
+                                </p>
+                                <p class="text-gray-500 text-xs">{{ __('collection/index.original_price') }}: €{{ number_format($stats['total_value_eur'], 2) }}</p>
+                            </div>
+                            <div x-show="currency === 'USD'">
+                                <p class="text-white text-2xl font-bold">
+                                    @php
+                                        $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                        $formatted = number_format($displayValueUsd, 2);
+                                        if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                            echo "{$symbol}{$formatted}";
+                                        } else {
+                                            echo "{$formatted} {$symbol}";
+                                        }
+                                    @endphp
+                                </p>
+                                <p class="text-gray-500 text-xs">{{ __('collection/index.original_price') }}: ${{ number_format($stats['total_value_usd'], 2) }}</p>
+                            </div>
+                        @else
+                            <!-- No preferred currency - show default EUR/USD -->
+                            <p class="text-white text-2xl font-bold" x-show="currency === 'EUR'">
+                                €{{ number_format($stats['total_value_eur'], 2) }}
+                            </p>
+                            <p class="text-white text-2xl font-bold" x-show="currency === 'USD'">
+                                ${{ number_format($stats['total_value_usd'], 2) }}
+                            </p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -93,18 +175,108 @@
                     </div>
                     <div class="text-right">
                         @php
-                            $price = $item->tcgcsvProduct->prices()->first();
+                            $tcgPrice = $item->tcgcsvProduct->prices()->first();
+                            $marketPriceUsd = $tcgPrice?->market_price ?? 0;
+                            
+                            // EUR price from RapidAPI Cardmarket data
+                            $marketPriceEur = 0;
+                            $rapidapiCard = $item->tcgcsvProduct->rapidapiCard;
+                            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                            }
+                            
+                            // Convert to preferred currency if set
+                            if ($preferredCurrency) {
+                                $convertedPriceEur = \App\Services\CurrencyService::convert($marketPriceEur, 'EUR', $preferredCurrency);
+                                $convertedPriceUsd = \App\Services\CurrencyService::convert($marketPriceUsd, 'USD', $preferredCurrency);
+                            }
                         @endphp
-                        @if($price && $price->market_price)
-                        <p class="text-green-400 font-semibold">
-                            ${{ number_format($price->market_price * $item->quantity, 2) }}
-                        </p>
-                        <p class="text-gray-500 text-xs">
-                            ${{ number_format($price->market_price, 2) }} each
-                        </p>
-                        @else
-                        <p class="text-gray-500 text-sm">N/A</p>
-                        @endif
+                        
+                        <!-- EUR Price -->
+                        <div x-show="currency === 'EUR'">
+                            @if($marketPriceEur > 0)
+                                @if($preferredCurrency)
+                                    <p class="text-green-400 font-semibold">
+                                        @php
+                                            $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                            $totalConverted = $convertedPriceEur * $item->quantity;
+                                            $formatted = number_format($totalConverted, 2);
+                                            if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                echo "{$symbol}{$formatted}";
+                                            } else {
+                                                echo "{$formatted} {$symbol}";
+                                            }
+                                        @endphp
+                                    </p>
+                                    <p class="text-gray-500 text-xs">
+                                        (€{{ number_format($marketPriceEur * $item->quantity, 2) }})
+                                    </p>
+                                    <p class="text-gray-500 text-xs">
+                                        @php
+                                            $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                            $eachConverted = number_format($convertedPriceEur, 2);
+                                            if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                echo "{$symbol}{$eachConverted} each";
+                                            } else {
+                                                echo "{$eachConverted} {$symbol} each";
+                                            }
+                                        @endphp
+                                    </p>
+                                @else
+                                    <p class="text-green-400 font-semibold">
+                                        €{{ number_format($marketPriceEur * $item->quantity, 2) }}
+                                    </p>
+                                    <p class="text-gray-500 text-xs">
+                                        €{{ number_format($marketPriceEur, 2) }} each
+                                    </p>
+                                @endif
+                            @else
+                                <p class="text-gray-500 text-sm">N/A</p>
+                            @endif
+                        </div>
+                        
+                        <!-- USD Price -->
+                        <div x-show="currency === 'USD'">
+                            @if($marketPriceUsd > 0)
+                                @if($preferredCurrency)
+                                    <p class="text-green-400 font-semibold">
+                                        @php
+                                            $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                            $totalConverted = $convertedPriceUsd * $item->quantity;
+                                            $formatted = number_format($totalConverted, 2);
+                                            if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                echo "{$symbol}{$formatted}";
+                                            } else {
+                                                echo "{$formatted} {$symbol}";
+                                            }
+                                        @endphp
+                                    </p>
+                                    <p class="text-gray-500 text-xs">
+                                        (${{ number_format($marketPriceUsd * $item->quantity, 2) }})
+                                    </p>
+                                    <p class="text-gray-500 text-xs">
+                                        @php
+                                            $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                            $eachConverted = number_format($convertedPriceUsd, 2);
+                                            if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
+                                                echo "{$symbol}{$eachConverted} each";
+                                            } else {
+                                                echo "{$eachConverted} {$symbol} each";
+                                            }
+                                        @endphp
+                                    </p>
+                                @else
+                                    <p class="text-green-400 font-semibold">
+                                        ${{ number_format($marketPriceUsd * $item->quantity, 2) }}
+                                    </p>
+                                    <p class="text-gray-500 text-xs">
+                                        ${{ number_format($marketPriceUsd, 2) }} each
+                                    </p>
+                                @endif
+                            @else
+                                <p class="text-gray-500 text-sm">N/A</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
                 @endforeach

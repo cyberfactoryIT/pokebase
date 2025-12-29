@@ -62,6 +62,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Profile tabs
+    Route::get('/profile/subscription', [ProfileController::class, 'subscription'])->name('profile.subscription');
+    Route::get('/profile/transactions', [ProfileController::class, 'transactions'])->name('profile.transactions');
 
     // Theme preference
     Route::post('/user/theme', [\App\Http\Controllers\ProfileController::class, 'updateTheme'])->name('user.theme.update');
@@ -176,6 +180,20 @@ Route::prefix('pokemon')->group(function () {
     Route::post('/deck-valuation/identity', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step2Submit'])->name('pokemon.deck-valuation.submit');
     Route::get('/deck-valuation/{uuid}', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step3Show'])->name('pokemon.deck-valuation.step3');
     Route::post('/deck-valuation/{uuid}/attach', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'attachToUser'])->name('pokemon.deck-valuation.attach');
+});
+
+// Deck Evaluation Purchase Routes
+Route::prefix('deck-evaluation')->name('deck-evaluation.')->group(function () {
+    Route::get('/packages', [\App\Http\Controllers\DeckEvaluationPurchaseController::class, 'index'])->name('packages.index');
+    Route::get('/packages/{package}', [\App\Http\Controllers\DeckEvaluationPurchaseController::class, 'show'])->name('packages.show');
+    Route::post('/packages/{package}/purchase', [\App\Http\Controllers\DeckEvaluationPurchaseController::class, 'purchase'])->name('packages.purchase');
+    Route::get('/purchases/{purchase}/success', [\App\Http\Controllers\DeckEvaluationPurchaseController::class, 'success'])->name('packages.success');
+    Route::post('/claim-guest-purchases', [\App\Http\Controllers\DeckEvaluationPurchaseController::class, 'claimGuestPurchases'])->name('claim-guest');
+    
+    // Account management route (authenticated)
+    Route::middleware('auth')->group(function () {
+        Route::get('/account', [\App\Http\Controllers\DeckEvaluationPurchaseController::class, 'account'])->name('account');
+    });
 });
 
 // Locale switch route

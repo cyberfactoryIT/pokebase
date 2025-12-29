@@ -20,7 +20,7 @@ class CollectionController extends Controller
         $currentGame = $request->attributes->get('currentGame');
         
         $query = UserCollection::where('user_id', $userId)
-            ->with('card.group');
+            ->with('card.group', 'card.rapidapiCard', 'card.prices');
             
         // Filter by current game
         if ($currentGame) {
@@ -44,8 +44,11 @@ class CollectionController extends Controller
         
         // Detailed statistics for stats tab
         $detailedStats = $this->getDetailedStats($userId, $currentGame);
+        
+        // Calculate collection value
+        $valuation = $this->calculateCollectionValue($userId, $currentGame);
 
-        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats'));
+        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation'));
     }
     
     private function getUserCardCount($userId, $currentGame)
@@ -312,5 +315,58 @@ class CollectionController extends Controller
             'total_quantity' => $items->sum('quantity'),
             'items' => $items,
         ]);
+    }
+    
+    /**
+     * Calculate total collection value in USD and EUR
+     */
+    private function calculateCollectionValue($userId, $currentGame): array
+    {
+        $query = UserCollection::where('user_id', $userId)
+            ->with([
+                'card.prices' => function($q) {
+                    $q->latest('snapshot_at')->limit(1);
+                },
+                'card.rapidapiCard'
+            ]);
+            
+        if ($currentGame) {
+            $query->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+        }
+        
+        $collectionItems = $query->get();
+        
+        $totalValueUsd = 0;
+        $totalValueEur = 0;
+        $cardsWithPricesUsd = 0;
+        $cardsWithPricesEur = 0;
+        
+        foreach ($collectionItems as $item) {
+            // USD price from TCGPlayer
+            $latestPrice = $item->card->prices->first();
+            $marketPriceUsd = $latestPrice?->market_price ?? 0;
+            
+            if ($marketPriceUsd > 0) {
+                $cardsWithPricesUsd++;
+                $totalValueUsd += $marketPriceUsd * $item->quantity;
+            }
+            
+            // EUR price from RapidAPI Cardmarket data
+            $rapidapiCard = $item->card->rapidapiCard;
+            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                if ($marketPriceEur > 0) {
+                    $cardsWithPricesEur++;
+                    $totalValueEur += $marketPriceEur * $item->quantity;
+                }
+            }
+        }
+        
+        return [
+            'total_value_usd' => round($totalValueUsd, 2),
+            'total_value_eur' => round($totalValueEur, 2),
+            'cards_with_prices_usd' => $cardsWithPricesUsd,
+            'cards_with_prices_eur' => $cardsWithPricesEur,
+        ];
     }
 }

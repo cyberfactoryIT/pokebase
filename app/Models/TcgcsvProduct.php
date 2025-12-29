@@ -54,6 +54,29 @@ class TcgcsvProduct extends Model
     }
     
     /**
+     * Get the RapidAPI card mapping
+     */
+    public function cardMapping()
+    {
+        return $this->hasOne(\App\Models\CardMapping::class, 'tcgcsv_product_id', 'product_id');
+    }
+    
+    /**
+     * Get the RapidAPI card data through mapping
+     */
+    public function rapidapiCard()
+    {
+        return $this->hasOneThrough(
+            \App\Models\RapidapiCard::class,
+            \App\Models\CardMapping::class,
+            'tcgcsv_product_id',  // Foreign key on card_mappings
+            'id',                  // Foreign key on rapidapi_cards
+            'product_id',          // Local key on tcgcsv_products
+            'rapidapi_card_id'     // Local key on card_mappings
+        );
+    }
+    
+    /**
      * Get all Cardmarket product variants through the metacard mapping
      */
     public function cardmarketVariants()

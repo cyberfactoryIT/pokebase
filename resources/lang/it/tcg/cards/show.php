@@ -21,6 +21,11 @@ return [
     'printing' => 'Stampa',
     'last_updated' => 'Ultimo aggiornamento',
     'pricing_coming_soon' => 'Informazioni sui prezzi disponibili a breve',
-    'no_eu_prices' => 'Prezzi europei non disponibili per questa carta',
+    'no_eu_prices' => 'Nessun prezzo europeo disponibile per questa carta',
     'extended_information' => 'Informazioni Estese',
+    'external_links' => 'Link Esterni',
+    'cardmarket_price' => 'Prezzo Cardmarket',
+    'buy_now' => 'Acquista Ora',
+    'other_variants' => 'Altre Varianti',
+    'card_details' => 'Dettagli Carta',
 ];

@@ -23,4 +23,9 @@ return [
     'pricing_coming_soon' => 'Pricing information coming soon',
     'no_eu_prices' => 'No European prices available for this card',
     'extended_information' => 'Extended Information',
+    'external_links' => 'External Links',
+    'cardmarket_price' => 'Cardmarket Price',
+    'buy_now' => 'Buy Now',
+    'other_variants' => 'Other Variants',
+    'card_details' => 'Card Details',
 ];

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\DeckEvaluationEntitlementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,20 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
         $user = Auth::user();
     ActivityLog::logActivity('login', 'user_login', [], config('organizations.enabled') ? $user->organization_id : null, $user->id);
+
+        // Claim guest deck evaluation data if exists
+        $guestToken = $request->cookie('deck_eval_guest_token');
+        if ($guestToken) {
+            $entitlementService = app(DeckEvaluationEntitlementService::class);
+            $result = $entitlementService->claimGuestData($user->id, $guestToken);
+            
+            if ($result['sessions_claimed'] > 0 || $result['purchases_claimed'] > 0) {
+                session()->flash('success', __(
+                    'deck_evaluation.claim.success',
+                    ['count' => $result['purchases_claimed']]
+                ));
+            }
+        }
 
         // Set locale from user profile if available
         if ($user && $user->locale) {

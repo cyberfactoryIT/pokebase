@@ -116,6 +116,20 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
+        // Claim guest deck evaluation data if exists
+        $guestToken = $request->cookie('deck_eval_guest_token');
+        if ($guestToken) {
+            $entitlementService = app(DeckEvaluationEntitlementService::class);
+            $result = $entitlementService->claimGuestData($user->id, $guestToken);
+            
+            if ($result['sessions_claimed'] > 0 || $result['purchases_claimed'] > 0) {
+                session()->flash('success', __(
+                    'deck_evaluation.claim.success',
+                    ['count' => $result['purchases_claimed']]
+                ));
+            }
+        }
+
     return redirect(route('dashboard', [], false));
     }
 }

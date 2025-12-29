@@ -24,8 +24,10 @@ class User extends Authenticatable
         'organization_id',
         'locale',
         'theme',
+        'preferred_currency',
         'email_verification_token',
         'email_verification_expires_at',
+        'default_game_id',
     ];
     /**
      * Get the user's preferred locale.
@@ -125,6 +127,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the default game for this user
+     */
+    public function defaultGame()
+    {
+        return $this->belongsTo(\App\Models\Game::class, 'default_game_id');
+    }
+
+    /**
      * Check if user has a specific game enabled
      */
     public function hasGame($gameCode): bool
@@ -138,6 +148,124 @@ class User extends Authenticatable
     public function hasAnyGames(): bool
     {
         return $this->games()->count() > 0;
+    }
+
+    /**
+     * Get all deck evaluation sessions for this user
+     */
+    public function deckEvaluationSessions()
+    {
+        return $this->hasMany(\App\Models\DeckEvaluationSession::class);
+    }
+
+    /**
+     * Get all deck evaluation purchases for this user
+     */
+    public function deckEvaluationPurchases()
+    {
+        return $this->hasMany(\App\Models\DeckEvaluationPurchase::class);
+    }
+
+    /**
+     * Get active deck evaluation purchase
+     */
+    public function activeDeckEvaluationPurchase()
+    {
+        return $this->deckEvaluationPurchases()
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->orderBy('expires_at', 'desc');
+    }
+
+    /**
+     * Check if user has active deck evaluation purchase
+     */
+    public function hasActiveDeckEvaluationPurchase(): bool
+    {
+        return $this->activeDeckEvaluationPurchase()->exists();
+    }
+
+    /**
+     * Get subscription tier (free, advanced, premium)
+     */
+    public function subscriptionTier(): string
+    {
+        if (!config('organizations.enabled') || !$this->organization) {
+            return 'free';
+        }
+
+        $org = $this->organization;
+        $plan = $org->pricingPlan;
+
+        if (!$plan) {
+            return 'free';
+        }
+
+        // Map pricing plan names to tiers
+        $planName = strtolower($plan->name ?? '');
+        
+        if (str_contains($planName, 'premium')) {
+            return 'premium';
+        }
+        
+        if (str_contains($planName, 'advanced') || str_contains($planName, 'pro')) {
+            return 'advanced';
+        }
+
+        return 'free';
+    }
+
+    /**
+     * Check if user is on free tier
+     */
+    public function isFree(): bool
+    {
+        return $this->subscriptionTier() === 'free';
+    }
+
+    /**
+     * Check if user is on advanced tier
+     */
+    public function isAdvanced(): bool
+    {
+        return $this->subscriptionTier() === 'advanced';
+    }
+
+    /**
+     * Check if user is on premium tier
+     */
+    public function isPremium(): bool
+    {
+        return $this->subscriptionTier() === 'premium';
+    }
+
+    /**
+     * Get membership status details
+     */
+    public function membershipStatus(): array
+    {
+        if (!config('organizations.enabled') || !$this->organization) {
+            return [
+                'tier' => 'free',
+                'status' => 'active',
+                'billing_period' => null,
+                'next_renewal' => null,
+                'is_cancelled' => false,
+            ];
+        }
+
+        $org = $this->organization;
+        $plan = $org->pricingPlan;
+
+        return [
+            'tier' => $this->subscriptionTier(),
+            'plan_name' => $plan->name ?? 'Free',
+            'status' => $org->subscription_cancelled ? 'cancelled' : 'active',
+            'billing_period' => $org->billing_period ?? null,
+            'next_renewal' => $org->renew_date,
+            'is_cancelled' => (bool) $org->subscription_cancelled,
+            'cancellation_date' => $org->cancellation_subscription_date,
+        ];
     }
 
     
