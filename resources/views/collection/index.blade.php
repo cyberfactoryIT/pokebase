@@ -513,6 +513,9 @@
                                 <p class="text-gray-400 text-sm">{{ __('collection/index.no_rarity_data') }}</p>
                                 @endforelse
                             </div>
+                            @if($rarityInsight)
+                            <p class="text-gray-400 text-sm mt-4 italic border-t border-white/10 pt-3">{{ $rarityInsight }}</p>
+                            @endif
                         </div>
 
                         <!-- Condition Distribution -->
@@ -541,6 +544,9 @@
                                 <p class="text-gray-400 text-sm">{{ __('collection/index.no_condition_data') }}</p>
                                 @endforelse
                             </div>
+                            @if($conditionInsight)
+                            <p class="text-gray-400 text-sm mt-4 italic border-t border-white/10 pt-3">{{ $conditionInsight }}</p>
+                            @endif
                         </div>
                     </div>
 
@@ -552,11 +558,24 @@
                             </svg>
                             {{ __('collection/index.top_5_sets') }}
                         </h3>
+                        @if($setsInsight)
+                        <p class="text-gray-400 text-sm mb-4 italic">{{ $setsInsight }}</p>
+                        @endif
                         <div class="space-y-4">
                             @forelse($detailedStats['top_sets'] as $set)
                             <div>
                                 <div class="flex items-center justify-between mb-1">
-                                    <span class="text-gray-300 font-medium">{{ $set->name }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-300 font-medium">{{ $set->name }}</span>
+                                        @if($focusSet && $focusSet['group_id'] == $set->group_id)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            {{ __('stats_insights.focus_set.badge') }}
+                                        </span>
+                                        @endif
+                                    </div>
                                     <span class="text-white font-bold">{{ $set->completion_percentage }}%</span>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -565,6 +584,9 @@
                                     </div>
                                     <span class="text-gray-400 text-sm">{{ $set->owned_count }}/{{ $set->total_in_set }}</span>
                                 </div>
+                                @if($focusSet && $focusSet['group_id'] == $set->group_id)
+                                <p class="text-xs text-green-400/80 mt-1 ml-1">{{ __('stats_insights.focus_set.helper') }}</p>
+                                @endif
                             </div>
                             @empty
                             <p class="text-gray-400 text-sm">{{ __('collection/index.no_set_data') }}</p>
@@ -573,6 +595,7 @@
                     </div>
 
                     <!-- Row 3: Quick Stats -->
+                    <h3 class="text-lg font-semibold text-white">{{ __('stats_insights.section_labels.collection_overview') }}</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
                             <div class="bg-blue-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\UserCollection;
 use App\Models\UserCardPhoto;
 use App\Models\TcgcsvProduct;
+use App\Services\CollectionInsightsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -47,10 +48,17 @@ class CollectionController extends Controller
         // Detailed statistics for stats tab
         $detailedStats = $this->getDetailedStats($userId, $currentGame);
         
+        // Generate insights for statistics tab
+        $insightsService = new CollectionInsightsService();
+        $rarityInsight = $insightsService->generateRarityInsight($topStats['rarity_distribution']);
+        $conditionInsight = $insightsService->generateConditionInsight($detailedStats['condition_distribution']);
+        $focusSet = $insightsService->identifyFocusSet($detailedStats['top_sets']);
+        $setsInsight = $insightsService->generateSetsInsight($detailedStats['top_sets'], $focusSet ?? []);
+        
         // Calculate collection value
         $valuation = $this->calculateCollectionValue($userId, $currentGame);
 
-        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation'));
+        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation', 'rarityInsight', 'conditionInsight', 'setsInsight', 'focusSet'));
     }
     
     private function getUserCardCount($userId, $currentGame)
