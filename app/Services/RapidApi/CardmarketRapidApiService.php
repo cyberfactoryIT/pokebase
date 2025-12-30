@@ -44,15 +44,58 @@ class CardmarketRapidApiService
     }
 
     /**
-     * Fetch all episodes/expansions
+     * Fetch all episodes/expansions (with pagination support)
      *
      * @param string $game pokemon|mtg|yugioh
+     * @param int|null $maxPages Limit number of pages to fetch (null = all)
      * @return array
      */
-    public function fetchEpisodes(string $game = 'pokemon'): array
+    public function fetchEpisodes(string $game = 'pokemon', ?int $maxPages = null): array
     {
-        $endpoint = "/{$game}/episodes";
-        return $this->makeRequest($endpoint);
+        $allEpisodes = [];
+        $page = 1;
+        $totalPages = null;
+
+        do {
+            $endpoint = "/{$game}/episodes";
+            $params = $page > 1 ? ['page' => $page] : [];
+            
+            $response = $this->makeRequest($endpoint, $params);
+            
+            if (!isset($response['data']) || empty($response['data'])) {
+                break;
+            }
+
+            $allEpisodes = array_merge($allEpisodes, $response['data']);
+
+            // Get total pages from first response
+            if ($totalPages === null && isset($response['paging']['total'])) {
+                $totalPages = $response['paging']['total'];
+            }
+
+            $page++;
+
+            // Check if we should stop
+            if ($maxPages && $page > $maxPages) {
+                break;
+            }
+
+            // Check if we reached the end
+            if ($totalPages && $page > $totalPages) {
+                break;
+            }
+
+            // Rate limiting delay
+            usleep($this->delayMs * 1000);
+
+        } while (true);
+
+        return [
+            'data' => $allEpisodes,
+            'total' => count($allEpisodes),
+            'pages_fetched' => $page - 1,
+            'total_pages' => $totalPages,
+        ];
     }
 
     /**

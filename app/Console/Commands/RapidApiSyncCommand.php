@@ -120,6 +120,11 @@ class RapidApiSyncCommand extends Command
     protected function syncEpisodes($episodes): void
     {
         foreach ($episodes as $episode) {
+            // Skip episodes without release date
+            if (empty($episode['released_at'])) {
+                continue;
+            }
+            
             DB::table('rapidapi_episodes')->updateOrInsert(
                 ['episode_id' => $episode['id']],
                 [
