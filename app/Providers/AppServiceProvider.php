@@ -27,5 +27,10 @@ class AppServiceProvider extends ServiceProvider
         );
 
         \App\Models\Help::observe(\App\Observers\HelpObserver::class);
+
+        // Register price visibility gate
+        \Illuminate\Support\Facades\Gate::define('seePrices', function (\App\Models\User $user) {
+            return $user->canSeePrices();
+        });
     }
 }

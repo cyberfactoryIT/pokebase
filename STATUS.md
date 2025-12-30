@@ -1,7 +1,26 @@
 # 📊 Pokebase - Project Status
-*Last Updated: 28 December 2025*
+*Last Updated: 30 December 2025*
 
 ---
+
+## 🆕 Latest Updates - December 30, 2025
+
+### ✅ Price Visibility Gating System (Monetization)
+Comprehensive authorization system controlling price access based on subscription tier or deck evaluation purchases:
+- **Business Rule**: Users can see prices if they are Advanced/Premium subscribers OR have an active deck evaluation purchase (within 365 days)
+- **Gate Authorization**: `Gate::define('seePrices')` registered in AppServiceProvider
+- **User Method**: `canSeePrices()` implements complete eligibility logic
+- **Views Gated**:
+  - Card detail page (tcg/cards/show.blade.php) - entire pricing section with EUR/USD toggle
+  - Deck views (decks/show.blade.php) - both aggregate statistics and individual card prices
+  - Collection valuation (collection/index.blade.php) - total value display
+- **Fallback UI**: 
+  - Lock icon with translated "Prices Hidden" message
+  - Dual upgrade paths: "Upgrade to Advanced/Premium" or "Buy Deck Evaluation"
+  - Full internationalization (EN/IT/DA) via resources/lang/{locale}/prices.php
+- **Testing**: 7 comprehensive feature tests, all passing (15 assertions)
+- **Scope**: Deck Evaluation section intentionally excluded (remains accessible to all users)
+- **Status**: ✅ Production ready, tested and validated
 
 ## 🆕 Latest Updates - December 28, 2025
 

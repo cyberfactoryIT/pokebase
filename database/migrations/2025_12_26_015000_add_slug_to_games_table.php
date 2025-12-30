@@ -23,11 +23,23 @@ return new class extends Migration
         });
 
         // Now add unique constraint if not exists
-        $indexes = DB::select("SHOW INDEX FROM games WHERE Key_name = 'games_slug_unique'");
-        if (empty($indexes)) {
-            Schema::table('games', function (Blueprint $table) {
-                $table->unique('slug');
-            });
+        // Only check indexes on MySQL (SHOW INDEX is MySQL-specific)
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            $indexes = DB::select("SHOW INDEX FROM games WHERE Key_name = 'games_slug_unique'");
+            if (empty($indexes)) {
+                Schema::table('games', function (Blueprint $table) {
+                    $table->unique('slug');
+                });
+            }
+        } else {
+            // For SQLite, just add the unique constraint
+            try {
+                Schema::table('games', function (Blueprint $table) {
+                    $table->unique('slug');
+                });
+            } catch (\Exception $e) {
+                // Unique constraint might already exist
+            }
         }
     }
 

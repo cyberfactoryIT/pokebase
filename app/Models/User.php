@@ -186,6 +186,25 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user can see prices in catalog/collection/deck/card pages
+     * 
+     * Business rule: User can see prices if:
+     * - Membership tier is ADVANCED or PREMIUM
+     * OR
+     * - User has an ACTIVE deck evaluation purchase (not expired)
+     */
+    public function canSeePrices(): bool
+    {
+        // Check membership tier
+        if ($this->isAdvanced() || $this->isPremium()) {
+            return true;
+        }
+
+        // Check for active deck evaluation purchase
+        return $this->hasActiveDeckEvaluationPurchase();
+    }
+
+    /**
      * Get subscription tier (free, advanced, premium)
      */
     public function subscriptionTier(): string

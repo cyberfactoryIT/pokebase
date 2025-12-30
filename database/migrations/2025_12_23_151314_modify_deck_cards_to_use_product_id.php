@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip this migration for SQLite (used in tests)
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+        
         // Get all foreign keys referencing card_catalog_id and drop them
         $foreignKeys = DB::select("
             SELECT CONSTRAINT_NAME 

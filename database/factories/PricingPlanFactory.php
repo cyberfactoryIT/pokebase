@@ -13,10 +13,11 @@ class PricingPlanFactory extends Factory
     {
         return [
             'name' => $this->faker->randomElement(['Free', 'Advanced', 'Premium']) . ' Plan',
-            'billing_period' => $this->faker->randomElement(['monthly', 'yearly']),
-            'price_cents' => $this->faker->numberBetween(1000, 10000),
+            'code' => strtolower($this->faker->randomElement(['free', 'advanced', 'premium'])),
+            'monthly_price_cents' => $this->faker->numberBetween(0, 10000),
+            'yearly_price_cents' => $this->faker->numberBetween(0, 100000),
             'currency' => 'EUR',
-            'is_active' => true,
+            'meta' => [],
         ];
     }
 
@@ -24,8 +25,10 @@ class PricingPlanFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'name' => 'Free Plan',
-                'price_cents' => 0,
+                'name' => 'Free',
+                'code' => 'free',
+                'monthly_price_cents' => 0,
+                'yearly_price_cents' => 0,
             ];
         });
     }
@@ -34,8 +37,10 @@ class PricingPlanFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'name' => 'Advanced Plan',
-                'price_cents' => 2999,
+                'name' => 'Advanced',
+                'code' => 'advanced',
+                'monthly_price_cents' => 2999,
+                'yearly_price_cents' => 29990,
             ];
         });
     }
@@ -44,8 +49,10 @@ class PricingPlanFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'name' => 'Premium Plan',
-                'price_cents' => 9999,
+                'name' => 'Premium',
+                'code' => 'premium',
+                'monthly_price_cents' => 9999,
+                'yearly_price_cents' => 99990,
             ];
         });
     }
