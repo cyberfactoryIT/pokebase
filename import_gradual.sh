@@ -23,8 +23,14 @@ for i in $(seq 1 $MAX_BATCHES); do
     echo "🔄 BATCH $i/$MAX_BATCHES - $(date '+%Y-%m-%d %H:%M:%S')" | tee -a "$LOG_FILE"
     echo "-----------------------------------" | tee -a "$LOG_FILE"
     
-    # Esegui import
-    php artisan rapidapi:test pokemon --pages=$BATCH_SIZE --save 2>&1 | tee -a "$LOG_FILE" | grep -E "✅|❌|Error|Saved"
+    # Calcola da quale pagina partire
+    CURRENT_CARDS=$(php artisan tinker --execute="echo DB::table('rapidapi_cards')->count();" 2>/dev/null | tail -1)
+    START_PAGE=$(( (CURRENT_CARDS / 20) + 1 ))
+    
+    echo "   Pagina di partenza: $START_PAGE (già importate: $CURRENT_CARDS carte)" | tee -a "$LOG_FILE"
+    
+    # Esegui import dalla pagina corretta
+    php artisan rapidapi:test pokemon --pages=$BATCH_SIZE --start-page=$START_PAGE --save 2>&1 | tee -a "$LOG_FILE" | grep -E "✅|❌|Error|Saved"
     
     # Controlla risultato
     RESULT=$(php artisan tinker --execute="
@@ -44,7 +50,7 @@ for i in $(seq 1 $MAX_BATCHES); do
     echo "" | tee -a "$LOG_FILE"
     
     # Controlla se abbiamo finito
-    if (( $(echo "$PROGRESS >= 99.0" | bc -l) )); then
+    if [ "$EPISODES" -ge 171 ]; then
         echo "✅ IMPORT COMPLETATO! ($PROGRESS%)" | tee -a "$LOG_FILE"
         break
     fi

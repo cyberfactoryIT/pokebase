@@ -125,12 +125,13 @@ class CardmarketRapidApiService
      *
      * @param string $game pokemon|mtg|yugioh
      * @param int|null $maxPages Limit number of pages to fetch (null = all)
+     * @param int $startPage Start from specific page (default 1)
      * @return array
      */
-    public function fetchAllPages(string $game, ?int $maxPages = null): array
+    public function fetchAllPages(string $game, ?int $maxPages = null, int $startPage = 1): array
     {
         $allCards = [];
-        $page = 1;
+        $page = $startPage;
         $totalPages = null;
 
         do {
@@ -158,7 +159,7 @@ class CardmarketRapidApiService
             $page++;
 
             // Check if we should stop
-            if ($maxPages && $page > $maxPages) {
+            if ($maxPages && $page > ($startPage + $maxPages - 1)) {
                 break;
             }
 
@@ -175,7 +176,7 @@ class CardmarketRapidApiService
         return [
             'cards' => $allCards,
             'total' => count($allCards),
-            'pages_fetched' => $page - 1,
+            'pages_fetched' => $page - $startPage,
             'total_pages' => $totalPages,
         ];
     }

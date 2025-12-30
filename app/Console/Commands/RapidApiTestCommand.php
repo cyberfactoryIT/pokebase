@@ -16,6 +16,7 @@ class RapidApiTestCommand extends Command
     protected $signature = 'rapidapi:test 
                             {game=pokemon : Game to test (pokemon, mtg, yugioh)}
                             {--pages=1 : Number of pages to fetch}
+                            {--start-page=1 : Start from specific page (skips already imported)}
                             {--save : Save data to database}
                             {--stats : Show statistics}';
 
@@ -44,6 +45,7 @@ class RapidApiTestCommand extends Command
     {
         $game = $this->argument('game');
         $pages = (int) $this->option('pages');
+        $startPage = (int) $this->option('start-page');
         $save = $this->option('save');
         $showStats = $this->option('stats');
 
@@ -58,9 +60,13 @@ class RapidApiTestCommand extends Command
         $this->newLine();
 
         // Fetch data
-        $this->line("Fetching {$pages} page(s)...");
+        if ($startPage > 1) {
+            $this->line("Fetching {$pages} page(s) starting from page {$startPage}...");
+        } else {
+            $this->line("Fetching {$pages} page(s)...");
+        }
         
-        $result = $this->service->fetchAllPages($game, $pages);
+        $result = $this->service->fetchAllPages($game, $pages, $startPage);
 
         if (empty($result['cards'])) {
             $this->error('No cards fetched!');
