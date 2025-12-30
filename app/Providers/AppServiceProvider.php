@@ -46,5 +46,21 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Gate::define('addCards', function (\App\Models\User $user, int $amount = 1) {
             return $user->canAddMoreCards($amount);
         });
+
+        // Register deck sharing gates
+        \Illuminate\Support\Facades\Gate::define('shareDeck', function (\App\Models\User $user, \App\Models\Deck $deck) {
+            // Must own the deck and be able to share another deck
+            return $deck->user_id === $user->id && $user->canShareAnotherDeck();
+        });
+
+        \Illuminate\Support\Facades\Gate::define('unshareDeck', function (\App\Models\User $user, \App\Models\Deck $deck) {
+            // Only deck owner can unshare
+            return $deck->user_id === $user->id;
+        });
+
+        // Register real card photo upload gate
+        \Illuminate\Support\Facades\Gate::define('uploadCardPhotos', function (\App\Models\User $user) {
+            return $user->canUploadRealCardPhotos();
+        });
     }
 }

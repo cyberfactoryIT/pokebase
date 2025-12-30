@@ -300,6 +300,64 @@ class User extends Authenticatable
     }
 
     /**
+     * Get maximum number of shared decks allowed for this user based on subscription tier
+     * 
+     * @return int|null null means unlimited (premium), 0 means none (free)
+     */
+    public function maxSharedDecks(): ?int
+    {
+        $tier = $this->subscriptionTier();
+        
+        return match($tier) {
+            'free' => 0,        // Cannot share any deck
+            'advanced' => 1,    // Can share exactly 1 deck
+            'premium' => null,  // Unlimited sharing
+            default => 0,       // Fallback to free tier
+        };
+    }
+
+    /**
+     * Get count of currently shared decks
+     */
+    public function sharedDecksCount(): int
+    {
+        return $this->decks()->shared()->count();
+    }
+
+    /**
+     * Check if user can share another deck
+     */
+    public function canShareAnotherDeck(): bool
+    {
+        $max = $this->maxSharedDecks();
+        
+        // null means unlimited
+        if ($max === null) {
+            return true;
+        }
+        
+        // 0 means cannot share any
+        if ($max === 0) {
+            return false;
+        }
+        
+        // Check current count against limit
+        $current = $this->sharedDecksCount();
+        return $current < $max;
+    }
+
+    /**
+     * Check if user can upload real card photos
+     * Premium only feature
+     * 
+     * @return bool
+     */
+    public function canUploadRealCardPhotos(): bool
+    {
+        return $this->isPremium();
+    }
+
+    /**
      * Get all deck evaluation sessions for this user
      */
     public function deckEvaluationSessions()
@@ -407,6 +465,38 @@ class User extends Authenticatable
     public function isPremium(): bool
     {
         return $this->subscriptionTier() === 'premium';
+    }
+
+    /**
+     * Check if user can see collection mini statistics cards
+     * (Rarity Distribution, Foil Cards, Top Set)
+     * 
+     * @return bool Advanced and Premium users can see mini stats
+     */
+    public function canSeeCollectionMiniStats(): bool
+    {
+        return $this->isAdvanced() || $this->isPremium();
+    }
+
+    /**
+     * Check if user can see the Statistics tab in Collection
+     * 
+     * @return bool Only Premium users can see Statistics tab
+     */
+    public function canSeeCollectionStatisticsTab(): bool
+    {
+        return $this->isPremium();
+    }
+
+    /**
+     * Check if user can see deck second row statistics
+     * (Rarity Distribution, Top Sets cards)
+     * 
+     * @return bool Advanced and Premium users can see second row stats
+     */
+    public function canSeeDeckSecondRowStats(): bool
+    {
+        return $this->isAdvanced() || $this->isPremium();
     }
 
     /**

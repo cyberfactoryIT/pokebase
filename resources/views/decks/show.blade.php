@@ -45,6 +45,73 @@
                     <a href="{{ route('decks.edit', $deck) }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition">
                         {{ __('decks/show.edit_deck') }}
                     </a>
+
+                    <!-- Share Deck Button -->
+                    @if($deck->is_shared)
+                        <!-- Deck is currently shared -->
+                        <div x-data="{ copied: false }" class="flex items-center gap-2">
+                            <button 
+                                @click="navigator.clipboard.writeText('{{ $deck->public_url }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center gap-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <span x-show="!copied">{{ __('sharing.deck.copy_link') }}</span>
+                                <span x-show="copied" x-cloak>{{ __('sharing.deck.copied') }}</span>
+                            </button>
+                            <form action="{{ route('decks.unshare', $deck) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 bg-red-600/80 hover:bg-red-700 text-white rounded-lg transition">
+                                    {{ __('sharing.deck.unshare') }}
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <!-- Deck is not shared -->
+                        @can('shareDeck', $deck)
+                            <form action="{{ route('decks.share', $deck) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                                    </svg>
+                                    {{ __('sharing.deck.share') }}
+                                </button>
+                            </form>
+                        @else
+                            <!-- Show why user cannot share -->
+                            @if(auth()->user()->maxSharedDecks() === 0)
+                                <div class="relative group">
+                                    <button disabled class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                        {{ __('sharing.deck.share') }}
+                                    </button>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-sm rounded-lg p-3 opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                                        <p class="font-semibold mb-1">{{ __('sharing.limit.free.title') }}</p>
+                                        <p class="text-gray-300 mb-2">{{ __('sharing.limit.free.body') }}</p>
+                                        <a href="{{ route('profile.subscription') }}" class="text-blue-400 hover:text-blue-300">{{ __('sharing.limit.free.cta_upgrade') }} →</a>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="relative group">
+                                    <button disabled class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                        {{ __('sharing.deck.share') }}
+                                    </button>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-sm rounded-lg p-3 opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                                        <p class="font-semibold mb-1">{{ __('sharing.limit.reached.title') }}</p>
+                                        <p class="text-gray-300 mb-2">{{ __('sharing.limit.reached.body', ['limit' => auth()->user()->maxSharedDecks(), 'current' => auth()->user()->sharedDecksCount()]) }}</p>
+                                        <a href="{{ route('profile.subscription') }}" class="text-blue-400 hover:text-blue-300">{{ __('sharing.limit.reached.cta_upgrade') }} →</a>
+                                    </div>
+                                </div>
+                            @endif
+                        @endcan
+                    @endif
                 </div>
             </div>
 
@@ -248,6 +315,7 @@
             @endcan
         </div>
 
+        @if(auth()->user()->canSeeDeckSecondRowStats())
         <!-- Rarity & Set Distribution -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Rarity Distribution -->
@@ -282,6 +350,23 @@
                 </div>
             </div>
         </div>
+        @else
+        <!-- Free tier - Show upsell badge for second row stats -->
+        <div class="mb-6 bg-[#161615] border border-white/15 rounded-xl p-8 text-center">
+            <div class="flex flex-col items-center">
+                <div class="bg-blue-500/20 p-4 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-white mb-2">{{ __('stats.upsell.deck_free_title') }}</h3>
+                <p class="text-gray-400 mb-6 max-w-2xl">{{ __('stats.upsell.deck_free_body') }}</p>
+                <a href="{{ route('billing.index') }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
+                    {{ __('stats.upsell.cta_upgrade') }}
+                </a>
+            </div>
+        </div>
+        @endif
         @endif
 
         <!-- Quick Add Cards - Two Columns -->

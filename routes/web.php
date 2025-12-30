@@ -37,6 +37,10 @@ Route::post('/waitlist', [WaitlistController::class, 'store'])->name('waitlist.s
 
 // Public FAQ route
 Route::get('/faq', [\App\Http\Controllers\PublicFaqController::class, 'index']);
+
+// Public Deck View (no auth required)
+Route::get('/shared/deck/{token}', [\App\Http\Controllers\DeckController::class, 'publicView'])->name('decks.public');
+
 // Company info lookup (used by registration form CVR lookup)
 Route::post('/company-info/lookup', [\App\Http\Controllers\CompanyInfoController::class, 'lookup'])->name('company.info.lookup');
 // Simple test endpoint to verify route/controller reachable
@@ -84,6 +88,10 @@ Route::middleware('auth')->group(function () {
     Route::post('decks/{deck}/cards', [\App\Http\Controllers\DeckController::class, 'addCard'])->name('decks.cards.add');
     Route::delete('decks/{deck}/cards/{deckCard}', [\App\Http\Controllers\DeckController::class, 'removeCard'])->name('decks.cards.remove');
     Route::patch('decks/{deck}/cards/{deckCard}/quantity', [\App\Http\Controllers\DeckController::class, 'updateCardQuantity'])->name('decks.cards.updateQuantity');
+    
+    // Deck Sharing
+    Route::post('decks/{deck}/share', [\App\Http\Controllers\DeckController::class, 'share'])->name('decks.share');
+    Route::post('decks/{deck}/unshare', [\App\Http\Controllers\DeckController::class, 'unshare'])->name('decks.unshare');
 
     // User Collection
     Route::get('collection', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collection.index');
@@ -92,6 +100,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'update'])->name('collection.update');
     Route::get('collection/check/{productId}', [\App\Http\Controllers\CollectionController::class, 'checkCard'])->name('collection.check');
     Route::get('collection/ids', [\App\Http\Controllers\Api\CollectionController::class, 'getProductIds'])->name('collection.ids');
+    
+    // Real card photo uploads (Premium only)
+    Route::post('collection/{collection}/photos', [\App\Http\Controllers\CollectionController::class, 'uploadPhoto'])->name('collection.photos.upload');
+    Route::delete('collection/photos/{photo}', [\App\Http\Controllers\CollectionController::class, 'deletePhoto'])->name('collection.photos.delete');
 
     // Billing
     Route::get('/billing', [\App\Http\Controllers\BillingController::class,'index'])->name('billing.index');

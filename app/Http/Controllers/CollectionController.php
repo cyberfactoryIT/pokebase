@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserCollection;
+use App\Models\UserCardPhoto;
 use App\Models\TcgcsvProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -20,7 +22,7 @@ class CollectionController extends Controller
         $currentGame = $request->attributes->get('currentGame');
         
         $query = UserCollection::where('user_id', $userId)
-            ->with('card.group', 'card.rapidapiCard', 'card.prices');
+            ->with('card.group', 'card.rapidapiCard', 'card.prices', 'photos');
             
         // Filter by current game
         if ($currentGame) {
@@ -384,5 +386,57 @@ class CollectionController extends Controller
             'cards_with_prices_usd' => $cardsWithPricesUsd,
             'cards_with_prices_eur' => $cardsWithPricesEur,
         ];
+    }
+
+    /**
+     * Upload a photo for a collection item (Premium only)
+     */
+    public function uploadPhoto(Request $request, UserCollection $collection)
+    {
+        // Authorization: must own the collection item
+        if ($collection->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Authorization: must be premium
+        if (!Gate::allows('uploadCardPhotos')) {
+            return back()->with('error', __('photos.upload.not_allowed.title'));
+        }
+
+        $validated = $request->validate([
+            'photo' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120', // 5MB max
+        ]);
+
+        $file = $request->file('photo');
+        
+        // Store in private storage
+        $path = $file->store('user-card-photos/' . Auth::id(), 'private');
+        
+        // Create photo record
+        $photo = \App\Models\UserCardPhoto::create([
+            'user_id' => Auth::id(),
+            'user_collection_id' => $collection->id,
+            'path' => $path,
+            'original_filename' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size_bytes' => $file->getSize(),
+        ]);
+
+        return back()->with('success', __('photos.upload.success'));
+    }
+
+    /**
+     * Delete a photo (owner only)
+     */
+    public function deletePhoto(\App\Models\UserCardPhoto $photo)
+    {
+        // Authorization: must own the photo
+        if ($photo->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $photo->delete(); // Will also delete file via model event
+
+        return back()->with('success', __('photos.delete.success'));
     }
 }

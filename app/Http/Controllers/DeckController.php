@@ -227,6 +227,71 @@ class DeckController extends Controller
     }
 
     /**
+     * Share a deck (generate public link)
+     */
+    public function share(Deck $deck): RedirectResponse
+    {
+        // Authorize ownership and sharing permission
+        if (!\Gate::forUser(Auth::user())->allows('shareDeck', $deck)) {
+            $max = Auth::user()->maxSharedDecks();
+            $current = Auth::user()->sharedDecksCount();
+            
+            if ($max === 0) {
+                return back()->with('error', __('sharing.limit.free.title'))
+                    ->with('error_detail', __('sharing.limit.free.body'));
+            }
+            
+            if ($max !== null && $current >= $max) {
+                return back()->with('error', __('sharing.limit.reached.title'))
+                    ->with('error_detail', __('sharing.limit.reached.body', [
+                        'limit' => $max,
+                        'current' => $current,
+                    ]));
+            }
+            
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Share the deck (generates token)
+        $deck->share();
+
+        return back()->with('success', __('sharing.deck.shared'))
+            ->with('shared_url', $deck->public_url);
+    }
+
+    /**
+     * Unshare a deck (revoke public link)
+     */
+    public function unshare(Deck $deck): RedirectResponse
+    {
+        // Authorize ownership
+        if (!\Gate::forUser(Auth::user())->allows('unshareDeck', $deck)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Unshare the deck
+        $deck->unshare();
+
+        return back()->with('success', __('sharing.deck.unshared'));
+    }
+
+    /**
+     * Show public deck view (accessible without login)
+     */
+    public function publicView(string $token): View
+    {
+        $deck = Deck::where('shared_token', $token)
+            ->where('is_shared', true)
+            ->with(['deckCards.card.group', 'game', 'user'])
+            ->firstOrFail();
+
+        $stats = $this->getDeckStats($deck);
+        $topStats = $this->getDeckTopStats($deck);
+
+        return view('decks.public', compact('deck', 'stats', 'topStats'));
+    }
+
+    /**
      * Get basic deck statistics
      */
     private function getDeckStats(Deck $deck): array

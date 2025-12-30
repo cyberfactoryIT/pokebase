@@ -39,6 +39,100 @@
             </div>
         </div>
 
+        <!-- Entitlement Progress Indicator -->
+        @if(isset($entitlement))
+        <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
+            @if($entitlement['type'] === 'free')
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-white font-semibold mb-1">{{ __('deck_evaluation.entitlement.free.title') }}</h3>
+                        <p class="text-gray-400 text-sm">
+                            {{ __('deck_evaluation.entitlement.free.usage', [
+                                'used' => $entitlement['cards_used'],
+                                'limit' => $entitlement['cards_limit']
+                            ]) }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        @php
+                            $percentUsed = $entitlement['cards_limit'] > 0 ? ($entitlement['cards_used'] / $entitlement['cards_limit']) * 100 : 0;
+                            $badgeColor = $percentUsed >= 100 ? 'bg-red-500' : ($percentUsed >= 80 ? 'bg-yellow-500' : 'bg-blue-500');
+                        @endphp
+                        <div class="inline-flex items-center gap-2 {{ $badgeColor }} text-white px-4 py-2 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            <span class="font-bold">{{ $entitlement['cards_remaining'] }}</span>
+                            <span class="text-sm">{{ __('deck_evaluation.progress.remaining') }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 bg-black/30 rounded-full h-2 overflow-hidden">
+                    <div class="{{ $badgeColor }} h-full transition-all duration-300" style="width: {{ min($percentUsed, 100) }}%"></div>
+                </div>
+                @if($percentUsed >= 80)
+                    <div class="mt-3 text-center">
+                        <a href="{{ route('deck-evaluation.packages') }}" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium">
+                            {{ __('deck_evaluation.errors.free_limit_exceeded.cta') }} →
+                        </a>
+                    </div>
+                @endif
+            @else
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-white font-semibold mb-1">
+                            {{ __('deck_evaluation.entitlement.purchased.title', ['package' => $entitlement['package_name']]) }}
+                        </h3>
+                        @if($entitlement['is_unlimited'])
+                            <p class="text-gray-400 text-sm">
+                                {{ __('deck_evaluation.entitlement.purchased.usage_unlimited', ['used' => $entitlement['cards_used']]) }}
+                            </p>
+                        @else
+                            <p class="text-gray-400 text-sm">
+                                {{ __('deck_evaluation.entitlement.purchased.usage', [
+                                    'used' => $entitlement['cards_used'],
+                                    'limit' => $entitlement['cards_limit']
+                                ]) }}
+                            </p>
+                        @endif
+                        <p class="text-gray-500 text-xs mt-1">
+                            {{ __('deck_evaluation.entitlement.purchased.expires', [
+                                'date' => $entitlement['expires_at']->format('M d, Y')
+                            ]) }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        @if($entitlement['is_unlimited'])
+                            <div class="inline-flex items-center gap-2 bg-purple-500 text-white px-4 py-2 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                </svg>
+                                <span class="font-bold">{{ __('deck_evaluation.progress.unlimited') }}</span>
+                            </div>
+                        @else
+                            @php
+                                $percentUsed = $entitlement['cards_limit'] > 0 ? ($entitlement['cards_used'] / $entitlement['cards_limit']) * 100 : 0;
+                                $badgeColor = $percentUsed >= 100 ? 'bg-red-500' : ($percentUsed >= 80 ? 'bg-yellow-500' : 'bg-green-500');
+                            @endphp
+                            <div class="inline-flex items-center gap-2 {{ $badgeColor }} text-white px-4 py-2 rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="font-bold">{{ $entitlement['cards_remaining'] }}</span>
+                                <span class="text-sm">{{ __('deck_evaluation.progress.remaining') }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                @if(!$entitlement['is_unlimited'])
+                    <div class="mt-3 bg-black/30 rounded-full h-2 overflow-hidden">
+                        <div class="{{ $badgeColor }} h-full transition-all duration-300" style="width: {{ min($percentUsed, 100) }}%"></div>
+                    </div>
+                @endif
+            @endif
+        </div>
+        @endif
+
         <!-- Search Card -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
             <h2 class="text-lg font-semibold text-white mb-4">{{ __('deckvaluation.step1_search_title') }}</h2>

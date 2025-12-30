@@ -33,29 +33,43 @@ class DeckEvaluationEntitlementService
         // Get or create session
         $session = $this->getOrCreateSession($userId, $guestToken);
 
-        // Check for active purchase first
-        $activePurchase = $this->getActivePurchase($userId, $guestToken);
+        // First check for any purchase (including expired ones)
+        $anyPurchase = DeckEvaluationPurchase::forUserOrGuest($userId, $guestToken)
+            ->with('package')
+            ->orderBy('expires_at', 'desc')
+            ->first();
 
-        if ($activePurchase) {
-            // User has an active purchase
-            if ($activePurchase->isExpired()) {
-                $activePurchase->markExpired();
+        if ($anyPurchase) {
+            // Check if expired first
+            if ($anyPurchase->isExpired()) {
+                $anyPurchase->markExpired();
                 return [
                     'allowed' => false,
                     'reason' => 'purchase_expired',
-                    'purchase' => $activePurchase,
+                    'purchase' => $anyPurchase,
                     'session' => $session,
                 ];
             }
 
-            // Check card limits
-            if ($activePurchase->cards_limit !== null) {
-                $remaining = $activePurchase->remaining_cards;
+            // Check if consumed
+            if ($anyPurchase->status === 'consumed') {
+                return [
+                    'allowed' => false,
+                    'reason' => 'insufficient_cards',
+                    'purchase' => $anyPurchase,
+                    'session' => $session,
+                    'remaining' => 0,
+                ];
+            }
+
+            // Check card limits for active purchases
+            if ($anyPurchase->cards_limit !== null) {
+                $remaining = $anyPurchase->remaining_cards;
                 if ($cardsCount > $remaining) {
                     return [
                         'allowed' => false,
                         'reason' => 'insufficient_cards',
-                        'purchase' => $activePurchase,
+                        'purchase' => $anyPurchase,
                         'session' => $session,
                         'remaining' => $remaining,
                     ];
@@ -65,12 +79,12 @@ class DeckEvaluationEntitlementService
             return [
                 'allowed' => true,
                 'reason' => 'active_purchase',
-                'purchase' => $activePurchase,
+                'purchase' => $anyPurchase,
                 'session' => $session,
             ];
         }
 
-        // No active purchase - check free limit
+        // No purchase - check free limit
         if ($session->hasFreeCardsRemaining()) {
             $remaining = $session->remaining_free_cards;
             
@@ -202,6 +216,19 @@ class DeckEvaluationEntitlementService
     {
         return DeckEvaluationPurchase::forUserOrGuest($userId, $guestToken)
             ->active()
+            ->with('package')
+            ->orderBy('expires_at', 'desc')
+            ->first();
+    }
+
+    /**
+     * Get any recent purchase (including consumed) for user or guest
+     */
+    public function getRecentPurchase(?int $userId, ?string $guestToken): ?DeckEvaluationPurchase
+    {
+        return DeckEvaluationPurchase::forUserOrGuest($userId, $guestToken)
+            ->whereIn('status', ['active', 'consumed'])
+            ->where('expires_at', '>', now())
             ->with('package')
             ->orderBy('expires_at', 'desc')
             ->first();
