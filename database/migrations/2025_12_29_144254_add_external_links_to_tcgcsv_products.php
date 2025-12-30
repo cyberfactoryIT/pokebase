@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tcgcsv_products', function (Blueprint $table) {
-            // Check if columns don't exist before adding them
+            // Add columns at the end of the table (before updated_at)
             if (!Schema::hasColumn('tcgcsv_products', 'tcgo_url')) {
-                $table->text('tcgo_url')->nullable()->after('cardmarket_price_updated_at');
+                $table->text('tcgo_url')->nullable();
             }
             if (!Schema::hasColumn('tcgcsv_products', 'cardmarket_url')) {
-                $table->text('cardmarket_url')->nullable()->after('tcgo_url');
+                $table->text('cardmarket_url')->nullable();
             }
         });
     }
