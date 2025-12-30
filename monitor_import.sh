@@ -31,8 +31,8 @@ while true; do
     # Mostra statistiche
     echo "[$TIMESTAMP] 🎴 Carte: $CARDS | 📺 Episodi: $EPISODES/173 ($PROGRESS%) | 💰 Prezzi: $PRICES ($PRICE_PERCENT%) | ⏳ ~${EST_TIME}min rimasti"
     
-    # Controlla se finito
-    if (( $(echo "$PROGRESS >= 99.0" | bc -l) )); then
+    # Controlla se finito (senza bc)
+    if [ "$EPISODES" -ge 171 ]; then
         echo ""
         echo "✅ IMPORT COMPLETATO!"
         break
