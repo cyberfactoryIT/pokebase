@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
@@ -66,8 +67,8 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-    // Revoke all remember tokens on logout-all
-    app(\App\Services\RememberTokenService::class)->revokeAll($request->user());
+        // Revoke all remember tokens on logout-all
+        app(\App\Services\RememberTokenService::class)->revokeAll($request->user());
 
         $user->delete();
 
@@ -134,6 +135,10 @@ class ProfileController extends Controller
     public function subscription(Request $request): View
     {
         $user = $request->user();
+        
+        // Force refresh organization relationship to get latest data
+        $user->load('organization.pricingPlan');
+        
         $membershipStatus = $user->membershipStatus();
         
         // Get active and expired deck evaluation purchases
@@ -163,13 +168,79 @@ class ProfileController extends Controller
     }
 
     /**
-     * Display the user's transaction history.
+     * Display the user's transactions tab.
      */
-    public function transactions(Request $request, TransactionHistoryService $historyService): View
+    public function transactions(Request $request): View
     {
         $user = $request->user();
-        $transactions = $historyService->getHistory($user);
+        
+        // Get transaction history using the service
+        $transactionService = app(TransactionHistoryService::class);
+        $transactions = $transactionService->getHistory($user);
+        
+        return view('profile.transactions', compact(
+            'user',
+            'transactions'
+        ));
+    }
 
-        return view('profile.transactions', compact('user', 'transactions', 'historyService'));
+    /**
+     * TEST ONLY: Quick switch pricing plan
+     */
+    public function testSwitchPlan(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'plan_id' => 'required|exists:pricing_plans,id',
+        ]);
+
+        $user = $request->user();
+        
+        // Get the plan details
+        $plan = \App\Models\PricingPlan::findOrFail($validated['plan_id']);
+        
+        // Get or create organization if needed
+        if (!$user->organization) {
+            $org = \App\Models\Organization::create([
+                'name' => $user->name . "'s Organization",
+                'code' => 'ORG-' . strtoupper(Str::random(6)),
+                'slug' => Str::slug($user->name) . '-' . time(),
+            ]);
+            $user->organization_id = $org->id;
+            $user->save();
+            
+            \Log::info('Created new organization for user', [
+                'user_id' => $user->id,
+                'org_id' => $org->id,
+            ]);
+        } else {
+            $org = $user->organization;
+        }
+
+        // Store old plan for logging
+        $oldPlanId = $org->pricing_plan_id;
+
+        // Update organization with new plan
+        $org->pricing_plan_id = $validated['plan_id'];
+        $org->billing_period = 'monthly';
+        $org->subscription_date = now();
+        $org->renew_date = now()->addMonth();
+        $org->subscription_cancelled = 0;
+        $org->save();
+        
+        // Clear relationship cache to ensure fresh data on next request
+        $user->unsetRelation('organization');
+        $user->load('organization.pricingPlan');
+        
+        \Log::info('TEST: Plan changed', [
+            'user_id' => $user->id,
+            'org_id' => $org->id,
+            'old_plan_id' => $oldPlanId,
+            'new_plan_id' => $validated['plan_id'],
+            'plan_name' => $plan->name,
+        ]);
+
+        return redirect()
+            ->route('profile.subscription')
+            ->with('success', "✅ Piano '{$plan->name}' attivato con successo! (TEST MODE)");
     }
 }

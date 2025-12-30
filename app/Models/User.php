@@ -190,16 +190,18 @@ class User extends Authenticatable
      */
     public function subscriptionTier(): string
     {
-        if (!config('organizations.enabled') || !$this->organization) {
+        if (!$this->organization_id) {
             return 'free';
         }
 
-        $org = $this->organization;
+        // Get fresh organization with pricing plan
+        $org = Organization::with('pricingPlan')->find($this->organization_id);
+        
+        if (!$org || !$org->pricingPlan) {
+            return 'free';
+        }
+        
         $plan = $org->pricingPlan;
-
-        if (!$plan) {
-            return 'free';
-        }
 
         // Map pricing plan names to tiers
         $planName = strtolower($plan->name ?? '');
@@ -244,7 +246,7 @@ class User extends Authenticatable
      */
     public function membershipStatus(): array
     {
-        if (!config('organizations.enabled') || !$this->organization) {
+        if (!$this->organization_id) {
             return [
                 'tier' => 'free',
                 'status' => 'active',
@@ -254,7 +256,19 @@ class User extends Authenticatable
             ];
         }
 
-        $org = $this->organization;
+        // Get fresh organization with pricing plan
+        $org = Organization::with('pricingPlan')->find($this->organization_id);
+        
+        if (!$org) {
+            return [
+                'tier' => 'free',
+                'status' => 'active',
+                'billing_period' => null,
+                'next_renewal' => null,
+                'is_cancelled' => false,
+            ];
+        }
+        
         $plan = $org->pricingPlan;
 
         return [

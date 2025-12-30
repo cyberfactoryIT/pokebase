@@ -5,6 +5,41 @@
 @section('content')
 <div class="max-w-6xl mx-auto">
     
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="bg-green-900/20 border border-green-500/50 rounded-lg p-4 mb-6">
+            <div class="flex items-center gap-3">
+                <i class="fa fa-check-circle text-green-400 text-xl"></i>
+                <p class="text-green-400 font-medium">{{ session('success') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-6">
+            <div class="flex items-center gap-3">
+                <i class="fa fa-times-circle text-red-400 text-xl"></i>
+                <p class="text-red-400 font-medium">{{ session('error') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <i class="fa fa-exclamation-triangle text-red-400 text-xl"></i>
+                <div>
+                    <p class="text-red-400 font-medium mb-2">{{ __('validation.errors_occurred') }}</p>
+                    <ul class="list-disc list-inside text-red-300 text-sm">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+    
     <!-- Tab Navigation -->
     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl mb-6">
         <div class="flex border-b border-white/10">
@@ -103,6 +138,43 @@
                     @endif
                 </div>
             @endif
+
+            <!-- TEST: Quick Plan Switcher -->
+            <div class="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/50 rounded-lg">
+                <p class="text-yellow-400 text-xs font-semibold mb-3">⚠️ TEST MODE - Quick Plan Switcher</p>
+                <form id="testSwitchForm" action="{{ route('profile.test-switch-plan') }}" method="POST" class="flex gap-3 items-end">
+                    @csrf
+                    <div class="flex-1">
+                        <label class="block text-gray-400 text-sm mb-1">Select Plan:</label>
+                        <select name="plan_id" id="planSelect" class="w-full bg-[#0d0d0c] border border-white/10 rounded-lg px-3 py-2 text-white">
+                            @foreach(\App\Models\PricingPlan::all() as $plan)
+                                <option value="{{ $plan->id }}" {{ $membershipStatus['tier'] === strtolower($plan->name) ? 'selected' : '' }}>
+                                    {{ $plan->name }} (€{{ number_format($plan->monthly_price_cents / 100, 2) }}/month)
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit" id="activateBtn" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition font-medium">
+                        Activate
+                    </button>
+                </form>
+                <div id="testFeedback" class="mt-3 text-sm hidden"></div>
+            </div>
+            
+            <script>
+                document.getElementById('testSwitchForm').addEventListener('submit', function(e) {
+                    const btn = document.getElementById('activateBtn');
+                    const feedback = document.getElementById('testFeedback');
+                    
+                    // Show loading state
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>Attivazione...';
+                    
+                    feedback.className = 'mt-3 text-sm text-blue-400';
+                    feedback.textContent = '🔄 Invio richiesta in corso...';
+                    feedback.classList.remove('hidden');
+                });
+            </script>
         </div>
 
         <!-- Info Note for Advanced/Premium users -->

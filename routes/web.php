@@ -66,6 +66,9 @@ Route::middleware('auth')->group(function () {
     // Profile tabs
     Route::get('/profile/subscription', [ProfileController::class, 'subscription'])->name('profile.subscription');
     Route::get('/profile/transactions', [ProfileController::class, 'transactions'])->name('profile.transactions');
+    
+    // TEST ONLY: Quick plan switcher
+    Route::post('/profile/test-switch-plan', [ProfileController::class, 'testSwitchPlan'])->name('profile.test-switch-plan');
 
     // Theme preference
     Route::post('/user/theme', [\App\Http\Controllers\ProfileController::class, 'updateTheme'])->name('user.theme.update');
