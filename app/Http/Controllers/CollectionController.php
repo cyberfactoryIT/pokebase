@@ -237,6 +237,22 @@ class CollectionController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
+        $user = Auth::user();
+        $quantityToAdd = $validated['quantity'] ?? 1;
+
+        // Check card limit
+        if (!\Gate::forUser($user)->allows('addCards', $quantityToAdd)) {
+            $limit = $user->cardLimit();
+            $currentUsage = $user->currentCardUsage();
+            
+            return back()->with('error', __('limits.cards.reached.title'))
+                ->with('error_detail', __('limits.cards.reached.body_adding', [
+                    'amount' => $quantityToAdd,
+                    'limit' => $limit,
+                    'used' => $currentUsage,
+                ]));
+        }
+
         // Check if card already exists with same condition/foil
         $existing = UserCollection::where('user_id', Auth::id())
             ->where('product_id', $validated['product_id'])
@@ -246,7 +262,7 @@ class CollectionController extends Controller
 
         if ($existing) {
             // Increment quantity
-            $existing->increment('quantity', $validated['quantity'] ?? 1);
+            $existing->increment('quantity', $quantityToAdd);
             $message = 'Card quantity updated in your collection!';
         } else {
             // Create new entry

@@ -32,5 +32,19 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Gate::define('seePrices', function (\App\Models\User $user) {
             return $user->canSeePrices();
         });
+
+        // Register game activation gates
+        \Illuminate\Support\Facades\Gate::define('activateGame', function (\App\Models\User $user) {
+            return $user->canActivateAnotherGame();
+        });
+
+        \Illuminate\Support\Facades\Gate::define('useGame', function (\App\Models\User $user, \App\Models\Game $game) {
+            return $user->canUseGame($game);
+        });
+
+        // Register card limit gate
+        \Illuminate\Support\Facades\Gate::define('addCards', function (\App\Models\User $user, int $amount = 1) {
+            return $user->canAddMoreCards($amount);
+        });
     }
 }

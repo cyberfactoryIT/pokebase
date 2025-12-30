@@ -5,13 +5,64 @@
     <div class="max-w-7xl mx-auto px-6">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">{{ __('collection/index.title') }}</h1>
-            <p class="text-gray-400">{{ __('collection/index.subtitle') }}</p>
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-white mb-2">{{ __('collection/index.title') }}</h1>
+                    <p class="text-gray-400">{{ __('collection/index.subtitle') }}</p>
+                </div>
+                
+                <!-- Card Limit Badge (Free users only) -->
+                @if(auth()->user()->isFree())
+                    @php
+                        $cardLimit = auth()->user()->cardLimit();
+                        $currentUsage = auth()->user()->currentCardUsage();
+                        $percentUsed = $cardLimit > 0 ? round(($currentUsage / $cardLimit) * 100) : 0;
+                        $isNearLimit = $percentUsed >= 80;
+                        $isAtLimit = $currentUsage >= $cardLimit;
+                    @endphp
+                    <div class="text-right">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 {{ $isAtLimit ? 'bg-red-500/20 text-red-300' : ($isNearLimit ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300') }} rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <span class="font-semibold">
+                                {{ __('limits.cards.free.usage', ['used' => $currentUsage, 'limit' => $cardLimit]) }}
+                            </span>
+                        </div>
+                        @if($isNearLimit)
+                            <p class="text-xs text-gray-400 mt-1">
+                                <a href="{{ route('profile.subscription') }}" class="hover:text-blue-400 underline">
+                                    {{ __('limits.cards.cta_upgrade') }}
+                                </a>
+                            </p>
+                        @endif
+                    </div>
+                @endif
+            </div>
         </div>
 
         @if(session('success'))
         <div class="bg-green-900/30 border border-green-500/30 rounded-lg p-4 mb-6">
             <p class="text-green-200">{{ session('success') }}</p>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="bg-red-500/20 border border-red-400/30 text-red-300 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold">{{ session('error') }}</p>
+                    @if(session('error_detail'))
+                        <p class="text-sm mt-1">{{ session('error_detail') }}</p>
+                        <a href="{{ route('profile.subscription') }}" class="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+                            {{ __('limits.cards.cta_upgrade') }}
+                        </a>
+                    @endif
+                </div>
+            </div>
         </div>
         @endif
 

@@ -109,22 +109,46 @@ class ProfileController extends Controller
         ]);
 
         $gameIds = $validated['games'] ?? [];
-        $request->user()->games()->sync($gameIds);
+        $user = $request->user();
+        $currentGameIds = $user->games()->pluck('games.id')->toArray();
+        
+        // Check if user is trying to activate more games than allowed
+        $newGamesCount = count($gameIds);
+        $maxGames = $user->maxActiveGames();
+        
+        // If maxGames is null (premium), no limit
+        if ($maxGames !== null && $newGamesCount > $maxGames) {
+            $tierName = __('games.tier.' . $user->subscriptionTier());
+            return Redirect::route('profile.edit')
+                ->with('error', __('games.activation.not_allowed'))
+                ->with('error_detail', __('games.limit.reached.body', [
+                    'tier' => $tierName,
+                    'max' => $maxGames,
+                ]));
+        }
+        
+        // Ensure at least one game is selected
+        if (empty($gameIds)) {
+            return Redirect::route('profile.edit')
+                ->with('error', __('games.activation.must_have_one'));
+        }
+        
+        $user->games()->sync($gameIds);
 
         // Update default game only if it's provided and it's among the selected games
         if (isset($validated['default_game_id'])) {
             if (in_array($validated['default_game_id'], $gameIds)) {
-                $request->user()->default_game_id = $validated['default_game_id'];
+                $user->default_game_id = $validated['default_game_id'];
             } else {
                 // If default game is not in selected games, clear it
-                $request->user()->default_game_id = null;
+                $user->default_game_id = null;
             }
         } elseif (empty($gameIds)) {
             // If no games selected, clear default game
-            $request->user()->default_game_id = null;
+            $user->default_game_id = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'games-updated');
     }

@@ -151,6 +151,155 @@ class User extends Authenticatable
     }
 
     /**
+     * Get maximum number of active games allowed for this user based on subscription tier
+     * 
+     * @return int|null null means unlimited (premium)
+     */
+    public function maxActiveGames(): ?int
+    {
+        $tier = $this->subscriptionTier();
+        
+        return match($tier) {
+            'free' => 1,
+            'advanced' => 3,
+            'premium' => null, // unlimited
+            default => 1, // fallback to free tier
+        };
+    }
+
+    /**
+     * Get count of currently active games
+     */
+    public function activeGamesCount(): int
+    {
+        return $this->games()->count();
+    }
+
+    /**
+     * Check if user can activate another game
+     */
+    public function canActivateAnotherGame(): bool
+    {
+        $max = $this->maxActiveGames();
+        
+        // null means unlimited (premium)
+        if ($max === null) {
+            return true;
+        }
+        
+        return $this->activeGamesCount() < $max;
+    }
+
+    /**
+     * Check if user can use a specific game (game must be active for the user)
+     * 
+     * @param \App\Models\Game $game
+     * @return bool
+     */
+    public function canUseGame(\App\Models\Game $game): bool
+    {
+        return $this->games()->where('games.id', $game->id)->exists();
+    }
+
+    /**
+     * Get maximum number of cards allowed for this user based on subscription tier
+     * 
+     * @return int|null null means unlimited (advanced/premium)
+     */
+    public function cardLimit(): ?int
+    {
+        $tier = $this->subscriptionTier();
+        
+        return match($tier) {
+            'free' => config('limits.cards.free', 100), // Configurable, default 100
+            'advanced' => null, // unlimited
+            'premium' => null, // unlimited
+            default => config('limits.cards.free', 100), // fallback to free tier limit
+        };
+    }
+
+    /**
+     * Get current card usage (total unique cards across collection + decks)
+     * For each card (product_id), we take the maximum quantity between collection and decks
+     * to avoid counting the same card twice if it appears in both places.
+     * 
+     * @return int
+     */
+    public function currentCardUsage(): int
+    {
+        // Get all product_ids from collection with their quantities
+        $collectionCards = $this->collection()
+            ->select('product_id', \DB::raw('SUM(quantity) as total_quantity'))
+            ->groupBy('product_id')
+            ->pluck('total_quantity', 'product_id');
+        
+        // Get all product_ids from deck_cards with their quantities
+        $deckCards = \DB::table('deck_cards')
+            ->whereIn('deck_id', function($query) {
+                $query->select('id')
+                    ->from('decks')
+                    ->where('user_id', $this->id);
+            })
+            ->select('product_id', \DB::raw('SUM(quantity) as total_quantity'))
+            ->groupBy('product_id')
+            ->pluck('total_quantity', 'product_id');
+        
+        // Merge and take max quantity for each product_id to avoid double counting
+        $totalCount = 0;
+        $allProductIds = $collectionCards->keys()->merge($deckCards->keys())->unique();
+        
+        foreach ($allProductIds as $productId) {
+            $collectionQty = $collectionCards->get($productId, 0);
+            $deckQty = $deckCards->get($productId, 0);
+            
+            // Take the maximum between collection and deck to avoid double counting
+            $totalCount += max($collectionQty, $deckQty);
+        }
+        
+        return $totalCount;
+    }
+
+    /**
+     * Get remaining card slots for this user
+     * 
+     * @return int|null null means unlimited
+     */
+    public function remainingCardSlots(): ?int
+    {
+        $limit = $this->cardLimit();
+        
+        // null means unlimited
+        if ($limit === null) {
+            return null;
+        }
+        
+        $usage = $this->currentCardUsage();
+        $remaining = $limit - $usage;
+        
+        return max(0, $remaining);
+    }
+
+    /**
+     * Check if user can add more cards
+     * 
+     * @param int $amount Number of cards to add
+     * @return bool
+     */
+    public function canAddMoreCards(int $amount = 1): bool
+    {
+        $limit = $this->cardLimit();
+        
+        // null means unlimited (advanced/premium)
+        if ($limit === null) {
+            return true;
+        }
+        
+        $usage = $this->currentCardUsage();
+        
+        return ($usage + $amount) <= $limit;
+    }
+
+    /**
      * Get all deck evaluation sessions for this user
      */
     public function deckEvaluationSessions()

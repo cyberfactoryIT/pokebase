@@ -5,6 +5,26 @@
 @section('content')
 <div class="max-w-4xl mx-auto">
     
+    <!-- Error Messages -->
+    @if(session('error'))
+        <div class="mb-6 bg-red-500/20 border border-red-400/30 text-red-300 px-4 py-3 rounded-lg flex items-start gap-3" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="flex-1">
+                <p class="font-semibold">{{ session('error') }}</p>
+                @if(session('error_detail'))
+                    <p class="text-sm mt-1">{{ session('error_detail') }}</p>
+                @endif
+            </div>
+            <button @click="show = false" class="text-red-300 hover:text-red-100">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    @endif
+    
     <!-- Tab Navigation -->
     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl mb-6">
         <div class="flex border-b border-white/10">
@@ -80,11 +100,91 @@
 
     <!-- Game Preferences -->
     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
-        <h2 class="text-2xl font-bold text-white mb-2">{{ __('profile/edit.active_games') }}</h2>
-        <p class="text-gray-400 text-sm mb-6">{{ __('profile/edit.active_games_description') }}</p>
+        <div class="flex items-start justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-2">{{ __('profile/edit.active_games') }}</h2>
+                <p class="text-gray-400 text-sm">{{ __('profile/edit.active_games_description') }}</p>
+            </div>
+            
+            <!-- Membership tier badge and limit info -->
+            <div class="text-right">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 text-blue-300 text-sm font-semibold rounded-lg mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                    </svg>
+                    {{ __('games.tier.' . $user->subscriptionTier()) }}
+                </div>
+                <p class="text-gray-400 text-xs">
+                    {{ __('games.limits.' . $user->subscriptionTier()) }}
+                </p>
+            </div>
+        </div>
         
-        <form method="POST" action="{{ route('profile.games.update') }}" x-data="{ selectedGames: {{ json_encode($userGames) }}, defaultGame: {{ $user->default_game_id ?? 'null' }} }">
+        <!-- Game limit warning (shown when at or near limit) -->
+        @php
+            $maxGames = $user->maxActiveGames();
+            $currentCount = count($userGames);
+            $isAtLimit = $maxGames !== null && $currentCount >= $maxGames;
+            $isNearLimit = $maxGames !== null && $currentCount >= ($maxGames - 1) && $currentCount < $maxGames;
+        @endphp
+        
+        @if($isAtLimit || $isNearLimit)
+            <div class="mb-6 p-4 {{ $isAtLimit ? 'bg-red-500/10 border-red-500/30' : 'bg-yellow-500/10 border-yellow-500/30' }} border rounded-lg">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 {{ $isAtLimit ? 'text-red-400' : 'text-yellow-400' }} flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="font-semibold {{ $isAtLimit ? 'text-red-300' : 'text-yellow-300' }} mb-1">
+                            {{ __('games.limit.reached.title') }}
+                        </p>
+                        <p class="text-sm {{ $isAtLimit ? 'text-red-200' : 'text-yellow-200' }} mb-3">
+                            {{ __('games.limit.reached.' . ($isAtLimit ? 'body_at_limit' : 'body'), [
+                                'tier' => __('games.tier.' . $user->subscriptionTier()),
+                                'max' => $maxGames,
+                            ]) }}
+                        </p>
+                        @if(!$user->isPremium())
+                            <a href="{{ route('profile.subscription') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                {{ __('games.limit.cta_upgrade') }}
+                            </a>
+                            <p class="text-xs {{ $isAtLimit ? 'text-red-300' : 'text-yellow-300' }} mt-2">
+                                {{ __('games.limit.upgrade_benefits') }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+        
+        <form method="POST" action="{{ route('profile.games.update') }}" x-data="{ 
+            selectedGames: {{ json_encode($userGames) }}, 
+            defaultGame: {{ $user->default_game_id ?? 'null' }},
+            maxGames: {{ $maxGames ?? 'null' }},
+            showLimitWarning: false,
+            checkLimit() {
+                if (this.maxGames !== null && this.selectedGames.length > this.maxGames) {
+                    this.showLimitWarning = true;
+                    return false;
+                }
+                this.showLimitWarning = false;
+                return true;
+            }
+        }">
             @csrf
+            
+            <!-- Dynamic limit warning -->
+            <div x-show="showLimitWarning" x-cloak class="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <p class="text-red-300 text-sm">
+                    {{ __('games.limit.reached.body', [
+                        'tier' => __('games.tier.' . $user->subscriptionTier()),
+                        'max' => $maxGames ?? 0,
+                    ]) }}
+                </p>
+            </div>
             
             <div class="space-y-4">
                 @foreach($allGames as $game)
@@ -96,7 +196,7 @@
                             {{ in_array($game->id, $userGames) ? 'checked' : '' }}
                             class="w-5 h-5 text-blue-500 bg-black/50 border-white/30 rounded focus:ring-blue-500 focus:ring-2"
                             x-model="selectedGames"
-                            @change="if (!selectedGames.includes({{ $game->id }}) && defaultGame === {{ $game->id }}) { defaultGame = null }"
+                            @change="if (!selectedGames.includes({{ $game->id }}) && defaultGame === {{ $game->id }}) { defaultGame = null }; checkLimit();"
                         >
                         <div class="ml-4 flex-1">
                             <div class="text-white font-semibold">{{ $game->name }}</div>

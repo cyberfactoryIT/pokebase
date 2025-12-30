@@ -13,7 +13,7 @@
             </a>
 
             <div class="flex justify-between items-start">
-                <div>
+                <div class="flex-1">
                     <h1 class="text-3xl font-bold text-white mb-2">{{ $deck->name }}</h1>
                     <div class="flex items-center gap-4 text-gray-400">
                         @if($deck->format)
@@ -23,9 +23,29 @@
                         <span>Created {{ $deck->created_at->diffForHumans() }}</span>
                     </div>
                 </div>
-                <a href="{{ route('decks.edit', $deck) }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition">
-                    {{ __('decks/show.edit_deck') }}
-                </a>
+                
+                <div class="flex items-center gap-3">
+                    <!-- Card Limit Badge (Free users only) -->
+                    @if(auth()->user()->isFree())
+                        @php
+                            $cardLimit = auth()->user()->cardLimit();
+                            $currentUsage = auth()->user()->currentCardUsage();
+                            $percentUsed = $cardLimit > 0 ? round(($currentUsage / $cardLimit) * 100) : 0;
+                            $isNearLimit = $percentUsed >= 80;
+                            $isAtLimit = $currentUsage >= $cardLimit;
+                        @endphp
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 {{ $isAtLimit ? 'bg-red-500/20 text-red-300' : ($isNearLimit ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300') }} rounded-lg text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <span class="font-semibold">{{ $currentUsage }}/{{ $cardLimit }}</span>
+                        </div>
+                    @endif
+                    
+                    <a href="{{ route('decks.edit', $deck) }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition">
+                        {{ __('decks/show.edit_deck') }}
+                    </a>
+                </div>
             </div>
 
             @if($deck->description)
@@ -36,6 +56,25 @@
         @if(session('success'))
         <div class="bg-green-900/30 border border-green-500/30 rounded-lg p-4 mb-6">
             <p class="text-green-200">{{ session('success') }}</p>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="bg-red-500/20 border border-red-400/30 text-red-300 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold">{{ session('error') }}</p>
+                    @if(session('error_detail'))
+                        <p class="text-sm mt-1">{{ session('error_detail') }}</p>
+                        <a href="{{ route('profile.subscription') }}" class="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+                            {{ __('limits.cards.cta_upgrade') }}
+                        </a>
+                    @endif
+                </div>
+            </div>
         </div>
         @endif
 
