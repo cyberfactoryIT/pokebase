@@ -37,10 +37,12 @@ return [
     'no_set_data' => 'Ingen sætdata tilgængelige',
     
     // Quick Stats
+    'collection_value' => 'Samlingens Værdi',
     'different_sets' => 'Forskellige Sæt',
     'with_notes' => 'Med Noter',
     'duplicates' => 'Dubletter',
     'avg_per_set' => 'Gns. pr. Sæt',
+    'prices_from_cardmarket' => 'Priser fra Cardmarket (EUR)',
     
     // Timeline
     'collection_growth' => 'Samlingsvækst (Sidste 6 Måneder)',

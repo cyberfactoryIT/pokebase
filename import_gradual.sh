@@ -5,7 +5,7 @@
 
 BATCH_SIZE=25          # Pagine per batch (25 pagine = ~500 carte)
 PAUSE_SECONDS=300      # Pausa tra batch (5 minuti)
-MAX_BATCHES=10         # Numero massimo di batch (25*10 = 250 pagine)
+MAX_BATCHES=50         # Numero massimo di batch (25*10 = 250 pagine)
 
 LOG_FILE="/tmp/rapidapi_gradual_$(date +%Y%m%d_%H%M%S).log"
 
