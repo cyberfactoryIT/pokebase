@@ -10,33 +10,6 @@
                 <p class="mt-1 text-sm text-gray-300">{{ __('catalogue.expansions_subtitle') }}</p>
             </div>
 
-            <!-- Tabs -->
-            <div class="border-b border-white/10 px-6 pt-4">
-                <div class="flex gap-2">
-                    <button 
-                        id="tabTop" 
-                        class="tab-btn px-6 py-3 text-sm font-medium rounded-t-lg transition-colors"
-                        onclick="switchTab('top')"
-                    >
-                        🔥 Top Expansions
-                    </button>
-                    <button 
-                        id="tabAll" 
-                        class="tab-btn px-6 py-3 text-sm font-medium rounded-t-lg transition-colors"
-                        onclick="switchTab('all')"
-                    >
-                        📚 All Expansions
-                    </button>
-                    <button 
-                        id="tabUpcoming" 
-                        class="tab-btn px-6 py-3 text-sm font-medium rounded-t-lg transition-colors"
-                        onclick="switchTab('upcoming')"
-                    >
-                        🚀 Coming Soon
-                    </button>
-                </div>
-            </div>
-
             <!-- Search Bar -->
             <div class="px-6 py-4 border-b border-white/10">
                 <div class="relative">
@@ -59,14 +32,6 @@
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 {{ __('catalogue.loading_expansions') }}
-            </div>
-
-            <!-- Coming Soon Section -->
-            <div id="upcomingSection" class="px-6 py-4 border-b border-white/10 hidden">
-                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">🚀 Coming Soon</h3>
-                <div id="upcomingList" class="flex flex-wrap gap-2">
-                    <!-- Populated by JS -->
-                </div>
             </div>
 
             <!-- Results Grid -->
@@ -104,7 +69,6 @@ const i18n = {
 
 let currentPage = 1;
 let currentQuery = '';
-let currentTab = 'all';
 let lastPage = 1;
 let debounceTimer = null;
 let isLoading = false;
@@ -116,34 +80,6 @@ const expansionsList = document.getElementById('expansionsList');
 const noResults = document.getElementById('noResults');
 const loadMoreContainer = document.getElementById('loadMoreContainer');
 const loadMoreBtn = document.getElementById('loadMoreBtn');
-const upcomingSection = document.getElementById('upcomingSection');
-const upcomingList = document.getElementById('upcomingList');
-
-// Tab switching
-function switchTab(tab) {
-    currentTab = tab;
-    currentPage = 1;
-    
-    // Update tab styles
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white');
-        btn.classList.add('text-gray-400', 'hover:text-white');
-    });
-    
-    const activeBtn = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-    activeBtn.classList.remove('text-gray-400', 'hover:text-white');
-    activeBtn.classList.add('bg-blue-600', 'text-white');
-    
-    // Show/hide search based on tab
-    const searchBar = searchInput.parentElement.parentElement;
-    if (tab === 'upcoming') {
-        searchBar.classList.add('hidden');
-    } else {
-        searchBar.classList.remove('hidden');
-    }
-    
-    loadExpansions(true);
-}
 
 // Debounced search
 searchInput.addEventListener('input', (e) => {
@@ -177,8 +113,7 @@ async function loadExpansions(replace = true) {
     try {
         const url = new URL('{{ route('tcg.expansions.search') }}');
         url.searchParams.append('page', currentPage);
-        url.searchParams.append('tab', currentTab);
-        if (currentQuery && currentTab !== 'upcoming') {
+        if (currentQuery) {
             url.searchParams.append('query', currentQuery);
         }
 
@@ -195,24 +130,6 @@ async function loadExpansions(replace = true) {
         } else {
             resultsContainer.classList.remove('hidden');
             noResults.classList.add('hidden');
-
-            // Show upcoming section only on 'all' tab, first page
-            if (currentTab === 'all' && currentPage === 1 && data.upcoming && data.upcoming.length > 0) {
-                upcomingList.innerHTML = '';
-                data.upcoming.forEach(item => {
-                    const link = document.createElement('a');
-                    link.href = `/tcg/expansions/${item.group_id}`;
-                    link.className = 'inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-500/20 transition text-xs font-medium';
-                    link.innerHTML = `
-                        <span>${escapeHtml(item.name)}</span>
-                        <span class="text-blue-300/70">(${item.published_on})</span>
-                    `;
-                    upcomingList.appendChild(link);
-                });
-                upcomingSection.classList.remove('hidden');
-            } else {
-                upcomingSection.classList.add('hidden');
-            }
 
             data.data.forEach(expansion => {
                 const row = createExpansionRow(expansion);
@@ -296,6 +213,6 @@ function escapeHtml(text) {
 }
 
 // Load initial results
-switchTab('all');
+loadExpansions();
 </script>
 @endsection

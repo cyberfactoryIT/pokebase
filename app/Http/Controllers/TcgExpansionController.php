@@ -40,13 +40,10 @@ class TcgExpansionController extends Controller
         $validated = $request->validate([
             'query' => 'nullable|string|max:100',
             'page' => 'integer|min:1',
-            'tab' => 'nullable|string|in:all,top,upcoming',
         ]);
 
-        $tab = $validated['tab'] ?? 'all';
-
         $query = TcgcsvGroup::query()
-            ->where('category_id', $currentGame->id)
+            ->where('game_id', $currentGame->id)
             ->withCount('products');
 
         // Search filter
@@ -58,63 +55,13 @@ class TcgExpansionController extends Controller
             });
         }
 
-        $today = now()->toDateString();
-        
-        // Tab-specific filtering
-        if ($tab === 'upcoming') {
-            // Only future releases
-            $query->where('published_on', '>', $today)
-                  ->orderBy('published_on', 'ASC');
-            $upcoming = collect();
-        } elseif ($tab === 'top') {
-            // Top expansions: with logo and value, ordered by date descending
-            $query->where(function($q) use ($today) {
-                $q->whereNull('tcgcsv_groups.published_on')
-                  ->orWhere('tcgcsv_groups.published_on', '<=', $today);
-            })
-            ->whereNotNull('tcgcsv_groups.logo_url');
-            
-            // Join with rapidapi_episodes to filter by value
-            $query->join('rapidapi_episodes', function($join) {
-                $join->on('tcgcsv_groups.abbreviation', '=', 'rapidapi_episodes.code');
-            })
-            ->where('rapidapi_episodes.cardmarket_total_value', '>', 0)
-            ->select('tcgcsv_groups.*')
-            ->addSelect('rapidapi_episodes.cardmarket_total_value')
-            ->addSelect('rapidapi_episodes.cards_printed_total')
-            ->orderByRaw('tcgcsv_groups.published_on IS NULL, tcgcsv_groups.published_on DESC');
-            
-            $upcoming = collect();
-        } else {
-            // 'all' tab - current/past releases
-            // Get upcoming releases for banner
-            $upcomingQuery = clone $query;
-            $upcoming = $upcomingQuery
-                ->where('published_on', '>', $today)
-                ->orderBy('published_on', 'ASC')
-                ->get()
-                ->map(function($expansion) {
-                    return [
-                        'group_id' => $expansion->group_id,
-                        'name' => $expansion->name,
-                        'abbreviation' => $expansion->abbreviation,
-                        'published_on' => $expansion->published_on ? $expansion->published_on->format('Y-m-d') : null,
-                    ];
-                });
-            
-            // Filter main query
-            $query->where(function($q) use ($today) {
-                $q->whereNull('published_on')
-                  ->orWhere('published_on', '<=', $today);
-            });
-            $query->orderByRaw('published_on IS NULL, published_on DESC');
-        }
+        // Order: published_on DESC, but nulls last
+        $query->orderByRaw('published_on IS NULL, published_on DESC');
 
         // Paginate
         $expansions = $query->paginate(25);
 
         return response()->json([
-            'upcoming' => $upcoming,
             'data' => $expansions->map(function($expansion) {
                 // Get Cardmarket value from rapidapi_episodes if available
                 $rapidapiEpisode = \DB::table('rapidapi_episodes')
