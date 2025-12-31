@@ -55,6 +55,30 @@ class TcgExpansionController extends Controller
             });
         }
 
+        // Separate future releases from current/past
+        $today = now()->toDateString();
+        
+        // Get upcoming releases (future dates)
+        $upcomingQuery = clone $query;
+        $upcoming = $upcomingQuery
+            ->where('published_on', '>', $today)
+            ->orderBy('published_on', 'ASC')
+            ->get()
+            ->map(function($expansion) {
+                return [
+                    'group_id' => $expansion->group_id,
+                    'name' => $expansion->name,
+                    'abbreviation' => $expansion->abbreviation,
+                    'published_on' => $expansion->published_on ? $expansion->published_on->format('Y-m-d') : null,
+                ];
+            });
+        
+        // Filter main query to only show current/past releases
+        $query->where(function($q) use ($today) {
+            $q->whereNull('published_on')
+              ->orWhere('published_on', '<=', $today);
+        });
+
         // Order: published_on DESC, but nulls last
         $query->orderByRaw('published_on IS NULL, published_on DESC');
 
@@ -62,6 +86,7 @@ class TcgExpansionController extends Controller
         $expansions = $query->paginate(25);
 
         return response()->json([
+            'upcoming' => $upcoming,
             'data' => $expansions->map(function($expansion) {
                 // Get Cardmarket value from rapidapi_episodes if available
                 $rapidapiEpisode = \DB::table('rapidapi_episodes')

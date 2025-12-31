@@ -34,6 +34,14 @@
                 {{ __('catalogue.loading_expansions') }}
             </div>
 
+            <!-- Coming Soon Section -->
+            <div id="upcomingSection" class="px-6 py-4 border-b border-white/10 hidden">
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">🚀 Coming Soon</h3>
+                <div id="upcomingList" class="flex flex-wrap gap-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
             <!-- Results Grid -->
             <div id="resultsContainer" class="p-6">
                 <div id="expansionsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -80,6 +88,8 @@ const expansionsList = document.getElementById('expansionsList');
 const noResults = document.getElementById('noResults');
 const loadMoreContainer = document.getElementById('loadMoreContainer');
 const loadMoreBtn = document.getElementById('loadMoreBtn');
+const upcomingSection = document.getElementById('upcomingSection');
+const upcomingList = document.getElementById('upcomingList');
 
 // Debounced search
 searchInput.addEventListener('input', (e) => {
@@ -130,6 +140,24 @@ async function loadExpansions(replace = true) {
         } else {
             resultsContainer.classList.remove('hidden');
             noResults.classList.add('hidden');
+
+            // Show upcoming releases on first page only
+            if (currentPage === 1 && data.upcoming && data.upcoming.length > 0) {
+                upcomingList.innerHTML = '';
+                data.upcoming.forEach(item => {
+                    const link = document.createElement('a');
+                    link.href = `/tcg/expansions/${item.group_id}`;
+                    link.className = 'inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-500/20 transition text-xs font-medium';
+                    link.innerHTML = `
+                        <span>${escapeHtml(item.name)}</span>
+                        <span class="text-blue-300/70">(${item.published_on})</span>
+                    `;
+                    upcomingList.appendChild(link);
+                });
+                upcomingSection.classList.remove('hidden');
+            } else if (currentPage === 1) {
+                upcomingSection.classList.add('hidden');
+            }
 
             data.data.forEach(expansion => {
                 const row = createExpansionRow(expansion);
