@@ -40,11 +40,33 @@ class TcgExpansionController extends Controller
         $validated = $request->validate([
             'query' => 'nullable|string|max:100',
             'page' => 'integer|min:1',
+            'tab' => 'nullable|in:all,top,coming-soon',
         ]);
 
         $query = TcgcsvGroup::query()
             ->where('game_id', $currentGame->id)
             ->withCount('products');
+
+        $tab = $validated['tab'] ?? 'all';
+
+        // Tab filters
+        if ($tab === 'coming-soon') {
+            // Future releases only
+            $query->where('published_on', '>', now());
+            $query->orderBy('published_on', 'asc');
+        } elseif ($tab === 'top') {
+            // Only published expansions with Cardmarket value
+            $query->where(function($q) {
+                $q->whereNull('published_on')
+                  ->orWhere('published_on', '<=', now());
+            });
+        } else {
+            // All: already released or no date
+            $query->where(function($q) {
+                $q->whereNull('published_on')
+                  ->orWhere('published_on', '<=', now());
+            });
+        }
 
         // Search filter
         if (!empty($validated['query'])) {
@@ -55,31 +77,41 @@ class TcgExpansionController extends Controller
             });
         }
 
-        // Order: published_on DESC, but nulls last
-        $query->orderByRaw('published_on IS NULL, published_on DESC');
+        // Default order for 'all' and 'top' tabs (will be overridden for top after getting cardmarket values)
+        if ($tab !== 'coming-soon') {
+            $query->orderByRaw('published_on IS NULL, published_on DESC');
+        }
 
         // Paginate
         $expansions = $query->paginate(25);
 
+        // Map results and add Cardmarket data
+        $data = $expansions->map(function($expansion) {
+            // Get Cardmarket value from rapidapi_episodes if available
+            $rapidapiEpisode = \DB::table('rapidapi_episodes')
+                ->where('code', $expansion->abbreviation)
+                ->first();
+            
+            return [
+                'group_id' => $expansion->group_id,
+                'name' => $expansion->name,
+                'abbreviation' => $expansion->abbreviation,
+                'published_on' => $expansion->published_on ? $expansion->published_on->format('Y-m-d') : null,
+                'products_count' => $expansion->products_count,
+                'color' => $this->getExpansionColor($expansion->group_id),
+                'logo_url' => $expansion->logo_url,
+                'cardmarket_value' => $rapidapiEpisode->cardmarket_total_value ?? 0,
+                'cards_printed' => $rapidapiEpisode->cards_printed_total ?? $expansion->products_count,
+            ];
+        });
+
+        // Sort by Cardmarket value for 'top' tab
+        if ($tab === 'top') {
+            $data = $data->sortByDesc('cardmarket_value')->values();
+        }
+
         return response()->json([
-            'data' => $expansions->map(function($expansion) {
-                // Get Cardmarket value from rapidapi_episodes if available
-                $rapidapiEpisode = \DB::table('rapidapi_episodes')
-                    ->where('code', $expansion->abbreviation)
-                    ->first();
-                
-                return [
-                    'group_id' => $expansion->group_id,
-                    'name' => $expansion->name,
-                    'abbreviation' => $expansion->abbreviation,
-                    'published_on' => $expansion->published_on ? $expansion->published_on->format('Y-m-d') : null,
-                    'products_count' => $expansion->products_count,
-                    'color' => $this->getExpansionColor($expansion->group_id),
-                    'logo_url' => $expansion->logo_url,
-                    'cardmarket_value' => $rapidapiEpisode->cardmarket_total_value ?? 0,
-                    'cards_printed' => $rapidapiEpisode->cards_printed_total ?? $expansion->products_count,
-                ];
-            }),
+            'data' => $data,
             'meta' => [
                 'current_page' => $expansions->currentPage(),
                 'last_page' => $expansions->lastPage(),

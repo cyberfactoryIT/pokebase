@@ -1,6 +1,20 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+.tab-button {
+    border-color: transparent;
+    color: #9ca3af;
+}
+.tab-button:hover {
+    color: white;
+}
+.tab-button.active {
+    border-color: #3b82f6;
+    color: #60a5fa;
+}
+</style>
+
 <div class="bg-black min-h-screen py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl">
@@ -8,6 +22,33 @@
             <div class="border-b border-white/10 px-6 py-4">
                 <h1 class="text-3xl font-bold text-white">{{ __('catalogue.expansions_title') }}</h1>
                 <p class="mt-1 text-sm text-gray-300">{{ __('catalogue.expansions_subtitle') }}</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-b border-white/10 px-6">
+                <div class="flex gap-4">
+                    <button 
+                        onclick="switchTab('all')" 
+                        id="tab-all"
+                        class="tab-button px-4 py-3 text-sm font-medium border-b-2 transition-colors active"
+                    >
+                        All Expansions
+                    </button>
+                    <button 
+                        onclick="switchTab('top')" 
+                        id="tab-top"
+                        class="tab-button px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+                    >
+                        Top Value
+                    </button>
+                    <button 
+                        onclick="switchTab('coming-soon')" 
+                        id="tab-coming-soon"
+                        class="tab-button px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+                    >
+                        Coming Soon
+                    </button>
+                </div>
             </div>
 
             <!-- Search Bar -->
@@ -69,6 +110,7 @@ const i18n = {
 
 let currentPage = 1;
 let currentQuery = '';
+let currentTab = 'all';
 let lastPage = 1;
 let debounceTimer = null;
 let isLoading = false;
@@ -80,6 +122,24 @@ const expansionsList = document.getElementById('expansionsList');
 const noResults = document.getElementById('noResults');
 const loadMoreContainer = document.getElementById('loadMoreContainer');
 const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+// Tab switching
+function switchTab(tab) {
+    currentTab = tab;
+    currentPage = 1;
+    
+    // Update tab UI
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active', 'border-blue-500', 'text-blue-400');
+        btn.classList.add('border-transparent', 'text-gray-400', 'hover:text-white');
+    });
+    
+    const activeTab = document.getElementById(`tab-${tab}`);
+    activeTab.classList.add('active', 'border-blue-500', 'text-blue-400');
+    activeTab.classList.remove('border-transparent', 'text-gray-400', 'hover:text-white');
+    
+    loadExpansions(true);
+}
 
 // Debounced search
 searchInput.addEventListener('input', (e) => {
@@ -113,6 +173,7 @@ async function loadExpansions(replace = true) {
     try {
         const url = new URL('{{ route('tcg.expansions.search') }}');
         url.searchParams.append('page', currentPage);
+        url.searchParams.append('tab', currentTab);
         if (currentQuery) {
             url.searchParams.append('query', currentQuery);
         }
