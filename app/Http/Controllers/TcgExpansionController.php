@@ -70,6 +70,7 @@ class TcgExpansionController extends Controller
                     'published_on' => $expansion->published_on ? $expansion->published_on->format('Y-m-d') : null,
                     'products_count' => $expansion->products_count,
                     'color' => $this->getExpansionColor($expansion->group_id),
+                    'logo_url' => $expansion->logo_url,
                 ];
             }),
             'meta' => [

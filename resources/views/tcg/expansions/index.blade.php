@@ -34,22 +34,11 @@
                 {{ __('catalogue.loading_expansions') }}
             </div>
 
-            <!-- Results Table -->
-            <div id="resultsContainer" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-white/10">
-                    <thead class="bg-black/30">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-20">{{ __('catalogue.table_icon') }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">{{ __('catalogue.table_name') }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">{{ __('catalogue.table_code') }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">{{ __('catalogue.table_published') }}</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">{{ __('catalogue.table_cards') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="expansionsList" class="bg-black/20 divide-y divide-white/10">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
+            <!-- Results Grid -->
+            <div id="resultsContainer" class="p-6">
+                <div id="expansionsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Populated by JS -->
+                </div>
             </div>
 
             <!-- No Results -->
@@ -165,46 +154,43 @@ async function loadExpansions(replace = true) {
     }
 }
 
-// Create expansion row
+// Create expansion card
 function createExpansionRow(expansion) {
-    const tr = document.createElement('tr');
-    tr.className = 'hover:bg-white/5 cursor-pointer transition-colors';
-    tr.onclick = () => {
+    const card = document.createElement('div');
+    card.className = 'bg-black/40 border border-white/10 rounded-xl overflow-hidden hover:border-blue-500/50 hover:shadow-xl transition-all cursor-pointer group';
+    card.onclick = () => {
         window.location.href = `/tcg/expansions/${expansion.group_id}`;
     };
 
-    const logoPath = `/images/logos/${expansion.abbreviation || 'unknown'}-logo.png`;
+    const localLogoPath = `/images/logos/${expansion.abbreviation || 'unknown'}-logo.png`;
+    const logoUrl = expansion.logo_url || localLogoPath;
     const badgeId = `badge-${expansion.group_id}`;
     
-    tr.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap">
+    card.innerHTML = `
+        <div class="aspect-video bg-gradient-to-br from-gray-900 to-black relative flex items-center justify-center p-4">
             <img 
-                src="${logoPath}" 
+                src="${logoUrl}" 
                 alt="${escapeHtml(expansion.name)}" 
-                class="w-12 h-12 object-contain"
-                onerror="this.style.display='none'; document.getElementById('${badgeId}').style.display='flex';"
+                class="max-w-full max-h-full object-contain transition-transform group-hover:scale-105"
+                onerror="this.onerror=null; this.src='${localLogoPath}'; this.onerror=function() { this.style.display='none'; document.getElementById('${badgeId}').style.display='flex'; };"
             />
-            <div id="${badgeId}" class="w-12 h-12 ${expansion.color} rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md" style="display:none;">
+            <div id="${badgeId}" class="w-24 h-24 ${expansion.color} rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg" style="display:none;">
                 ${escapeHtml(expansion.abbreviation || '?').substring(0, 3)}
             </div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm font-medium text-white">${escapeHtml(expansion.name)}</div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-white/10 text-gray-300">
-                ${escapeHtml(expansion.abbreviation || 'N/A')}
-            </span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-            ${expansion.published_on || 'N/A'}
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-            ${i18n.cardsCount.replace('{count}', expansion.products_count.toLocaleString())}
-        </td>
+        </div>
+        <div class="p-4">
+            <h3 class="text-white font-semibold text-base mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                ${escapeHtml(expansion.name)}
+            </h3>
+            <div class="flex items-center justify-between text-xs text-gray-400">
+                <span class="px-2 py-1 bg-white/5 rounded-md font-mono">${escapeHtml(expansion.abbreviation || 'N/A')}</span>
+                <span>${i18n.cardsCount.replace('{count}', expansion.products_count.toLocaleString())}</span>
+            </div>
+            ${expansion.published_on ? `<div class="mt-2 text-xs text-gray-500">${expansion.published_on}</div>` : ''}
+        </div>
     `;
 
-    return tr;
+    return card;
 }
 
 // Escape HTML to prevent XSS
