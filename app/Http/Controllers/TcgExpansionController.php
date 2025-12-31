@@ -46,7 +46,7 @@ class TcgExpansionController extends Controller
         $tab = $validated['tab'] ?? 'all';
 
         $query = TcgcsvGroup::query()
-            ->where('game_id', $currentGame->id)
+            ->where('category_id', $currentGame->id)
             ->withCount('products');
 
         // Search filter

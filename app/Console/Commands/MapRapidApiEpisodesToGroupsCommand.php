@@ -68,7 +68,7 @@ class MapRapidApiEpisodesToGroupsCommand extends Command
                     
                     if ($shouldUpdate) {
                         DB::table('tcgcsv_groups')
-                            ->where('id', $group->id)
+                            ->where('group_id', $group->group_id)
                             ->update([
                                 'logo_url' => $episode->logo_url,
                                 'rapidapi_episode_id' => $episode->episode_id,
