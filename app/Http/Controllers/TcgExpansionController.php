@@ -69,17 +69,19 @@ class TcgExpansionController extends Controller
         } elseif ($tab === 'top') {
             // Top expansions: with logo and value, ordered by date descending
             $query->where(function($q) use ($today) {
-                $q->whereNull('published_on')
-                  ->orWhere('published_on', '<=', $today);
+                $q->whereNull('tcgcsv_groups.published_on')
+                  ->orWhere('tcgcsv_groups.published_on', '<=', $today);
             })
-            ->whereNotNull('logo_url');
+            ->whereNotNull('tcgcsv_groups.logo_url');
             
             // Join with rapidapi_episodes to filter by value
-            $query->leftJoin('rapidapi_episodes', function($join) {
+            $query->join('rapidapi_episodes', function($join) {
                 $join->on('tcgcsv_groups.abbreviation', '=', 'rapidapi_episodes.code');
             })
             ->where('rapidapi_episodes.cardmarket_total_value', '>', 0)
-            ->select('tcgcsv_groups.*', 'rapidapi_episodes.cardmarket_total_value')
+            ->select('tcgcsv_groups.*')
+            ->addSelect('rapidapi_episodes.cardmarket_total_value')
+            ->addSelect('rapidapi_episodes.cards_printed_total')
             ->orderByRaw('tcgcsv_groups.published_on IS NULL, tcgcsv_groups.published_on DESC');
             
             $upcoming = collect();
