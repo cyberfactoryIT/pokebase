@@ -125,6 +125,9 @@ Route::middleware(['web', 'auth'])->prefix('admin')->group(function () {
     // Gestione organizzazione
     Route::get('organization/edit', [App\Http\Controllers\Admin\OrganizationController::class, 'edit'])->name('admin.organization.edit');
     Route::patch('organization/update', [App\Http\Controllers\Admin\OrganizationController::class, 'update'])->name('admin.organization.update');
+    
+    // TCGdex Import Runs
+    Route::get('tcgdx/import-runs', [App\Http\Controllers\Admin\TcgdxImportRunController::class, 'index'])->name('admin.tcgdx.import-runs');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -175,14 +178,26 @@ require __DIR__.'/auth.php';
 
 // TCG Browsing Routes (game-agnostic)
 Route::prefix('tcg')->group(function () {
-    // Expansions
+    // Expansions (TCGCSV)
     Route::get('/expansions', [\App\Http\Controllers\TcgExpansionController::class, 'index'])->name('tcg.expansions.index');
     Route::get('/expansions/search', [\App\Http\Controllers\TcgExpansionController::class, 'search'])->name('tcg.expansions.search');
     Route::get('/expansions/{groupId}', [\App\Http\Controllers\TcgExpansionController::class, 'show'])->name('tcg.expansions.show');
     Route::get('/expansions/{groupId}/cards/search', [\App\Http\Controllers\TcgExpansionController::class, 'cardsSearch'])->name('tcg.expansions.cards.search');
     
-    // Cards
+    // Cards (TCGCSV)
     Route::get('/cards/{productId}', [\App\Http\Controllers\TcgCardController::class, 'show'])->name('tcg.cards.show');
+});
+
+// TCGdex Browsing Routes
+Route::prefix('tcgdex')->group(function () {
+    // Sets
+    Route::get('/sets', [\App\Http\Controllers\TcgdxSetController::class, 'index'])->name('tcgdex.sets.index');
+    Route::get('/sets/search', [\App\Http\Controllers\TcgdxSetController::class, 'search'])->name('tcgdex.sets.search');
+    Route::get('/sets/{setId}', [\App\Http\Controllers\TcgdxSetController::class, 'show'])->name('tcgdex.sets.show');
+    Route::get('/sets/{setId}/cards/search', [\App\Http\Controllers\TcgdxSetController::class, 'cardsSearch'])->name('tcgdex.sets.cards.search');
+    
+    // Cards
+    Route::get('/cards/{cardId}', [\App\Http\Controllers\TcgdxCardController::class, 'show'])->name('tcgdex.cards.show');
 });
 
 // Pokemon Deck Valuation Flow (guest lead capture)
