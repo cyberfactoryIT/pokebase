@@ -63,6 +63,11 @@ class TcgExpansionController extends Controller
 
         return response()->json([
             'data' => $expansions->map(function($expansion) {
+                // Get Cardmarket value from rapidapi_episodes if available
+                $rapidapiEpisode = \DB::table('rapidapi_episodes')
+                    ->where('code', $expansion->abbreviation)
+                    ->first();
+                
                 return [
                     'group_id' => $expansion->group_id,
                     'name' => $expansion->name,
@@ -71,6 +76,8 @@ class TcgExpansionController extends Controller
                     'products_count' => $expansion->products_count,
                     'color' => $this->getExpansionColor($expansion->group_id),
                     'logo_url' => $expansion->logo_url,
+                    'cardmarket_value' => $rapidapiEpisode->cardmarket_total_value ?? 0,
+                    'cards_printed' => $rapidapiEpisode->cards_printed_total ?? $expansion->products_count,
                 ];
             }),
             'meta' => [

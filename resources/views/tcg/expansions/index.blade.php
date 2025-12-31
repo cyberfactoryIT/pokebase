@@ -166,6 +166,17 @@ function createExpansionRow(expansion) {
     const logoUrl = expansion.logo_url || localLogoPath;
     const badgeId = `badge-${expansion.group_id}`;
     
+    // Format Cardmarket value
+    const valueDisplay = expansion.cardmarket_value > 0 
+        ? `<div class="mt-2 flex items-center justify-between text-xs">
+            <span class="text-gray-500">Est. Value:</span>
+            <span class="text-green-400 font-semibold">€${expansion.cardmarket_value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+           </div>
+           <div class="mt-1 text-xs text-gray-600">
+            ${expansion.cards_printed} printed cards
+           </div>`
+        : '';
+    
     card.innerHTML = `
         <div class="aspect-video bg-gradient-to-br from-gray-900 to-black relative flex items-center justify-center p-4">
             <img 
@@ -187,6 +198,7 @@ function createExpansionRow(expansion) {
                 <span>${i18n.cardsCount.replace('{count}', expansion.products_count.toLocaleString())}</span>
             </div>
             ${expansion.published_on ? `<div class="mt-2 text-xs text-gray-500">${expansion.published_on}</div>` : ''}
+            ${valueDisplay}
         </div>
     `;
 
