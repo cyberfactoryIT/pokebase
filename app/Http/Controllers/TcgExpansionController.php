@@ -40,7 +40,10 @@ class TcgExpansionController extends Controller
         $validated = $request->validate([
             'query' => 'nullable|string|max:100',
             'page' => 'integer|min:1',
+            'tab' => 'nullable|string|in:all,top,upcoming',
         ]);
+
+        $tab = $validated['tab'] ?? 'all';
 
         $query = TcgcsvGroup::query()
             ->where('game_id', $currentGame->id)
@@ -55,32 +58,53 @@ class TcgExpansionController extends Controller
             });
         }
 
-        // Separate future releases from current/past
         $today = now()->toDateString();
         
-        // Get upcoming releases (future dates)
-        $upcomingQuery = clone $query;
-        $upcoming = $upcomingQuery
-            ->where('published_on', '>', $today)
-            ->orderBy('published_on', 'ASC')
-            ->get()
-            ->map(function($expansion) {
-                return [
-                    'group_id' => $expansion->group_id,
-                    'name' => $expansion->name,
-                    'abbreviation' => $expansion->abbreviation,
-                    'published_on' => $expansion->published_on ? $expansion->published_on->format('Y-m-d') : null,
-                ];
+        // Tab-specific filtering
+        if ($tab === 'upcoming') {
+            // Only future releases
+            $query->where('published_on', '>', $today)
+                  ->orderBy('published_on', 'ASC');
+            $upcoming = collect();
+        } elseif ($tab === 'top') {
+            // Top expansions by Cardmarket value
+            $query->where(function($q) use ($today) {
+                $q->whereNull('published_on')
+                  ->orWhere('published_on', '<=', $today);
             });
-        
-        // Filter main query to only show current/past releases
-        $query->where(function($q) use ($today) {
-            $q->whereNull('published_on')
-              ->orWhere('published_on', '<=', $today);
-        });
-
-        // Order: published_on DESC, but nulls last
-        $query->orderByRaw('published_on IS NULL, published_on DESC');
+            
+            // Join with rapidapi_episodes to get cardmarket_total_value
+            $query->leftJoin('rapidapi_episodes', function($join) {
+                $join->on('tcgcsv_groups.abbreviation', '=', 'rapidapi_episodes.code');
+            })
+            ->select('tcgcsv_groups.*', 'rapidapi_episodes.cardmarket_total_value')
+            ->orderByDesc('rapidapi_episodes.cardmarket_total_value');
+            
+            $upcoming = collect();
+        } else {
+            // 'all' tab - current/past releases
+            // Get upcoming releases for banner
+            $upcomingQuery = clone $query;
+            $upcoming = $upcomingQuery
+                ->where('published_on', '>', $today)
+                ->orderBy('published_on', 'ASC')
+                ->get()
+                ->map(function($expansion) {
+                    return [
+                        'group_id' => $expansion->group_id,
+                        'name' => $expansion->name,
+                        'abbreviation' => $expansion->abbreviation,
+                        'published_on' => $expansion->published_on ? $expansion->published_on->format('Y-m-d') : null,
+                    ];
+                });
+            
+            // Filter main query
+            $query->where(function($q) use ($today) {
+                $q->whereNull('published_on')
+                  ->orWhere('published_on', '<=', $today);
+            });
+            $query->orderByRaw('published_on IS NULL, published_on DESC');
+        }
 
         // Paginate
         $expansions = $query->paginate(25);

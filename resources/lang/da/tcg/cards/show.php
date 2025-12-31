@@ -21,5 +21,6 @@ return [
     'printing' => 'Tryk',
     'last_updated' => 'Sidst opdateret',
     'pricing_coming_soon' => 'Prisinformation kommer snart',
+    'no_eu_prices' => 'Ingen europæiske priser tilgængelige for dette kort',
     'extended_information' => 'Udvidet Information',
 ];

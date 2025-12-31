@@ -10,6 +10,33 @@
                 <p class="mt-1 text-sm text-gray-300">{{ __('catalogue.expansions_subtitle') }}</p>
             </div>
 
+            <!-- Tabs -->
+            <div class="border-b border-white/10 px-6 pt-4">
+                <div class="flex gap-2">
+                    <button 
+                        id="tabTop" 
+                        class="tab-btn px-6 py-3 text-sm font-medium rounded-t-lg transition-colors"
+                        onclick="switchTab('top')"
+                    >
+                        🔥 Top Expansions
+                    </button>
+                    <button 
+                        id="tabAll" 
+                        class="tab-btn px-6 py-3 text-sm font-medium rounded-t-lg transition-colors"
+                        onclick="switchTab('all')"
+                    >
+                        📚 All Expansions
+                    </button>
+                    <button 
+                        id="tabUpcoming" 
+                        class="tab-btn px-6 py-3 text-sm font-medium rounded-t-lg transition-colors"
+                        onclick="switchTab('upcoming')"
+                    >
+                        🚀 Coming Soon
+                    </button>
+                </div>
+            </div>
+
             <!-- Search Bar -->
             <div class="px-6 py-4 border-b border-white/10">
                 <div class="relative">
@@ -77,6 +104,7 @@ const i18n = {
 
 let currentPage = 1;
 let currentQuery = '';
+let currentTab = 'all';
 let lastPage = 1;
 let debounceTimer = null;
 let isLoading = false;
@@ -90,6 +118,32 @@ const loadMoreContainer = document.getElementById('loadMoreContainer');
 const loadMoreBtn = document.getElementById('loadMoreBtn');
 const upcomingSection = document.getElementById('upcomingSection');
 const upcomingList = document.getElementById('upcomingList');
+
+// Tab switching
+function switchTab(tab) {
+    currentTab = tab;
+    currentPage = 1;
+    
+    // Update tab styles
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('text-gray-400', 'hover:text-white');
+    });
+    
+    const activeBtn = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+    activeBtn.classList.remove('text-gray-400', 'hover:text-white');
+    activeBtn.classList.add('bg-blue-600', 'text-white');
+    
+    // Show/hide search based on tab
+    const searchBar = searchInput.parentElement.parentElement;
+    if (tab === 'upcoming') {
+        searchBar.classList.add('hidden');
+    } else {
+        searchBar.classList.remove('hidden');
+    }
+    
+    loadExpansions(true);
+}
 
 // Debounced search
 searchInput.addEventListener('input', (e) => {
@@ -123,7 +177,8 @@ async function loadExpansions(replace = true) {
     try {
         const url = new URL('{{ route('tcg.expansions.search') }}');
         url.searchParams.append('page', currentPage);
-        if (currentQuery) {
+        url.searchParams.append('tab', currentTab);
+        if (currentQuery && currentTab !== 'upcoming') {
             url.searchParams.append('query', currentQuery);
         }
 
@@ -141,8 +196,8 @@ async function loadExpansions(replace = true) {
             resultsContainer.classList.remove('hidden');
             noResults.classList.add('hidden');
 
-            // Show upcoming releases on first page only
-            if (currentPage === 1 && data.upcoming && data.upcoming.length > 0) {
+            // Show upcoming section only on 'all' tab, first page
+            if (currentTab === 'all' && currentPage === 1 && data.upcoming && data.upcoming.length > 0) {
                 upcomingList.innerHTML = '';
                 data.upcoming.forEach(item => {
                     const link = document.createElement('a');
@@ -155,7 +210,7 @@ async function loadExpansions(replace = true) {
                     upcomingList.appendChild(link);
                 });
                 upcomingSection.classList.remove('hidden');
-            } else if (currentPage === 1) {
+            } else {
                 upcomingSection.classList.add('hidden');
             }
 
@@ -241,6 +296,6 @@ function escapeHtml(text) {
 }
 
 // Load initial results
-loadExpansions();
+switchTab('all');
 </script>
 @endsection
