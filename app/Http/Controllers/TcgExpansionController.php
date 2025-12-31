@@ -67,18 +67,20 @@ class TcgExpansionController extends Controller
                   ->orderBy('published_on', 'ASC');
             $upcoming = collect();
         } elseif ($tab === 'top') {
-            // Top expansions by Cardmarket value
+            // Top expansions: with logo and value, ordered by date descending
             $query->where(function($q) use ($today) {
                 $q->whereNull('published_on')
                   ->orWhere('published_on', '<=', $today);
-            });
+            })
+            ->whereNotNull('logo_url');
             
-            // Join with rapidapi_episodes to get cardmarket_total_value
+            // Join with rapidapi_episodes to filter by value
             $query->leftJoin('rapidapi_episodes', function($join) {
                 $join->on('tcgcsv_groups.abbreviation', '=', 'rapidapi_episodes.code');
             })
+            ->where('rapidapi_episodes.cardmarket_total_value', '>', 0)
             ->select('tcgcsv_groups.*', 'rapidapi_episodes.cardmarket_total_value')
-            ->orderByDesc('rapidapi_episodes.cardmarket_total_value');
+            ->orderByRaw('tcgcsv_groups.published_on IS NULL, tcgcsv_groups.published_on DESC');
             
             $upcoming = collect();
         } else {
