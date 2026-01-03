@@ -33,4 +33,11 @@ return [
     'psa_graded_prices' => 'Prezzi PSA Gradata',
     'near_mint' => 'Near Mint',
     'prices' => 'Prezzi',
+    'tcgdex_prices' => 'Prezzi TCGdex',
+    'holofoil' => 'Holofoil',
+    'average' => 'Media',
+    'trend' => 'Tendenza',
+    '7d_average' => 'Media 7 Giorni',
+    '30d_average' => 'Media 30 Giorni',
+    '1d_average' => 'Media 1 Giorno',
 ];

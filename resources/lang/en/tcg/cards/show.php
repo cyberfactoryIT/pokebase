@@ -33,4 +33,11 @@ return [
     'psa_graded_prices' => 'PSA Graded Prices',
     'near_mint' => 'Near Mint',
     'prices' => 'Prices',
+    'tcgdex_prices' => 'TCGdex Prices',
+    'holofoil' => 'Holofoil',
+    'average' => 'Average',
+    'trend' => 'Trend',
+    '7d_average' => '7-Day Average',
+    '30d_average' => '30-Day Average',
+    '1d_average' => '1-Day Average',
 ];

@@ -21,7 +21,8 @@ class TcgCardController extends Controller
                 },
                 'cardmarketMapping',
                 'cardmarketVariants.latestPriceQuote',
-                'rapidapiCard'
+                'rapidapiCard',
+                'tcgdxCard'
             ])
             ->firstOrFail();
 

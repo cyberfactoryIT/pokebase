@@ -92,6 +92,14 @@ class TcgcsvProduct extends Model
     }
     
     /**
+     * Get the TCGdex card data
+     */
+    public function tcgdxCard()
+    {
+        return $this->belongsTo(\App\Models\Tcgdx\TcgdxCard::class, 'tcgdex_card_id', 'tcgdex_id');
+    }
+
+    /**
      * Check if this product has Cardmarket variants
      */
     public function hasCardmarketVariants(): bool

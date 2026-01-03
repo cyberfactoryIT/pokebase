@@ -398,6 +398,16 @@
                         $tcgPlayerPricesRapid = $allPricesRapid['tcg_player'] ?? [];
                         $tcgPlayerMarketRapid = $tcgPlayerPricesRapid['market_price'] ?? null;
                         $tcgPlayerMidRapid = $tcgPlayerPricesRapid['mid_price'] ?? null;
+                        
+                        // Get TCGdex prices from raw field
+                        $tcgdxCard = $card->tcgdxCard;
+                        $tcgdxRaw = $tcgdxCard && $tcgdxCard->raw 
+                            ? (is_string($tcgdxCard->raw) ? json_decode($tcgdxCard->raw, true) : $tcgdxCard->raw)
+                            : [];
+                        $tcgdxPricing = $tcgdxRaw['pricing'] ?? [];
+                        $tcgdxTcgplayer = $tcgdxPricing['tcgplayer'] ?? [];
+                        $tcgdxCardmarket = $tcgdxPricing['cardmarket'] ?? [];
+                        $tcgdxUpdated = $tcgdxTcgplayer['updated'] ?? null;
                     @endphp
                     
                     @if($latestPrice)
@@ -564,6 +574,142 @@
                                     <p><strong>{{ __('tcg/cards/show.data_source') }}:</strong> TCGPlayer via RapidAPI</p>
                                     @if($rapidapiCard && $rapidapiCard->updated_at)
                                     <p class="mt-1">{{ __('tcg/cards/show.last_updated') }}: {{ $rapidapiCard->updated_at->diffForHumans() }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    <!-- TCGdex Prices (TCGPlayer & Cardmarket) -->
+                    @if(!empty($tcgdxTcgplayer) || !empty($tcgdxCardmarket))
+                    <div class="mt-6 border-t border-white/10 pt-6">
+                        <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.tcgdex_prices') }}</h3>
+                        
+                        @if(!empty($tcgdxTcgplayer['holofoil']))
+                        <div class="mb-4">
+                            <h4 class="text-xs font-medium text-gray-400 mb-2 uppercase">TCGPlayer (USD) - {{ __('tcg/cards/show.holofoil') }}</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                @php $holofoil = $tcgdxTcgplayer['holofoil']; @endphp
+                                
+                                @if(isset($holofoil['marketPrice']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.market_price') }}</div>
+                                    <div class="text-xl font-bold text-white">${{ number_format($holofoil['marketPrice'], 2) }}</div>
+                                </div>
+                                @endif
+                                
+                                @if(isset($holofoil['lowPrice']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
+                                    <div class="text-xl font-semibold text-gray-200">${{ number_format($holofoil['lowPrice'], 2) }}</div>
+                                </div>
+                                @endif
+                                
+                                @if(isset($holofoil['midPrice']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.mid_price') }}</div>
+                                    <div class="text-xl font-semibold text-gray-200">${{ number_format($holofoil['midPrice'], 2) }}</div>
+                                </div>
+                                @endif
+                                
+                                @if(isset($holofoil['highPrice']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.high_price') }}</div>
+                                    <div class="text-xl font-semibold text-gray-200">${{ number_format($holofoil['highPrice'], 2) }}</div>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if(!empty($tcgdxCardmarket))
+                        <div class="mt-4">
+                            <h4 class="text-xs font-medium text-gray-400 mb-2 uppercase">Cardmarket (EUR)</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                @if(isset($tcgdxCardmarket['avg']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.average') }}</div>
+                                    <div class="text-xl font-bold text-white">€{{ number_format($tcgdxCardmarket['avg'], 2) }}</div>
+                                </div>
+                                @endif
+                                
+                                @if(isset($tcgdxCardmarket['low']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
+                                    <div class="text-xl font-semibold text-gray-200">€{{ number_format($tcgdxCardmarket['low'], 2) }}</div>
+                                </div>
+                                @endif
+                                
+                                @if(isset($tcgdxCardmarket['trend']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.trend') }}</div>
+                                    <div class="text-xl font-semibold text-gray-200">€{{ number_format($tcgdxCardmarket['trend'], 2) }}</div>
+                                </div>
+                                @endif
+                                
+                                @if(isset($tcgdxCardmarket['avg7']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.7d_average') }}</div>
+                                    <div class="text-xl font-semibold text-gray-200">€{{ number_format($tcgdxCardmarket['avg7'], 2) }}</div>
+                                </div>
+                                @endif
+                                
+                                @if(isset($tcgdxCardmarket['avg30']))
+                                <div class="border border-purple-400/30 bg-purple-500/20 rounded-lg p-3">
+                                    <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.30d_average') }}</div>
+                                    <div class="text-xl font-semibold text-gray-200">€{{ number_format($tcgdxCardmarket['avg30'], 2) }}</div>
+                                </div>
+                                @endif
+                            </div>
+                            
+                            @if(isset($tcgdxCardmarket['avg1-holo']) || isset($tcgdxCardmarket['avg7-holo']) || isset($tcgdxCardmarket['avg30-holo']) || isset($tcgdxCardmarket['trend-holo']))
+                            <div class="mt-3">
+                                <h5 class="text-xs font-medium text-gray-500 mb-2">{{ __('tcg/cards/show.holofoil') }} {{ __('tcg/cards/show.prices') }}</h5>
+                                <div class="grid grid-cols-2 gap-2">
+                                    @if(isset($tcgdxCardmarket['avg1-holo']))
+                                    <div class="border border-purple-400/20 bg-purple-500/10 rounded p-2">
+                                        <div class="text-xs text-gray-500">{{ __('tcg/cards/show.1d_average') }}</div>
+                                        <div class="text-sm font-semibold text-gray-300">€{{ number_format($tcgdxCardmarket['avg1-holo'], 2) }}</div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if(isset($tcgdxCardmarket['avg7-holo']))
+                                    <div class="border border-purple-400/20 bg-purple-500/10 rounded p-2">
+                                        <div class="text-xs text-gray-500">{{ __('tcg/cards/show.7d_average') }}</div>
+                                        <div class="text-sm font-semibold text-gray-300">€{{ number_format($tcgdxCardmarket['avg7-holo'], 2) }}</div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if(isset($tcgdxCardmarket['avg30-holo']))
+                                    <div class="border border-purple-400/20 bg-purple-500/10 rounded p-2">
+                                        <div class="text-xs text-gray-500">{{ __('tcg/cards/show.30d_average') }}</div>
+                                        <div class="text-sm font-semibold text-gray-300">€{{ number_format($tcgdxCardmarket['avg30-holo'], 2) }}</div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if(isset($tcgdxCardmarket['trend-holo']))
+                                    <div class="border border-purple-400/20 bg-purple-500/10 rounded p-2">
+                                        <div class="text-xs text-gray-500">{{ __('tcg/cards/show.trend') }}</div>
+                                        <div class="text-sm font-semibold text-gray-300">€{{ number_format($tcgdxCardmarket['trend-holo'], 2) }}</div>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @endif
+                        
+                        <!-- TCGdex Source Citation -->
+                        <div class="mt-3 text-xs text-gray-500">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p><strong>{{ __('tcg/cards/show.data_source') }}:</strong> TCGdex</p>
+                                    @if($tcgdxUpdated)
+                                    <p class="mt-1">{{ __('tcg/cards/show.last_updated') }}: {{ \Carbon\Carbon::parse($tcgdxUpdated)->diffForHumans() }}</p>
                                     @endif
                                 </div>
                             </div>
