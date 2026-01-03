@@ -158,11 +158,11 @@ echo -e "${GREEN}═════════════════════
 echo -e "${GREEN}STEP 7/8: TCGdex to TCGCSV Mapping (Schedule: 05:50)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Mapping TCGdex sets/cards to TCGCSV (fuzzy matching)${NC}"
+echo -e "${CYAN}📝 Mapping TCGdex sets/cards to TCGCSV (fuzzy matching + logos)${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~5-15 seconds${NC}"
 echo ""
 step7_start=$(date +%s)
-php artisan tcgdex:map
+php artisan tcgdex:map-to-tcgcsv
 step7_end=$(date +%s)
 step7_duration=$((step7_end - step7_start))
 echo ""

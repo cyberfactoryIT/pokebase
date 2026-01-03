@@ -75,6 +75,15 @@ else
     MAPPING_SUCCESS=false
 fi
 
+# Map TCGdex sets (logos)
+echo ""
+echo "🎨 Mapping TCGdex sets and logos..."
+if run_with_retry "php artisan tcgdex:map-to-tcgcsv" "TCGdex mapping"; then
+    TCGDEX_SUCCESS=true
+else
+    TCGDEX_SUCCESS=false
+fi
+
 # Enrich data
 echo ""
 echo "✨ Enriching TCGCSV data..."
