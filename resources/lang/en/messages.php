@@ -45,6 +45,14 @@ return [
     'privacy' => 'Privacy Policy',
     'cookies' => 'Cookie Policy',
     'pricing_plans' => 'Pricing Plans',
+    'select_game' => 'Select Game',
+    'no_games_activated' => 'No games activated',
+    'activate_game' => 'Activate a Game',
+    'my_decks' => 'My Decks',
+    'no_decks_yet' => 'No decks yet',
+    'create_deck' => 'Create Deck',
+    'view_all_decks' => 'View All Decks',
+    'articles' => 'Articles',
 
 
     ],

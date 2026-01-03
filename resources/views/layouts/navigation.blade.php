@@ -80,7 +80,7 @@
                             <span class="text-base font-bold">YGO</span>
                         @endif
                     @endif
-                    <span>{{ __('catalogue.expansions_title') }}</span>
+                    
                 </a>
                 @endif
                 
@@ -92,7 +92,7 @@
                     {{ __('messages.nav.pricing_plans') }}
                 </a>
                 <a href="{{ route('admin.articles.index') }}" class="px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('admin.articles.*') ? 'text-white font-semibold' : '' }}">
-                    Articles
+                    {{ __('messages.nav.articles') }}
                 </a>
                 @endif
                 

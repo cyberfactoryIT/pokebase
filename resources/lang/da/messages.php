@@ -40,6 +40,14 @@ return [
     'privacy' => 'Privatlivspolitik',
     'cookies' => 'Cookiepolitik',
     'pricing_plans' => 'Prisplaner',
+    'select_game' => 'Vælg Spil',
+    'no_games_activated' => 'Ingen spil aktiveret',
+    'activate_game' => 'Aktiver et Spil',
+    'my_decks' => 'Mine Decks',
+    'no_decks_yet' => 'Ingen decks endnu',
+    'create_deck' => 'Opret Deck',
+    'view_all_decks' => 'Vis Alle Decks',
+    'articles' => 'Artikler',
 
 
     ],

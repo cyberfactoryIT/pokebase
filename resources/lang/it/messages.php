@@ -40,6 +40,14 @@ return [
     'privacy' => 'Privacy Policy',
     'cookies' => 'Cookie Policy',
     'pricing_plans' => 'Piani tariffari',
+    'select_game' => 'Seleziona Gioco',
+    'no_games_activated' => 'Nessun gioco attivato',
+    'activate_game' => 'Attiva un Gioco',
+    'my_decks' => 'I miei Mazzi',
+    'no_decks_yet' => 'Nessun mazzo ancora',
+    'create_deck' => 'Crea Mazzo',
+    'view_all_decks' => 'Vedi Tutti i Mazzi',
+    'articles' => 'Articoli',
 
 
     ],
