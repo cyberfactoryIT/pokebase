@@ -613,7 +613,7 @@
                             <!-- TCGPlayer Prices (from RapidAPI) -->
                             @if($tcgPlayerMarket || $tcgPlayerMid)
                             <div class="mb-6">
-                                <h3 class="text-sm font-semibold text-gray-300 mb-3">TCGPlayer {{ __('Prices') }} (USD)</h3>
+                                <h3 class="text-sm font-semibold text-gray-300 mb-3">TCGPlayer Prices (USD)</h3>
                                 <div class="grid grid-cols-2 gap-3">
                                     @if($tcgPlayerMarket)
                                     <div class="border border-blue-400/30 bg-blue-500/20 rounded-lg p-3">
