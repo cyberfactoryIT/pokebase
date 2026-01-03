@@ -28,13 +28,12 @@
                         <span>{{ __('catalogue.cards_count', ['count' => $expansion->products_count]) }}</span>
                     </div>
                 </div>
-                @if($expansion->abbreviation)
+                @if($expansion->logo_url)
                     <div class="ml-6 flex-shrink-0">
                         <img 
-                            src="/images/logos/{{ $expansion->abbreviation }}-logo.png" 
+                            src="{{ $expansion->logo_url }}" 
                             alt="{{ $expansion->name }} logo" 
-                            class="h-16 w-auto object-contain"
-                            onerror="this.style.display='none'"
+                            class="h-20 w-auto object-contain"
                         >
                     </div>
                 @endif
