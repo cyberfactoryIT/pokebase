@@ -636,24 +636,38 @@
                     @endif
                     </div>
                     
-                    <!-- EU Prices (Cardmarket via RapidAPI) -->
+                    <!-- EU Prices (Cardmarket from cardmarket_price_quotes) -->
                     <div x-show="activeTab === 'eu'" x-transition x-cloak>
                         @php
-                            // Get all Cardmarket price data from RapidAPI
-                            $rapidapiCard = $card->rapidapiCard;
-                            $allPrices = $rapidapiCard && $rapidapiCard->prices 
-                                ? (is_string($rapidapiCard->prices) ? json_decode($rapidapiCard->prices, true) : $rapidapiCard->prices)
-                                : [];
-                            $cardmarketPrices = $allPrices['cardmarket'] ?? [];
+                            // Get Cardmarket prices from cardmarket_price_quotes via cardmarketVariants
+                            $cardmarketVariants = $card->cardmarketVariants;
+                            $latestQuote = null;
+                            $cardmarketUrl = null;
                             
-                            $marketPriceEur = $cardmarketPrices['lowest_near_mint'] ?? 0;
-                            $avg7d = $cardmarketPrices['7d_average'] ?? null;
-                            $avg30d = $cardmarketPrices['30d_average'] ?? null;
-                            $priceDE = $cardmarketPrices['lowest_near_mint_DE'] ?? null;
-                            $priceES = $cardmarketPrices['lowest_near_mint_ES'] ?? null;
-                            $priceFR = $cardmarketPrices['lowest_near_mint_FR'] ?? null;
-                            $priceIT = $cardmarketPrices['lowest_near_mint_IT'] ?? null;
-                            $psaPrices = $cardmarketPrices['graded']['psa'] ?? [];
+                            // Get the first variant with a price quote
+                            foreach ($cardmarketVariants as $variant) {
+                                if ($variant->latestPriceQuote) {
+                                    $latestQuote = $variant->latestPriceQuote;
+                                    // Build Cardmarket URL from variant
+                                    if ($variant->cardmarket_product_id) {
+                                        $cardmarketUrl = "https://www.cardmarket.com/en/Pokemon/Products/Singles/" . $variant->cardmarket_product_id;
+                                    }
+                                    break;
+                                }
+                            }
+                            
+                            // Extract price data from quote
+                            $marketPriceEur = $latestQuote?->avg ?? $latestQuote?->trend ?? 0;
+                            $lowPriceEur = $latestQuote?->low ?? null;
+                            $trendPriceEur = $latestQuote?->trend ?? null;
+                            $avg1d = $latestQuote?->avg1 ?? null;
+                            $avg7d = $latestQuote?->avg7 ?? null;
+                            $avg30d = $latestQuote?->avg30 ?? null;
+                            
+                            // Foil/Holo prices
+                            $avgHolo = $latestQuote?->avg_holo ?? null;
+                            $lowHolo = $latestQuote?->low_holo ?? null;
+                            $trendHolo = $latestQuote?->trend_holo ?? null;
                             
                             // Convert to preferred currency if set
                             $marketPriceEurDisplay = $marketPriceEur;
@@ -668,7 +682,7 @@
                                 <div class="border border-emerald-400/30 bg-emerald-500/20 rounded-lg p-4">
                                     <div class="flex items-center justify-between">
                                         <div class="flex-1">
-                                            <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.cardmarket_price') }} ({{ __('tcg/cards/show.near_mint') }})</div>
+                                            <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.cardmarket_price') }}</div>
                                             @if($preferredCurrency)
                                                 <div class="text-3xl font-bold text-white">
                                                     @php
@@ -685,24 +699,6 @@
                                             @else
                                                 <div class="text-3xl font-bold text-white">€{{ number_format($marketPriceEur, 2) }}</div>
                                             @endif
-                                            
-                                            <!-- Price Trends -->
-                                            @if($avg7d || $avg30d)
-                                            <div class="mt-3 grid grid-cols-2 gap-2">
-                                                @if($avg7d)
-                                                <div class="text-xs">
-                                                    <span class="text-gray-400">{{ __('variants.avg_7d') }}:</span>
-                                                    <span class="text-blue-300 font-semibold">€{{ number_format($avg7d, 2) }}</span>
-                                                </div>
-                                                @endif
-                                                @if($avg30d)
-                                                <div class="text-xs">
-                                                    <span class="text-gray-400">{{ __('variants.avg_30d') }}:</span>
-                                                    <span class="text-blue-300 font-semibold">€{{ number_format($avg30d, 2) }}</span>
-                                                </div>
-                                                @endif
-                                            </div>
-                                            @endif
                                         </div>
                                         @if($cardmarketUrl)
                                             <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition flex items-center gap-2 ml-4">
@@ -716,62 +712,72 @@
                                 </div>
                             </div>
                             
-                            <!-- Regional Prices -->
-                            @if($priceDE || $priceES || $priceFR || $priceIT)
+                            <!-- Price Details Grid -->
                             <div class="mb-6">
-                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.regional_prices') }} ({{ __('tcg/cards/show.near_mint') }})</h3>
+                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.prices') }} {{ __('Details') }}</h3>
                                 <div class="grid grid-cols-2 gap-3">
-                                    @if($priceDE)
+                                    @if($lowPriceEur)
                                     <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 flex items-center gap-1">
-                                            <span>🇩🇪</span>
-                                            <span>Germany</span>
-                                        </div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($priceDE, 2) }}</div>
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($lowPriceEur, 2) }}</div>
                                     </div>
                                     @endif
-                                    @if($priceES)
+                                    
+                                    @if($trendPriceEur)
                                     <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 flex items-center gap-1">
-                                            <span>🇪🇸</span>
-                                            <span>Spain</span>
-                                        </div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($priceES, 2) }}</div>
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.trend') }}</div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($trendPriceEur, 2) }}</div>
                                     </div>
                                     @endif
-                                    @if($priceFR)
+                                    
+                                    @if($avg1d)
                                     <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 flex items-center gap-1">
-                                            <span>🇫🇷</span>
-                                            <span>France</span>
-                                        </div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($priceFR, 2) }}</div>
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.1d_average') }}</div>
+                                        <div class="text-lg font-semibold text-gray-200">€{{ number_format($avg1d, 2) }}</div>
                                     </div>
                                     @endif
-                                    @if($priceIT)
+                                    
+                                    @if($avg7d)
                                     <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 flex items-center gap-1">
-                                            <span>🇮🇹</span>
-                                            <span>Italy</span>
-                                        </div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($priceIT, 2) }}</div>
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.7d_average') }}</div>
+                                        <div class="text-lg font-semibold text-gray-200">€{{ number_format($avg7d, 2) }}</div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($avg30d)
+                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.30d_average') }}</div>
+                                        <div class="text-lg font-semibold text-gray-200">€{{ number_format($avg30d, 2) }}</div>
                                     </div>
                                     @endif
                                 </div>
                             </div>
-                            @endif
                             
-                            <!-- PSA Graded Prices -->
-                            @if(!empty($psaPrices))
+                            <!-- Foil/Holo Prices -->
+                            @if($avgHolo || $lowHolo || $trendHolo)
                             <div class="mb-6">
-                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.psa_graded_prices') }}</h3>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    @foreach($psaPrices as $grade => $price)
+                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.holofoil') }} {{ __('tcg/cards/show.prices') }}</h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    @if($avgHolo)
                                     <div class="border border-yellow-400/30 bg-yellow-500/20 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ strtoupper($grade) }}</div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($price, 2) }}</div>
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.average') }}</div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($avgHolo, 2) }}</div>
                                     </div>
-                                    @endforeach
+                                    @endif
+                                    
+                                    @if($lowHolo)
+                                    <div class="border border-yellow-400/30 bg-yellow-500/20 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($lowHolo, 2) }}</div>
+                                    </div>
+                                    @endif
+                                    
+                                    @if($trendHolo)
+                                    <div class="border border-yellow-400/30 bg-yellow-500/20 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.trend') }}</div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($trendHolo, 2) }}</div>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
                             @endif
@@ -783,9 +789,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <div>
-                                        <p><strong>{{ __('tcg/cards/show.data_source') }}:</strong> Cardmarket via RapidAPI</p>
-                                        @if($rapidapiCard && $rapidapiCard->updated_at)
-                                        <p class="mt-1">{{ __('tcg/cards/show.last_updated') }}: {{ $rapidapiCard->updated_at->diffForHumans() }}</p>
+                                        <p><strong>{{ __('tcg/cards/show.data_source') }}:</strong> Cardmarket Price Quotes</p>
+                                        @if($latestQuote && $latestQuote->as_of_date)
+                                        <p class="mt-1">{{ __('tcg/cards/show.last_updated') }}: {{ $latestQuote->as_of_date->diffForHumans() }}</p>
                                         @endif
                                     </div>
                                 </div>
