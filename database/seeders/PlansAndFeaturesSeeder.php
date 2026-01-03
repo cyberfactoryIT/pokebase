@@ -22,17 +22,17 @@ class PlansAndFeaturesSeeder extends Seeder
         }
 
         $plans = [
-            ['name'=>'Freemium','code'=>'free','monthly_price_cents'=>0,'currency'=>'EUR'],
-            ['name'=>'Pro','code'=>'pro','monthly_price_cents'=>9900,'currency'=>'EUR'],
-            ['name'=>'Large','code'=>'large','monthly_price_cents'=>29900,'currency'=>'EUR'],
+            ['name'=>'Free','code'=>'free','monthly_price_cents'=>0,'currency'=>'EUR'],
+            ['name'=>'Advanced','code'=>'advanced','monthly_price_cents'=>9900,'currency'=>'EUR'],
+            ['name'=>'Premium','code'=>'premium','monthly_price_cents'=>29900,'currency'=>'EUR'],
         ];
         foreach ($plans as $p) {
             $plan = PricingPlan::firstOrCreate(['code'=>$p['code']], $p);
             // Assign features
             foreach (Feature::all() as $feature) {
                 $value = match($feature->key) {
-                    'projects_limit' => $plan->code === 'free' ? 3 : ($plan->code === 'pro' ? 20 : 100),
-                    'users_limit' => $plan->code === 'free' ? 5 : ($plan->code === 'pro' ? 50 : 500),
+                    'projects_limit' => $plan->code === 'free' ? 3 : ($plan->code === 'advanced' ? 20 : 100),
+                    'users_limit' => $plan->code === 'free' ? 5 : ($plan->code === 'advanced' ? 50 : 500),
                     default => $plan->code !== 'free' ? '1' : '0',
                 };
                 $plan->features()->syncWithoutDetaching([$feature->id => ['value' => $value]]);

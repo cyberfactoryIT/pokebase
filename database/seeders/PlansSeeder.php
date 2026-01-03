@@ -19,14 +19,14 @@ class PlansSeeder extends Seeder
                     'currency' => 'EUR',
                 ],
                 [
-                    'code' => 'pro',
-                    'name' => 'Pro',
+                    'code' => 'advanced',
+                    'name' => 'Advanced',
                     'monthly_price_cents' => 2500,
                     'currency' => 'EUR',
                 ],
                 [
-                    'code' => 'large',
-                    'name' => 'Large',
+                    'code' => 'premium',
+                    'name' => 'Premium',
                     'monthly_price_cents' => 5900,
                     'currency' => 'EUR',
                 ],
