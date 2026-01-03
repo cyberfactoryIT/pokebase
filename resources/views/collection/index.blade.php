@@ -160,18 +160,40 @@
                 @endif
             </div>
             @else
-            <!-- Free tier - Show upsell badge -->
-            <div class="md:col-span-3 bg-[#161615] border border-white/15 rounded-xl p-8 text-center">
-                <div class="flex flex-col items-center">
-                    <div class="bg-blue-500/20 p-4 rounded-full mb-4">
-                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
+            <!-- Free tier - Show combined upsell badge -->
+            <div class="md:col-span-3 bg-[#161615] border border-white/15 rounded-xl p-8">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Statistics Feature -->
+                    <div class="flex flex-col items-center text-center">
+                        <div class="bg-blue-500/20 p-4 rounded-full mb-4">
+                            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">{{ __('stats.upsell.collection_free_title') }}</h3>
+                        <p class="text-gray-400 text-sm">{{ __('stats.upsell.collection_free_body') }}</p>
                     </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">{{ __('stats.upsell.collection_free_title') }}</h3>
-                    <p class="text-gray-400 mb-6 max-w-2xl">{{ __('stats.upsell.collection_free_body') }}</p>
-                    <a href="{{ route('billing.index') }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
+                    
+                    <!-- Prices Feature -->
+                    <div class="flex flex-col items-center text-center">
+                        <div class="bg-blue-500/20 p-4 rounded-full mb-4">
+                            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">{{ __('prices.hidden.title') }}</h3>
+                        <p class="text-gray-400 text-sm">{{ __('prices.hidden.body') }}</p>
+                    </div>
+                </div>
+                
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center mt-6 pt-6 border-t border-white/10">
+                    <a href="{{ route('billing.index') }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-center">
                         {{ __('stats.upsell.cta_upgrade') }}
+                    </a>
+                    <span class="text-gray-400 flex items-center justify-center">{{ __('prices.hidden.or') }}</span>
+                    <a href="{{ route('deck-evaluation.packages.index') }}" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition text-center">
+                        {{ __('prices.hidden.cta_deck_evaluation') }}
                     </a>
                 </div>
             </div>
@@ -312,26 +334,6 @@
             </div>
             <div class="text-xs text-gray-500" x-show="currency === 'USD'">
                 {{ __('collection/index.prices_from_tcgplayer') }}
-            </div>
-        </div>
-        @else
-        <!-- Prices Hidden for Free Users -->
-        <div class="bg-[#161615] border border-white/15 rounded-xl p-6 mb-6">
-            <div class="flex items-center justify-center flex-col py-8">
-                <svg class="w-12 h-12 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                </svg>
-                <h3 class="text-xl font-semibold text-white mb-2">{{ __('prices.hidden.title') }}</h3>
-                <p class="text-gray-400 text-center mb-6">{{ __('prices.hidden.body') }}</p>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <a href="{{ route('billing.index') }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
-                        {{ __('prices.hidden.cta_upgrade') }}
-                    </a>
-                    <span class="text-gray-400 flex items-center">{{ __('prices.hidden.or') }}</span>
-                    <a href="{{ route('deck-evaluation.packages.index') }}" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition">
-                        {{ __('prices.hidden.cta_deck_evaluation') }}
-                    </a>
-                </div>
             </div>
         </div>
         @endcan
