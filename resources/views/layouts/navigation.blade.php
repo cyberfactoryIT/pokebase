@@ -71,6 +71,15 @@
                 </div>
                 
                 <a href="{{ route('tcg.expansions.index') }}" class="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('tcg.expansions.*') ? 'text-white font-semibold' : '' }}">
+                    @if($currentGame)
+                        @if($currentGame->code === 'pokemon')
+                            <img src="/images/logos/logo_pokemon.png" alt="{{ $currentGame->name }}" class="w-6 h-6 object-contain">
+                        @elseif($currentGame->code === 'mtg')
+                            <span class="text-base font-bold">MTG</span>
+                        @elseif($currentGame->code === 'yugioh')
+                            <span class="text-base font-bold">YGO</span>
+                        @endif
+                    @endif
                     <span>{{ __('catalogue.expansions_title') }}</span>
                 </a>
                 @endif
