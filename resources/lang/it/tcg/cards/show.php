@@ -32,4 +32,5 @@ return [
     'regional_prices' => 'Prezzi Regionali',
     'psa_graded_prices' => 'Prezzi PSA Gradata',
     'near_mint' => 'Near Mint',
+    'prices' => 'Prezzi',
 ];

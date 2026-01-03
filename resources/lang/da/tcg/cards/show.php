@@ -31,4 +31,5 @@ return [
     'regional_prices' => 'Regionale Priser',
     'psa_graded_prices' => 'PSA Graderede Priser',
     'near_mint' => 'Near Mint',
+    'prices' => 'Priser',
 ];
