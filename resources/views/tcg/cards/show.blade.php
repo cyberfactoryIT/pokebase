@@ -530,16 +530,24 @@
                         @php
                             // Get all Cardmarket price data from RapidAPI
                             $rapidapiCard = $card->rapidapiCard;
-                            $cardmarketPrices = $rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']) 
-                                ? $rapidapiCard->raw_data['prices']['cardmarket'] 
+                            $allPrices = $rapidapiCard && $rapidapiCard->prices 
+                                ? (is_string($rapidapiCard->prices) ? json_decode($rapidapiCard->prices, true) : $rapidapiCard->prices)
                                 : [];
+                            $cardmarketPrices = $allPrices['cardmarket'] ?? [];
+                            $tcgPlayerPrices = $allPrices['tcg_player'] ?? [];
                             
                             $marketPriceEur = $cardmarketPrices['lowest_near_mint'] ?? 0;
+                            $avg7d = $cardmarketPrices['7d_average'] ?? null;
+                            $avg30d = $cardmarketPrices['30d_average'] ?? null;
                             $priceDE = $cardmarketPrices['lowest_near_mint_DE'] ?? null;
                             $priceES = $cardmarketPrices['lowest_near_mint_ES'] ?? null;
                             $priceFR = $cardmarketPrices['lowest_near_mint_FR'] ?? null;
                             $priceIT = $cardmarketPrices['lowest_near_mint_IT'] ?? null;
                             $psaPrices = $cardmarketPrices['graded']['psa'] ?? [];
+                            
+                            // TCGPlayer prices from same source
+                            $tcgPlayerMarket = $tcgPlayerPrices['market_price'] ?? null;
+                            $tcgPlayerMid = $tcgPlayerPrices['mid_price'] ?? null;
                             
                             // Convert to preferred currency if set
                             $marketPriceEurDisplay = $marketPriceEur;
@@ -553,7 +561,7 @@
                             <div class="mb-6">
                                 <div class="border border-emerald-400/30 bg-emerald-500/20 rounded-lg p-4">
                                     <div class="flex items-center justify-between">
-                                        <div>
+                                        <div class="flex-1">
                                             <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.cardmarket_price') }} ({{ __('tcg/cards/show.near_mint') }})</div>
                                             @if($preferredCurrency)
                                                 <div class="text-3xl font-bold text-white">
@@ -571,9 +579,27 @@
                                             @else
                                                 <div class="text-3xl font-bold text-white">€{{ number_format($marketPriceEur, 2) }}</div>
                                             @endif
+                                            
+                                            <!-- Price Trends -->
+                                            @if($avg7d || $avg30d)
+                                            <div class="mt-3 grid grid-cols-2 gap-2">
+                                                @if($avg7d)
+                                                <div class="text-xs">
+                                                    <span class="text-gray-400">{{ __('variants.avg_7d') }}:</span>
+                                                    <span class="text-blue-300 font-semibold">€{{ number_format($avg7d, 2) }}</span>
+                                                </div>
+                                                @endif
+                                                @if($avg30d)
+                                                <div class="text-xs">
+                                                    <span class="text-gray-400">{{ __('variants.avg_30d') }}:</span>
+                                                    <span class="text-blue-300 font-semibold">€{{ number_format($avg30d, 2) }}</span>
+                                                </div>
+                                                @endif
+                                            </div>
+                                            @endif
                                         </div>
                                         @if($cardmarketUrl)
-                                            <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition flex items-center gap-2">
+                                            <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition flex items-center gap-2 ml-4">
                                                 <span>{{ __('tcg/cards/show.buy_now') }}</span>
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
@@ -583,6 +609,27 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- TCGPlayer Prices (from RapidAPI) -->
+                            @if($tcgPlayerMarket || $tcgPlayerMid)
+                            <div class="mb-6">
+                                <h3 class="text-sm font-semibold text-gray-300 mb-3">TCGPlayer {{ __('Prices') }} (USD)</h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    @if($tcgPlayerMarket)
+                                    <div class="border border-blue-400/30 bg-blue-500/20 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.market_price') }}</div>
+                                        <div class="text-xl font-bold text-white">${{ number_format($tcgPlayerMarket, 2) }}</div>
+                                    </div>
+                                    @endif
+                                    @if($tcgPlayerMid)
+                                    <div class="border border-blue-400/30 bg-blue-500/20 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.mid_price') }}</div>
+                                        <div class="text-xl font-bold text-white">${{ number_format($tcgPlayerMid, 2) }}</div>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
                             
                             <!-- Regional Prices -->
                             @if($priceDE || $priceES || $priceFR || $priceIT)
