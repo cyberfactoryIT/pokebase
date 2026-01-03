@@ -10,4 +10,6 @@ return [
     'cards_count' => ':count cards',
     'edit' => 'Edit',
     'view' => 'View',
+    'upgrade' => 'Upgrade',
+    'limit_reached' => 'You have reached your deck limit. Upgrade your plan to create more decks.',
 ];

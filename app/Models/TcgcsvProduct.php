@@ -247,4 +247,62 @@ class TcgcsvProduct extends Model
             ->where('product_id', '!=', $this->product_id)
             ->exists();
     }
+
+    /**
+     * Users who liked this product
+     */
+    public function likedByUsers()
+    {
+        return $this->belongsToMany(\App\Models\User::class, 'user_likes', 'product_id', 'user_id')
+            ->withTimestamps()
+            ->withPivot('created_at');
+    }
+
+    /**
+     * Users who added this product to wishlist
+     */
+    public function wishlistedByUsers()
+    {
+        return $this->belongsToMany(\App\Models\User::class, 'user_wishlist_items', 'product_id', 'user_id')
+            ->withTimestamps()
+            ->withPivot('created_at');
+    }
+
+    /**
+     * Users watching this product
+     */
+    public function watchedByUsers()
+    {
+        return $this->belongsToMany(\App\Models\User::class, 'user_watch_items', 'product_id', 'user_id')
+            ->withTimestamps()
+            ->withPivot('created_at');
+    }
+
+    /**
+     * Check if product is liked by specific user
+     */
+    public function isLikedBy(?User $user): bool
+    {
+        if (!$user) return false;
+        return $this->likedByUsers()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Check if product is in user's wishlist
+     */
+    public function isInWishlist(?User $user): bool
+    {
+        if (!$user) return false;
+        return $this->wishlistedByUsers()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Check if product is watched by user
+     */
+    public function isWatchedBy(?User $user): bool
+    {
+        if (!$user) return false;
+        return $this->watchedByUsers()->where('user_id', $user->id)->exists();
+    }
 }
+

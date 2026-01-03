@@ -29,6 +29,9 @@ class DashboardController extends Controller
                 'userCollectionCount' => 0,
                 'uniqueCardsCount' => 0,
                 'currentGame' => null,
+                'articles' => collect(),
+                'articleCategories' => collect(),
+                'userLocale' => app()->getLocale(),
             ]);
         }
         

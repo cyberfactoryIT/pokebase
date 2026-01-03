@@ -251,9 +251,15 @@
 
                                     @if($userDecks->isEmpty())
                                         <p class="text-gray-400 mb-4">{{ __('tcg/cards/show.no_decks_yet') }}</p>
-                                        <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
-                                            {{ __('tcg/cards/show.create_first_deck') }}
-                                        </a>
+                                        @if(Auth::user()->canCreateAnotherDeck())
+                                            <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
+                                                {{ __('tcg/cards/show.create_first_deck') }}
+                                            </a>
+                                        @else
+                                            <a href="{{ route('profile.subscription') }}" class="block w-full px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-lg transition text-center font-semibold">
+                                                {{ __('decks/index.upgrade') }}
+                                            </a>
+                                        @endif
                                     @else
                                         <div class="space-y-2 max-h-96 overflow-y-auto">
                                             @foreach($userDecks as $deck)

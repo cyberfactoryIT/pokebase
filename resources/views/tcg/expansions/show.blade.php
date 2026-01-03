@@ -208,9 +208,15 @@
             
             @if($userDecks->isEmpty())
                 <p class="text-gray-400 mb-4">{{ __('tcg/expansions/show.no_decks_yet') }}</p>
-                <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
-                    {{ __('tcg/expansions/show.create_first_deck') }}
-                </a>
+                @if(Auth::user()->canCreateAnotherDeck())
+                    <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
+                        {{ __('tcg/expansions/show.create_first_deck') }}
+                    </a>
+                @else
+                    <a href="{{ route('profile.subscription') }}" class="block w-full px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-lg transition text-center font-semibold">
+                        {{ __('decks/index.upgrade') }}
+                    </a>
+                @endif
             @else
                 <div class="space-y-2 mb-4">
                     <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('tcg/expansions/show.quantity_per_card') }}</label>
@@ -482,6 +488,9 @@ function createCardTile(card) {
     // Usa immagine HD se disponibile, altrimenti fallback su standard
     const imageUrl = card.hd_image_url || card.image_url || 'https://via.placeholder.com/245x342/1a1a19/666?text=No+Image';
     const hasHdImage = !!card.hd_image_url;
+    
+    // Interaction buttons (show if user is authenticated)
+    const isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
 
     div.innerHTML = `
         <!-- Checkbox -->
@@ -490,24 +499,6 @@ function createCardTile(card) {
                    class="card-checkbox w-5 h-5 text-blue-600 bg-gray-700 border-gray-600 rounded cursor-pointer" 
                    data-product-id="${card.product_id}"
                    onclick="event.stopPropagation(); toggleCardSelection(${card.product_id}, this)">
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onclick="event.stopPropagation(); quickAddToCollection(${card.product_id})" 
-                    class="p-1.5 bg-green-600/90 hover:bg-green-600 rounded text-white transition" 
-                    title="Add to Collection">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-            </button>
-            <button onclick="event.stopPropagation(); quickAddToDeck(${card.product_id})" 
-                    class="p-1.5 bg-blue-600/90 hover:bg-blue-600 rounded text-white transition" 
-                    title="Add to Deck">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-            </button>
         </div>
         
         ${hasHdImage ? `
@@ -528,11 +519,62 @@ function createCardTile(card) {
                 onerror="this.src='${escapeHtml(card.image_url || 'https://via.placeholder.com/245x342/1a1a19/666?text=No+Image')}'"
             >
         </div>
-        <div class="p-2 cursor-pointer" onclick="window.location.href='/tcg/cards/${card.product_id}'">
-            <h3 class="text-xs font-semibold text-white truncate group-hover:text-blue-400 transition">
-                ${escapeHtml(card.name)}
-            </h3>
-            <div class="flex items-center justify-between mt-0.5">
+        <div class="p-2">
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="text-xs font-semibold text-white truncate group-hover:text-blue-400 transition cursor-pointer flex-1" onclick="window.location.href='/tcg/cards/${card.product_id}'">
+                    ${escapeHtml(card.name)}
+                </h3>
+                ${isAuthenticated ? `
+                <!-- Interaction Buttons -->
+                <div class="flex gap-1 ml-2 flex-shrink-0">
+                    <!-- Collection -->
+                    <button onclick="event.stopPropagation(); quickAddToCollection(${card.product_id})" 
+                            class="p-1 ${card.is_in_collection ? 'bg-green-600/90' : 'bg-gray-700/90'} hover:bg-green-600 rounded text-white transition" 
+                            title="Add to Collection">
+                        <svg class="w-3 h-3" fill="${card.is_in_collection ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </button>
+                    <!-- Deck -->
+                    <button onclick="event.stopPropagation(); quickAddToDeck(${card.product_id})" 
+                            class="p-1 ${card.is_in_deck ? 'bg-blue-600/90' : 'bg-gray-700/90'} hover:bg-blue-600 rounded text-white transition" 
+                            title="Add to Deck">
+                        <svg class="w-3 h-3" fill="${card.is_in_deck ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <!-- Like -->
+                    <button onclick="event.stopPropagation(); toggleLike(${card.product_id}, this)" 
+                            class="interaction-btn like-btn p-1 ${card.is_liked ? 'bg-red-500/90' : 'bg-gray-700/90'} hover:bg-red-500 rounded text-white transition" 
+                            title="{{ __('tcg/interactions.like') }}"
+                            data-product-id="${card.product_id}">
+                        <svg class="w-3 h-3" fill="${card.is_liked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </button>
+                    <!-- Wishlist -->
+                    <button onclick="event.stopPropagation(); toggleWishlist(${card.product_id}, this)" 
+                            class="interaction-btn wishlist-btn p-1 ${card.is_wishlist ? 'bg-yellow-500/90' : 'bg-gray-700/90'} hover:bg-yellow-500 rounded text-white transition" 
+                            title="{{ __('tcg/interactions.wishlist') }}"
+                            data-product-id="${card.product_id}">
+                        <svg class="w-3 h-3" fill="${card.is_wishlist ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                        </svg>
+                    </button>
+                    <!-- Watch -->
+                    <button onclick="event.stopPropagation(); toggleWatch(${card.product_id}, this)" 
+                            class="interaction-btn watch-btn p-1 ${card.is_watched ? 'bg-blue-500/90' : 'bg-gray-700/90'} hover:bg-blue-500 rounded text-white transition" 
+                            title="{{ __('tcg/interactions.watch') }}"
+                            data-product-id="${card.product_id}">
+                        <svg class="w-3 h-3" fill="${card.is_watched ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
+                </div>
+                ` : ''}
+            </div>
+            <div class="flex items-center justify-between cursor-pointer" onclick="window.location.href='/tcg/cards/${card.product_id}'">
                 ${card.card_number ? `<p class="text-xs text-gray-400">#${escapeHtml(card.card_number)}</p>` : '<span></span>'}
                 ${card.hp ? `<span class="text-xs text-red-400 font-semibold">${escapeHtml(card.hp)} HP</span>` : ''}
             </div>
@@ -553,6 +595,115 @@ function quickAddToDeck(productId) {
     selectedCards.clear();
     selectedCards.add(productId);
     openBulkDeckModal();
+}
+
+// Interaction toggles
+async function toggleLike(productId, button) {
+    try {
+        const response = await fetch(`/tcg/items/${productId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            // Update button state
+            const svg = button.querySelector('svg');
+            if (data.status === 'liked') {
+                button.classList.remove('bg-gray-700/90');
+                button.classList.add('bg-red-500/90');
+                svg.setAttribute('fill', 'currentColor');
+            } else {
+                button.classList.remove('bg-red-500/90');
+                button.classList.add('bg-gray-700/90');
+                svg.setAttribute('fill', 'none');
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling like:', error);
+    }
+}
+
+async function toggleWishlist(productId, button) {
+    try {
+        const response = await fetch(`/tcg/items/${productId}/wishlist`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            // Update button state
+            const svg = button.querySelector('svg');
+            if (data.status === 'added') {
+                button.classList.remove('bg-gray-700/90');
+                button.classList.add('bg-yellow-500/90');
+                svg.setAttribute('fill', 'currentColor');
+            } else {
+                button.classList.remove('bg-yellow-500/90');
+                button.classList.add('bg-gray-700/90');
+                svg.setAttribute('fill', 'none');
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling wishlist:', error);
+    }
+}
+
+async function toggleWatch(productId, button) {
+    try {
+        const response = await fetch(`/tcg/items/${productId}/watch`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            // Update button state
+            const svg = button.querySelector('svg');
+            if (data.status === 'watched') {
+                button.classList.remove('bg-gray-700/90');
+                button.classList.add('bg-blue-500/90');
+                svg.setAttribute('fill', 'currentColor');
+            } else {
+                button.classList.remove('bg-blue-500/90');
+                button.classList.add('bg-gray-700/90');
+                svg.setAttribute('fill', 'none');
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling watch:', error);
+    }
 }
 
 // Escape HTML to prevent XSS

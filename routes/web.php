@@ -189,6 +189,25 @@ Route::prefix('tcg')->group(function () {
     
     // Cards (TCGCSV)
     Route::get('/cards/{productId}', [\App\Http\Controllers\TcgCardController::class, 'show'])->name('tcg.cards.show');
+    
+    // User Interactions (authenticated)
+    Route::middleware('auth')->group(function () {
+        // Toggle actions (AJAX endpoints with rate limiting)
+        Route::post('/items/{productId}/like', [\App\Http\Controllers\TcgItemInteractionController::class, 'toggleLike'])
+            ->middleware('throttle:60,1')
+            ->name('tcg.items.like');
+        Route::post('/items/{productId}/wishlist', [\App\Http\Controllers\TcgItemInteractionController::class, 'toggleWishlist'])
+            ->middleware('throttle:60,1')
+            ->name('tcg.items.wishlist');
+        Route::post('/items/{productId}/watch', [\App\Http\Controllers\TcgItemInteractionController::class, 'toggleWatch'])
+            ->middleware('throttle:60,1')
+            ->name('tcg.items.watch');
+        
+        // List pages
+        Route::get('/likes', [\App\Http\Controllers\TcgItemInteractionController::class, 'likesList'])->name('tcg.likes');
+        Route::get('/wishlist', [\App\Http\Controllers\TcgItemInteractionController::class, 'wishlistList'])->name('tcg.wishlist');
+        Route::get('/osservazione', [\App\Http\Controllers\TcgItemInteractionController::class, 'watchList'])->name('tcg.osservazione');
+    });
 });
 
 // TCGdex Browsing Routes

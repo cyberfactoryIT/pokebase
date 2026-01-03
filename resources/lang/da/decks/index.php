@@ -10,4 +10,6 @@ return [
     'cards_count' => ':count kort',
     'edit' => 'Rediger',
     'view' => 'Vis',
+    'upgrade' => 'Opgrader',
+    'limit_reached' => 'Du har nået din deck-grænse. Opgrader din plan for at oprette flere decks.',
 ];

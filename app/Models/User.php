@@ -118,6 +118,36 @@ class User extends Authenticatable
     }
 
     /**
+     * Get liked products (cards)
+     */
+    public function likedProducts()
+    {
+        return $this->belongsToMany(\App\Models\TcgcsvProduct::class, 'user_likes', 'user_id', 'product_id')
+            ->withTimestamps()
+            ->withPivot('created_at');
+    }
+
+    /**
+     * Get wishlist products (cards)
+     */
+    public function wishlistProducts()
+    {
+        return $this->belongsToMany(\App\Models\TcgcsvProduct::class, 'user_wishlist_items', 'user_id', 'product_id')
+            ->withTimestamps()
+            ->withPivot('created_at');
+    }
+
+    /**
+     * Get watched products (cards in "Osservazione")
+     */
+    public function watchedProducts()
+    {
+        return $this->belongsToMany(\App\Models\TcgcsvProduct::class, 'user_watch_items', 'user_id', 'product_id')
+            ->withTimestamps()
+            ->withPivot('created_at');
+    }
+
+    /**
      * Get all games enabled for this user
      */
     public function games()
@@ -314,6 +344,40 @@ class User extends Authenticatable
             'premium' => null,  // Unlimited sharing
             default => 0,       // Fallback to free tier
         };
+    }
+
+    /**
+     * Get maximum number of decks allowed for this user based on subscription tier
+     * 
+     * @return int|null null means unlimited (advanced/premium)
+     */
+    public function maxDecks(): ?int
+    {
+        $tier = $this->subscriptionTier();
+        
+        return match($tier) {
+            'free' => config('limits.decks.free', 1), // Free users: 1 deck
+            'advanced' => null,   // Unlimited decks
+            'premium' => null,    // Unlimited decks
+            default => config('limits.decks.free', 1), // Fallback to free tier
+        };
+    }
+
+    /**
+     * Check if user can create another deck
+     */
+    public function canCreateAnotherDeck(): bool
+    {
+        $limit = $this->maxDecks();
+        
+        // null means unlimited (advanced/premium)
+        if ($limit === null) {
+            return true;
+        }
+        
+        $currentCount = $this->decks()->count();
+        
+        return $currentCount < $limit;
     }
 
     /**

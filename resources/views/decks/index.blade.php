@@ -9,17 +9,32 @@
                 <h1 class="text-3xl font-bold text-white">{{ __('decks/index.title') }}</h1>
                 <p class="text-gray-400 mt-1">{{ __('decks/index.subtitle') }}</p>
             </div>
-            <a href="{{ route('decks.create') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                {{ __('decks/index.new_deck') }}
-            </a>
+            @if(Auth::user()->canCreateAnotherDeck())
+                <a href="{{ route('decks.create') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    {{ __('decks/index.new_deck') }}
+                </a>
+            @else
+                <a href="{{ route('profile.subscription') }}" class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-lg transition flex items-center gap-2 font-semibold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                    </svg>
+                    {{ __('decks/index.upgrade') }}
+                </a>
+            @endif
         </div>
 
         @if(session('success'))
         <div class="bg-green-900/30 border border-green-500/30 rounded-lg p-4 mb-6">
             <p class="text-green-200">{{ session('success') }}</p>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="bg-red-900/30 border border-red-500/30 rounded-lg p-4 mb-6">
+            <p class="text-red-200">{{ session('error') }}</p>
         </div>
         @endif
 

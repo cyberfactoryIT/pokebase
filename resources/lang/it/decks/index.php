@@ -10,4 +10,6 @@ return [
     'cards_count' => ':count carte',
     'edit' => 'Modifica',
     'view' => 'Visualizza',
+    'upgrade' => 'Aggiorna Piano',
+    'limit_reached' => 'Hai raggiunto il limite di mazzi. Aggiorna il tuo piano per creare più mazzi.',
 ];

@@ -31,6 +31,12 @@ class DeckController extends Controller
      */
     public function create(): View
     {
+        // Check if user can create another deck
+        if (!Auth::user()->canCreateAnotherDeck()) {
+            return redirect()->route('decks.index')
+                ->with('error', __('decks/index.limit_reached'));
+        }
+
         return view('decks.create');
     }
 
@@ -39,6 +45,12 @@ class DeckController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Check if user can create another deck
+        if (!Auth::user()->canCreateAnotherDeck()) {
+            return redirect()->route('decks.index')
+                ->with('error', __('decks/index.limit_reached'));
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'format' => 'nullable|string|max:255',

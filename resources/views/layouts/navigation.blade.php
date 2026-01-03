@@ -135,9 +135,15 @@
                         @if($userDecks->isEmpty())
                             <div class="px-4 py-6 text-center">
                                 <p class="text-gray-400 text-sm mb-3">No decks yet</p>
-                                <a href="{{ route('decks.create') }}" class="inline-block px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition">
-                                    Create Deck
-                                </a>
+                                @if(Auth::user()->canCreateAnotherDeck())
+                                    <a href="{{ route('decks.create') }}" class="inline-block px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition">
+                                        Create Deck
+                                    </a>
+                                @else
+                                    <a href="{{ route('profile.subscription') }}" class="inline-block px-3 py-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white text-sm rounded transition font-semibold">
+                                        {{ __('decks/index.upgrade') }}
+                                    </a>
+                                @endif
                             </div>
                         @else
                             <div class="py-2">

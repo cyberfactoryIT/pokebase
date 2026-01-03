@@ -181,8 +181,58 @@ class TcgExpansionController extends Controller
         // Paginate
         $cards = $query->paginate(50);
 
+        // Load user interaction states efficiently (no N+1)
+        $userInteractions = [];
+        if ($user = auth()->user()) {
+            $productIds = $cards->pluck('product_id')->toArray();
+            
+            // Get all liked products in one query
+            $likedIds = \DB::table('user_likes')
+                ->where('user_id', $user->id)
+                ->whereIn('product_id', $productIds)
+                ->pluck('product_id')
+                ->toArray();
+            
+            // Get all wishlist products in one query
+            $wishlistIds = \DB::table('user_wishlist_items')
+                ->where('user_id', $user->id)
+                ->whereIn('product_id', $productIds)
+                ->pluck('product_id')
+                ->toArray();
+            
+            // Get all watched products in one query
+            $watchIds = \DB::table('user_watch_items')
+                ->where('user_id', $user->id)
+                ->whereIn('product_id', $productIds)
+                ->pluck('product_id')
+                ->toArray();
+            
+            // Get all products in user's collection
+            $collectionIds = \DB::table('user_collection')
+                ->where('user_id', $user->id)
+                ->whereIn('product_id', $productIds)
+                ->pluck('product_id')
+                ->toArray();
+            
+            // Get all products in user's decks
+            $deckIds = \DB::table('deck_cards')
+                ->join('decks', 'deck_cards.deck_id', '=', 'decks.id')
+                ->where('decks.user_id', $user->id)
+                ->whereIn('deck_cards.product_id', $productIds)
+                ->pluck('deck_cards.product_id')
+                ->toArray();
+            
+            $userInteractions = [
+                'liked' => $likedIds,
+                'wishlist' => $wishlistIds,
+                'watched' => $watchIds,
+                'collection' => $collectionIds,
+                'deck' => $deckIds,
+            ];
+        }
+
         return response()->json([
-            'data' => $cards->map(function($card) {
+            'data' => $cards->map(function($card) use ($userInteractions) {
                 // Get HD image URL from RapidAPI if available
                 $hdImageUrl = $card->rapidapiCard && $card->rapidapiCard->image_url 
                     ? $card->rapidapiCard->image_url 
@@ -195,6 +245,11 @@ class TcgExpansionController extends Controller
                     'image_url' => $this->getCardImage($card),
                     'hd_image_url' => $hdImageUrl,
                     'hp' => $card->hp,
+                    'is_liked' => !empty($userInteractions) && in_array($card->product_id, $userInteractions['liked']),
+                    'is_wishlist' => !empty($userInteractions) && in_array($card->product_id, $userInteractions['wishlist']),
+                    'is_watched' => !empty($userInteractions) && in_array($card->product_id, $userInteractions['watched']),
+                    'is_in_collection' => !empty($userInteractions) && in_array($card->product_id, $userInteractions['collection']),
+                    'is_in_deck' => !empty($userInteractions) && in_array($card->product_id, $userInteractions['deck']),
                 ];
             }),
             'meta' => [
