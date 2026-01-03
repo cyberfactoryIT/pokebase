@@ -369,8 +369,9 @@
                     
                     @php
                         // Get RapidAPI prices (both TCGPlayer and Cardmarket)
-                        $allPricesRapid = $card->prices 
-                            ? (is_string($card->prices) ? json_decode($card->prices, true) : $card->prices)
+                        $rapidapiCard = $card->rapidapiCard;
+                        $allPricesRapid = $rapidapiCard && $rapidapiCard->prices 
+                            ? (is_string($rapidapiCard->prices) ? json_decode($rapidapiCard->prices, true) : $rapidapiCard->prices)
                             : [];
                         
                         // TCGPlayer from RapidAPI
@@ -394,14 +395,16 @@
                         $tcgdxCardmarket = $tcgdxPricing['cardmarket'] ?? [];
                         $tcgdxUpdated = $tcgdxTcgplayer['updated'] ?? null;
                         
-                        // Get Cardmarket prices from cardmarket_price_quotes using cardmarket_id
+                        // Get Cardmarket prices from cardmarket_price_quotes using rapidapi_cards.cardmarket_id
                         $latestQuote = null;
                         $cardmarketUrl = null;
-                        if ($card->cardmarket_id) {
-                            $latestQuote = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $card->cardmarket_id)
+                        $cardmarketProductId = $rapidapiCard?->cardmarket_id ?? null;
+                        
+                        if ($cardmarketProductId) {
+                            $latestQuote = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $cardmarketProductId)
                                 ->latest('as_of_date')
                                 ->first();
-                            $cardmarketUrl = "https://www.cardmarket.com/en/Pokemon/Products/Singles/" . $card->cardmarket_id;
+                            $cardmarketUrl = "https://www.cardmarket.com/en/Pokemon/Products/Singles/" . $cardmarketProductId;
                         }
                         
                         // Extract price data from quote
