@@ -28,4 +28,8 @@ return [
     'buy_now' => 'Acquista Ora',
     'other_variants' => 'Altre Varianti',
     'card_details' => 'Dettagli Carta',
+    'data_source' => 'Fonte Dati',
+    'regional_prices' => 'Prezzi Regionali',
+    'psa_graded_prices' => 'Prezzi PSA Gradata',
+    'near_mint' => 'Near Mint',
 ];

@@ -23,4 +23,12 @@ return [
     'pricing_coming_soon' => 'Prisinformation kommer snart',
     'no_eu_prices' => 'Ingen europæiske priser tilgængelige for dette kort',
     'extended_information' => 'Udvidet Information',
+    'cardmarket_price' => 'Cardmarket Pris',
+    'buy_now' => 'Køb Nu',
+    'other_variants' => 'Andre Varianter',
+    'card_details' => 'Kortdetaljer',
+    'data_source' => 'Datakilde',
+    'regional_prices' => 'Regionale Priser',
+    'psa_graded_prices' => 'PSA Graderede Priser',
+    'near_mint' => 'Near Mint',
 ];

@@ -28,4 +28,8 @@ return [
     'buy_now' => 'Buy Now',
     'other_variants' => 'Other Variants',
     'card_details' => 'Card Details',
+    'data_source' => 'Data Source',
+    'regional_prices' => 'Regional Prices',
+    'psa_graded_prices' => 'PSA Graded Prices',
+    'near_mint' => 'Near Mint',
 ];

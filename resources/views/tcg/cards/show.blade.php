@@ -503,8 +503,17 @@
                             </div>
                         @endif
                         
-                        <div class="mt-3 text-xs text-gray-400">
-                            {{ __('tcg/cards/show.last_updated') }}: {{ $latestPrice->snapshot_at->diffForHumans() }}
+                        <!-- Price Source Citation -->
+                        <div class="mt-3 text-xs text-gray-500 border-t border-white/10 pt-3">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p><strong>{{ __('tcg/cards/show.data_source') }}:</strong> TCGPlayer / TCGCSV</p>
+                                    <p class="mt-1">{{ __('tcg/cards/show.last_updated') }}: {{ $latestPrice->snapshot_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
                         </div>
                     @else
                         <div class="text-center py-8 text-gray-400">
@@ -516,15 +525,21 @@
                     @endif
                     </div>
                     
-                    <!-- EU Prices (Cardmarket) -->
+                    <!-- EU Prices (Cardmarket via RapidAPI) -->
                     <div x-show="activeTab === 'eu'" x-transition x-cloak>
                         @php
-                            // Get EUR price from RapidAPI Cardmarket data
-                            $marketPriceEur = 0;
+                            // Get all Cardmarket price data from RapidAPI
                             $rapidapiCard = $card->rapidapiCard;
-                            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
-                            }
+                            $cardmarketPrices = $rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']) 
+                                ? $rapidapiCard->raw_data['prices']['cardmarket'] 
+                                : [];
+                            
+                            $marketPriceEur = $cardmarketPrices['lowest_near_mint'] ?? 0;
+                            $priceDE = $cardmarketPrices['lowest_near_mint_DE'] ?? null;
+                            $priceES = $cardmarketPrices['lowest_near_mint_ES'] ?? null;
+                            $priceFR = $cardmarketPrices['lowest_near_mint_FR'] ?? null;
+                            $priceIT = $cardmarketPrices['lowest_near_mint_IT'] ?? null;
+                            $psaPrices = $cardmarketPrices['graded']['psa'] ?? [];
                             
                             // Convert to preferred currency if set
                             $marketPriceEurDisplay = $marketPriceEur;
@@ -534,11 +549,12 @@
                         @endphp
                         
                         @if($marketPriceEur > 0)
+                            <!-- Main Cardmarket Price -->
                             <div class="mb-6">
                                 <div class="border border-emerald-400/30 bg-emerald-500/20 rounded-lg p-4">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.cardmarket_price') }}</div>
+                                            <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.cardmarket_price') }} ({{ __('tcg/cards/show.near_mint') }})</div>
                                             @if($preferredCurrency)
                                                 <div class="text-3xl font-bold text-white">
                                                     @php
@@ -565,11 +581,81 @@
                                             </a>
                                         @endif
                                     </div>
-                                    @if($rapidapiCard && $rapidapiCard->updated_at)
-                                        <div class="mt-2 text-xs text-gray-400">
-                                            {{ __('tcg/cards/show.last_updated') }}: {{ $rapidapiCard->updated_at->diffForHumans() }}
+                                </div>
+                            </div>
+                            
+                            <!-- Regional Prices -->
+                            @if($priceDE || $priceES || $priceFR || $priceIT)
+                            <div class="mb-6">
+                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.regional_prices') }} ({{ __('tcg/cards/show.near_mint') }})</h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    @if($priceDE)
+                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 flex items-center gap-1">
+                                            <span>🇩🇪</span>
+                                            <span>Germany</span>
                                         </div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($priceDE, 2) }}</div>
+                                    </div>
                                     @endif
+                                    @if($priceES)
+                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 flex items-center gap-1">
+                                            <span>🇪🇸</span>
+                                            <span>Spain</span>
+                                        </div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($priceES, 2) }}</div>
+                                    </div>
+                                    @endif
+                                    @if($priceFR)
+                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 flex items-center gap-1">
+                                            <span>🇫🇷</span>
+                                            <span>France</span>
+                                        </div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($priceFR, 2) }}</div>
+                                    </div>
+                                    @endif
+                                    @if($priceIT)
+                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 flex items-center gap-1">
+                                            <span>🇮🇹</span>
+                                            <span>Italy</span>
+                                        </div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($priceIT, 2) }}</div>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
+                            
+                            <!-- PSA Graded Prices -->
+                            @if(!empty($psaPrices))
+                            <div class="mb-6">
+                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.psa_graded_prices') }}</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    @foreach($psaPrices as $grade => $price)
+                                    <div class="border border-yellow-400/30 bg-yellow-500/20 rounded-lg p-3">
+                                        <div class="text-xs text-gray-400 uppercase">{{ strtoupper($grade) }}</div>
+                                        <div class="text-lg font-bold text-white">€{{ number_format($price, 2) }}</div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                            
+                            <!-- Price Source Citation -->
+                            <div class="text-xs text-gray-500 border-t border-white/10 pt-3">
+                                <div class="flex items-start gap-2">
+                                    <svg class="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div>
+                                        <p><strong>{{ __('tcg/cards/show.data_source') }}:</strong> Cardmarket via RapidAPI</p>
+                                        @if($rapidapiCard && $rapidapiCard->updated_at)
+                                        <p class="mt-1">{{ __('tcg/cards/show.last_updated') }}: {{ $rapidapiCard->updated_at->diffForHumans() }}</p>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @else
