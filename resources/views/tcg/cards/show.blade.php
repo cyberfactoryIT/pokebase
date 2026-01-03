@@ -361,33 +361,13 @@
                     activeTab: localStorage.getItem('priceTab') || 'us',
                     preferredCurrency: '{{ auth()->user()?->preferred_currency }}'
                 }">
-                    <!-- Price Toggle Tabs -->
-                    <div class="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
-                        <h2 class="text-xl font-bold text-white">{{ __('tcg/cards/show.pricing') }}</h2>
-                        
-                        @can('seePrices')
-                        <div class="flex rounded-lg bg-black/50 p-1">
-                            <button 
-                                @click="activeTab = 'us'; localStorage.setItem('priceTab', 'us')"
-                                :class="activeTab === 'us' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
-                                class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5">
-                                <span>🇺🇸</span>
-                                <span>{{ __('variants.tcgcsv_prices') }}</span>
-                            </button>
-                            <button 
-                                @click="activeTab = 'eu'; localStorage.setItem('priceTab', 'eu')"
-                                :class="activeTab === 'eu' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
-                                class="px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center gap-1.5">
-                                <span>🇪🇺</span>
-                                <span>{{ __('variants.eu_prices') }}</span>
-                            </button>
-                        </div>
-                        @endcan
+                    <!-- Price Header -->
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-white mb-1">{{ __('tcg/cards/show.pricing') }}</h2>
+                        <p class="text-sm text-gray-400">{{ __('Real-time price tracking from multiple sources') }}</p>
                     </div>
                     
                     @can('seePrices')
-                    <!-- US Prices (TCGCSV) -->
-                    <div x-show="activeTab === 'us'" x-transition>
                     
                     @php
                         // Get TCGPlayer prices from RapidAPI
@@ -410,7 +390,145 @@
                         $tcgdxUpdated = $tcgdxTcgplayer['updated'] ?? null;
                     @endphp
                     
-                    @if($latestPrice)
+                    <!-- US PRICES Section -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <span>🇺🇸</span>
+                                <span>US PRICES</span>
+                            </h3>
+                            <a href="https://www.tcgplayer.com/" target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+                                <span>TCGPLAYER</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                        </div>
+                        
+                        <!-- Price Table -->
+                        <div class="border border-white/10 rounded-lg overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead class="bg-black/30">
+                                    <tr class="border-b border-white/10">
+                                        <th class="text-left py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Source') }}</th>
+                                        <th class="text-left py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Market') }}</th>
+                                        <th class="text-right py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Price') }}</th>
+                                        <th class="text-right py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Change') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5">
+                                    @if($latestPrice && $latestPrice->market_price)
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGCSV</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.market_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-lg font-bold text-white">${{ number_format($latestPrice->market_price, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @if($latestPrice->low_price)
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGCSV</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.low_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">${{ number_format($latestPrice->low_price, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @if($latestPrice->mid_price)
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGCSV</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.mid_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">${{ number_format($latestPrice->mid_price, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @if($latestPrice->high_price)
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGCSV</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.high_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">${{ number_format($latestPrice->high_price, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @endif
+                                    
+                                    @if($tcgPlayerMarketRapid)
+                                    <tr class="hover:bg-white/5 bg-blue-500/5">
+                                        <td class="py-3 px-4 text-gray-300">RapidAPI</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.market_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-lg font-bold text-white">${{ number_format($tcgPlayerMarketRapid, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-400">Stable</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    
+                                    @if($tcgPlayerMidRapid)
+                                    <tr class="hover:bg-white/5 bg-blue-500/5">
+                                        <td class="py-3 px-4 text-gray-300">RapidAPI</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.mid_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">${{ number_format($tcgPlayerMidRapid, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    
+                                    @if(!empty($tcgdxTcgplayer['holofoil']))
+                                    @php $holofoil = $tcgdxTcgplayer['holofoil']; @endphp
+                                    @if(isset($holofoil['marketPrice']))
+                                    <tr class="hover:bg-white/5 bg-purple-500/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGdex</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('Market') }} ({{ __('tcg/cards/show.holofoil') }})</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-lg font-bold text-white">${{ number_format($holofoil['marketPrice'], 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-400">Stable</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @if(isset($holofoil['lowPrice']))
+                                    <tr class="hover:bg-white/5 bg-purple-500/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGdex</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.low_price') }} ({{ __('tcg/cards/show.holofoil') }})</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">${{ number_format($holofoil['lowPrice'], 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-3 text-xs text-gray-500">
+                            @if($latestPrice)
+                            <p>{{ __('TCGCSV last updated') }}: {{ $latestPrice->snapshot_at->diffForHumans() }}</p>
+                            @endif
+                        </div>
+                    </div>
                         @php
                             $user = auth()->user();
                             $preferredCurrency = $user?->preferred_currency;
@@ -634,10 +752,9 @@
                         </div>
                     </div>
                     @endif
-                    </div>
                     
-                    <!-- EU Prices (Cardmarket from cardmarket_price_quotes) -->
-                    <div x-show="activeTab === 'eu'" x-transition x-cloak>
+                    <!-- EU PRICES Section -->
+                    <div class="mb-8">
                         @php
                             // Get Cardmarket prices from cardmarket_price_quotes via cardmarketVariants
                             $cardmarketVariants = $card->cardmarketVariants;
@@ -668,119 +785,196 @@
                             $avgHolo = $latestQuote?->avg_holo ?? null;
                             $lowHolo = $latestQuote?->low_holo ?? null;
                             $trendHolo = $latestQuote?->trend_holo ?? null;
-                            
-                            // Convert to preferred currency if set
-                            $marketPriceEurDisplay = $marketPriceEur;
-                            if ($preferredCurrency && $marketPriceEur > 0) {
-                                $marketPriceEurDisplay = \App\Services\CurrencyService::convert($marketPriceEur, 'EUR', $preferredCurrency);
-                            }
                         @endphp
                         
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <span>🇪🇺</span>
+                                <span>EU PRICES</span>
+                            </h3>
+                            @if($cardmarketUrl)
+                            <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener" class="text-emerald-400 hover:text-emerald-300 text-sm flex items-center gap-1">
+                                <span>CARDMARKET</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                            @endif
+                        </div>
+                        
                         @if($marketPriceEur > 0)
-                            <!-- Main Cardmarket Price -->
-                            <div class="mb-6">
-                                <div class="border border-emerald-400/30 bg-emerald-500/20 rounded-lg p-4">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex-1">
-                                            <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.cardmarket_price') }}</div>
-                                            @if($preferredCurrency)
-                                                <div class="text-3xl font-bold text-white">
-                                                    @php
-                                                        $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
-                                                        $formatted = number_format($marketPriceEurDisplay, 2);
-                                                        if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
-                                                            echo "{$symbol}{$formatted}";
-                                                        } else {
-                                                            echo "{$formatted} {$symbol}";
-                                                        }
-                                                    @endphp
-                                                </div>
-                                                <div class="text-xs text-gray-500 mt-1">(€{{ number_format($marketPriceEur, 2) }})</div>
-                                            @else
-                                                <div class="text-3xl font-bold text-white">€{{ number_format($marketPriceEur, 2) }}</div>
-                                            @endif
-                                        </div>
-                                        @if($cardmarketUrl)
-                                            <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition flex items-center gap-2 ml-4">
-                                                <span>{{ __('tcg/cards/show.buy_now') }}</span>
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                                </svg>
-                                            </a>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Price Details Grid -->
-                            <div class="mb-6">
-                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.prices') }} {{ __('Details') }}</h3>
-                                <div class="grid grid-cols-2 gap-3">
+                        <!-- Price Table -->
+                        <div class="border border-white/10 rounded-lg overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead class="bg-black/30">
+                                    <tr class="border-b border-white/10">
+                                        <th class="text-left py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Source') }}</th>
+                                        <th class="text-left py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Market') }}</th>
+                                        <th class="text-right py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Price') }}</th>
+                                        <th class="text-right py-3 px-4 text-gray-400 font-medium uppercase text-xs">{{ __('Change') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5">
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.average') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-lg font-bold text-white">€{{ number_format($marketPriceEur, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-400">Stable</span>
+                                        </td>
+                                    </tr>
+                                    
                                     @if($lowPriceEur)
-                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($lowPriceEur, 2) }}</div>
-                                    </div>
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.low_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($lowPriceEur, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
                                     @endif
                                     
                                     @if($trendPriceEur)
-                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.trend') }}</div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($trendPriceEur, 2) }}</div>
-                                    </div>
-                                    @endif
-                                    
-                                    @if($avg1d)
-                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.1d_average') }}</div>
-                                        <div class="text-lg font-semibold text-gray-200">€{{ number_format($avg1d, 2) }}</div>
-                                    </div>
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.trend') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($trendPriceEur, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
                                     @endif
                                     
                                     @if($avg7d)
-                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.7d_average') }}</div>
-                                        <div class="text-lg font-semibold text-gray-200">€{{ number_format($avg7d, 2) }}</div>
-                                    </div>
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.7d_average') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($avg7d, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
                                     @endif
                                     
                                     @if($avg30d)
-                                    <div class="border border-white/20 bg-black/30 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.30d_average') }}</div>
-                                        <div class="text-lg font-semibold text-gray-200">€{{ number_format($avg30d, 2) }}</div>
-                                    </div>
+                                    <tr class="hover:bg-white/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.30d_average') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($avg30d, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
                                     @endif
-                                </div>
-                            </div>
-                            
-                            <!-- Foil/Holo Prices -->
-                            @if($avgHolo || $lowHolo || $trendHolo)
-                            <div class="mb-6">
-                                <h3 class="text-sm font-semibold text-gray-300 mb-3">{{ __('tcg/cards/show.holofoil') }} {{ __('tcg/cards/show.prices') }}</h3>
-                                <div class="grid grid-cols-2 gap-3">
+                                    
                                     @if($avgHolo)
-                                    <div class="border border-yellow-400/30 bg-yellow-500/20 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.average') }}</div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($avgHolo, 2) }}</div>
-                                    </div>
+                                    <tr class="hover:bg-white/5 bg-yellow-500/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.average') }} ({{ __('tcg/cards/show.holofoil') }})</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-lg font-bold text-white">€{{ number_format($avgHolo, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-400">Stable</span>
+                                        </td>
+                                    </tr>
                                     @endif
                                     
                                     @if($lowHolo)
-                                    <div class="border border-yellow-400/30 bg-yellow-500/20 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.low_price') }}</div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($lowHolo, 2) }}</div>
-                                    </div>
+                                    <tr class="hover:bg-white/5 bg-yellow-500/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.low_price') }} ({{ __('tcg/cards/show.holofoil') }})</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($lowHolo, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
                                     @endif
                                     
                                     @if($trendHolo)
-                                    <div class="border border-yellow-400/30 bg-yellow-500/20 rounded-lg p-3">
-                                        <div class="text-xs text-gray-400 uppercase">{{ __('tcg/cards/show.trend') }}</div>
-                                        <div class="text-lg font-bold text-white">€{{ number_format($trendHolo, 2) }}</div>
-                                    </div>
+                                    <tr class="hover:bg-white/5 bg-yellow-500/5">
+                                        <td class="py-3 px-4 text-gray-300">Cardmarket</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.trend') }} ({{ __('tcg/cards/show.holofoil') }})</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($trendHolo, 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
                                     @endif
-                                </div>
-                            </div>
+                                    
+                                    @if(!empty($tcgdxCardmarket))
+                                    @if(isset($tcgdxCardmarket['avg']))
+                                    <tr class="hover:bg-white/5 bg-purple-500/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGdex</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.average') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-lg font-bold text-white">€{{ number_format($tcgdxCardmarket['avg'], 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-400">Stable</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    
+                                    @if(isset($tcgdxCardmarket['low']))
+                                    <tr class="hover:bg-white/5 bg-purple-500/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGdex</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.low_price') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($tcgdxCardmarket['low'], 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    
+                                    @if(isset($tcgdxCardmarket['trend']))
+                                    <tr class="hover:bg-white/5 bg-purple-500/5">
+                                        <td class="py-3 px-4 text-gray-300">TCGdex</td>
+                                        <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.trend') }}</td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-base font-semibold text-gray-200">€{{ number_format($tcgdxCardmarket['trend'], 2) }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right">
+                                            <span class="text-gray-500">-</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-3 text-xs text-gray-500">
+                            @if($latestQuote && $latestQuote->as_of_date)
+                            <p>{{ __('Cardmarket last updated') }}: {{ $latestQuote->as_of_date->diffForHumans() }}</p>
                             @endif
+                        </div>
+                        @else
+                        <div class="text-center py-8 text-gray-400 border border-white/10 rounded-lg">
+                            <svg class="mx-auto h-12 w-12 text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p>{{ __('tcg/cards/show.no_eu_prices') }}</p>
+                        </div>
+                        @endif
+                    </div>
                             
                             <!-- Price Source Citation -->
                             <div class="text-xs text-gray-500 border-t border-white/10 pt-3">
