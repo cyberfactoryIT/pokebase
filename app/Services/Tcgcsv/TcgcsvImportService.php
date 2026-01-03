@@ -296,16 +296,26 @@ class TcgcsvImportService
             throw new \Exception('Missing groupId in group data');
         }
         
+        // Retrieve existing record
         $existing = TcgcsvGroup::where('group_id', $groupId)
             ->where('category_id', $this->categoryId)
-            ->exists();
+            ->first();
+        
+        $modifiedOn = isset($data['modifiedOn']) ? $this->parseDate($data['modifiedOn']) : null;
+        
+        // Skip update if not modified in source
+        if ($existing && $modifiedOn && $existing->modified_on && 
+            $existing->modified_on >= $modifiedOn) {
+            $stats['skipped'] = ($stats['skipped'] ?? 0) + 1;
+            return;
+        }
         
         $updateData = [
             'game_id' => $this->gameId,
             'name' => $data['name'] ?? null,
             'abbreviation' => $data['abbreviation'] ?? null,
             'published_on' => isset($data['publishedOn']) ? $this->parseDate($data['publishedOn']) : null,
-            'modified_on' => isset($data['modifiedOn']) ? $this->parseDate($data['modifiedOn']) : null,
+            'modified_on' => $modifiedOn,
             'raw' => $data,
         ];
         
@@ -335,9 +345,19 @@ class TcgcsvImportService
             throw new \Exception('Missing productId in product data');
         }
         
+        // Retrieve existing record
         $existing = TcgcsvProduct::where('product_id', $productId)
             ->where('category_id', $this->categoryId)
-            ->exists();
+            ->first();
+        
+        $modifiedOn = isset($data['modifiedOn']) ? $this->parseDate($data['modifiedOn']) : null;
+        
+        // Skip update if not modified in source
+        if ($existing && $modifiedOn && $existing->modified_on && 
+            $existing->modified_on >= $modifiedOn) {
+            $stats['skipped'] = ($stats['skipped'] ?? 0) + 1;
+            return;
+        }
         
         // Parse extended data for card number and rarity
         $extendedData = $data['extendedData'] ?? [];
@@ -357,7 +377,7 @@ class TcgcsvImportService
                 'image_url' => $data['imageUrl'] ?? null,
                 'rarity' => $rarity,
                 'card_number' => $cardNumber,
-                'modified_on' => isset($data['modifiedOn']) ? $this->parseDate($data['modifiedOn']) : null,
+                'modified_on' => $modifiedOn,
                 'extended_data' => $extendedData,
                 'raw' => $data,
             ]

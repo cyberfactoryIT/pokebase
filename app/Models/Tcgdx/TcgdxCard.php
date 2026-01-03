@@ -35,9 +35,24 @@ class TcgdxCard extends Model
         'hp' => 'integer',
     ];
 
+    protected $appends = ['name_en'];
+
     public function set(): BelongsTo
     {
         return $this->belongsTo(TcgdxSet::class, 'set_tcgdx_id');
+    }
+
+    /**
+     * Get English name (accessor)
+     */
+    public function getNameEnAttribute(): string
+    {
+        // name is already cast to array by Eloquent
+        if (is_array($this->name)) {
+            return $this->name['en'] ?? $this->name[array_key_first($this->name)] ?? 'Unknown';
+        }
+        
+        return $this->name ?? 'Unknown';
     }
 
     /**

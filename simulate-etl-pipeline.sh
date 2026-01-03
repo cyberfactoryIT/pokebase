@@ -1,0 +1,239 @@
+#!/bin/bash
+
+# ============================================================================
+# ETL Pipeline Simulator
+# ============================================================================
+# Simula l'intera pipeline di importazione nell'ordine schedulato
+# Basato su routes/console.php schedule (02:10 - 06:00)
+#
+# Usage: ./simulate-etl-pipeline.sh
+# ============================================================================
+
+set -e  # Exit on error
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Timestamp function
+timestamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+# Duration calculator
+start_time=$(date +%s)
+
+echo -e "${CYAN}"
+echo "╔════════════════════════════════════════════════════════════════════╗"
+echo "║                   ETL PIPELINE SIMULATOR                           ║"
+echo "║                                                                    ║"
+echo "║  Simula l'intera pipeline schedulata (02:10 - 06:00)              ║"
+echo "╚════════════════════════════════════════════════════════════════════╝"
+echo -e "${NC}"
+echo ""
+echo -e "${YELLOW}⚠️  NOTA: Questo eseguirà TUTTI i comandi ETL in sequenza${NC}"
+echo -e "${YELLOW}   Durata stimata: 20-30 minuti (principalmente RapidAPI)${NC}"
+echo ""
+echo -e "${GREEN}🚀 Avvio pipeline...${NC}"
+echo ""
+
+# Clean pipeline_runs table for fresh start
+echo -e "${BLUE}🧹 Pulizia tabella pipeline_runs per test pulito...${NC}"
+php artisan tinker --execute="\DB::table('pipeline_runs')->truncate(); echo '✓ Pipeline runs cleared';"
+echo ""
+
+# Step 1: Cardmarket ETL (02:10)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 1/7: Cardmarket ETL (Schedule: 02:10)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Downloading and importing Cardmarket catalogue + prices${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~15 seconds${NC}"
+echo ""
+step1_start=$(date +%s)
+php artisan cardmarket:etl
+step1_end=$(date +%s)
+step1_duration=$((step1_end - step1_start))
+echo ""
+echo -e "${GREEN}✅ STEP 1 completato in ${step1_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 2: TCGCSV Import Pokemon (02:40)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 2/7: TCGCSV Import Pokemon (Schedule: 02:40)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Importing Pokemon TCG data from tcgcsv.com (TCGplayer)${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~5-10 minutes${NC}"
+echo ""
+step2_start=$(date +%s)
+php artisan tcgcsv:import-pokemon
+step2_end=$(date +%s)
+step2_duration=$((step2_end - step2_start))
+echo ""
+echo -e "${GREEN}✅ STEP 2 completato in ${step2_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 3: RapidAPI Import Episodes (03:30)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 3/8: RapidAPI Import Episodes (Schedule: 03:30)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Importing Pokemon episodes list from RapidAPI${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
+echo ""
+step3_start=$(date +%s)
+php artisan rapidapi:import-episodes pokemon
+step3_end=$(date +%s)
+step3_duration=$((step3_end - step3_start))
+echo ""
+echo -e "${GREEN}✅ STEP 3 completato in ${step3_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 4: RapidAPI Sync Cards (03:35)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 4/8: RapidAPI Sync Cards (Schedule: 03:35)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Syncing all episode cards with daily price snapshots${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~8-10 minutes (171 episodes × 3s rate limit)${NC}"
+echo -e "${YELLOW}⚠️  Rate limit: 300 req/minute${NC}"
+echo ""
+step4_start=$(date +%s)
+php artisan rapidapi:sync-cards pokemon
+step4_end=$(date +%s)
+step4_duration=$((step4_end - step4_start))
+echo ""
+echo -e "${GREEN}✅ STEP 4 completato in ${step4_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 5: TCGdex Import (04:45)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 5/8: TCGdex Import (Schedule: 04:45)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Importing Pokemon sets and cards from TCGdex API${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~1-2 minutes${NC}"
+echo ""
+step5_start=$(date +%s)
+php artisan tcgdx:import
+step5_end=$(date +%s)
+step5_duration=$((step5_end - step5_start))
+echo ""
+echo -e "${GREEN}✅ STEP 5 completato in ${step5_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 6: RapidAPI Episodes Mapping (05:30)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 6/8: RapidAPI Episodes Mapping (Schedule: 05:30)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Mapping RapidAPI episodes to TCGCSV groups${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
+echo ""
+step6_start=$(date +%s)
+php artisan rapidapi:map-episodes
+step6_end=$(date +%s)
+step6_duration=$((step6_end - step6_start))
+echo ""
+echo -e "${GREEN}✅ STEP 6 completato in ${step6_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 7: TCGdex to TCGCSV Mapping (05:50)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 7/8: TCGdex to TCGCSV Mapping (Schedule: 05:50)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Mapping TCGdex sets/cards to TCGCSV (fuzzy matching)${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~5-15 seconds${NC}"
+echo ""
+step7_start=$(date +%s)
+php artisan tcgdex:map
+step7_end=$(date +%s)
+step7_duration=$((step7_end - step7_start))
+echo ""
+echo -e "${GREEN}✅ STEP 7 completato in ${step7_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 8: TCGCSV Enrichment (06:00)
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 8/8: TCGCSV Enrichment (Schedule: 06:00)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Enriching TCGCSV with HD images, prices, links, details${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~2-5 minutes${NC}"
+echo ""
+step8_start=$(date +%s)
+php artisan tcgcsv:enrich --all
+step8_end=$(date +%s)
+step8_duration=$((step8_end - step8_start))
+echo ""
+echo -e "${GREEN}✅ STEP 8 completato in ${step8_duration}s${NC}"
+echo ""
+
+# Calculate total duration
+end_time=$(date +%s)
+total_duration=$((end_time - start_time))
+total_minutes=$((total_duration / 60))
+total_seconds=$((total_duration % 60))
+
+# Final summary
+echo ""
+echo -e "${CYAN}"
+echo "╔════════════════════════════════════════════════════════════════════╗"
+echo "║                      PIPELINE COMPLETATA! 🎉                       ║"
+echo "╚════════════════════════════════════════════════════════════════════╝"
+echo -e "${NC}"
+echo ""
+echo -e "${GREEN}📊 RIEPILOGO DURATE:${NC}"
+echo -e "   1️⃣  Cardmarket ETL ............. ${step1_duration}s"
+echo -e "   2️⃣  TCGCSV Import .............. ${step2_duration}s"
+echo -e "   3️⃣  RapidAPI Import Episodes ... ${step3_duration}s"
+echo -e "   4️⃣  RapidAPI Sync Cards ........ ${step4_duration}s"
+echo -e "   5️⃣  TCGdex Import .............. ${step5_duration}s"
+echo -e "   6️⃣  RapidAPI Mapping ........... ${step6_duration}s"
+echo -e "   7️⃣  TCGdex Mapping ............. ${step7_duration}s"
+echo -e "   8️⃣  TCGCSV Enrichment .......... ${step8_duration}s"
+echo ""
+echo -e "${CYAN}⏱️  DURATA TOTALE: ${total_minutes}m ${total_seconds}s${NC}"
+echo ""
+
+# Show pipeline_runs table
+echo -e "${BLUE}📋 PIPELINE RUNS (tracking log):${NC}"
+echo ""
+php artisan tinker --execute="
+\$runs = \App\Models\PipelineRun::orderBy('started_at')->get();
+echo str_pad('TASK', 30) . str_pad('STATUS', 12) . str_pad('DURATION', 12) . str_pad('ROWS', 15) . 'ERRORS' . PHP_EOL;
+echo str_repeat('─', 90) . PHP_EOL;
+foreach (\$runs as \$run) {
+    echo str_pad(\$run->task_name, 30) . 
+         str_pad(\$run->status, 12) . 
+         str_pad(\$run->duration ?? '0s', 12) . 
+         str_pad((\$run->rows_processed ?? 0) . ' processed', 15) . 
+         (\$run->errors_count ?? 0) . PHP_EOL;
+}
+echo PHP_EOL . '✅ Total runs: ' . \$runs->count() . PHP_EOL;
+"
+
+echo ""
+echo -e "${GREEN}✅ Pipeline simulation completata con successo!${NC}"
+echo ""
+echo -e "${YELLOW}💡 Per vedere i dettagli completi:${NC}"
+echo -e "   ${CYAN}php artisan tinker${NC}"
+echo -e "   ${CYAN}> \\App\\Models\\PipelineRun::all();${NC}"
+echo ""

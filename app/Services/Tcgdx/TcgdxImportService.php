@@ -35,9 +35,10 @@ class TcgdxImportService
      * Import all Pokemon sets and their cards
      * 
      * @param callable|null $output Progress callback
+     * @param \App\Models\PipelineRun|null $pipelineRun Pipeline run to update
      * @return TcgdxImportRun
      */
-    public function runImportAll(?callable $output = null): TcgdxImportRun
+    public function runImportAll(?callable $output = null, $pipelineRun = null): TcgdxImportRun
     {
         $run = TcgdxImportRun::create([
             'started_at' => now(),
@@ -92,12 +93,26 @@ class TcgdxImportService
                     if ($output) {
                         $output("  ✅ {$result['cards_imported']} cards imported\n\n");
                     }
+                    
+                    // Update pipeline stats every 20 sets
+                    if ($pipelineRun && $progress % 20 === 0) {
+                        $pipelineRun->updateStats([
+                            'rows_processed' => $setsImported,
+                            'rows_created' => $cardsTotal,
+                            'errors_count' => $setsFailed,
+                        ]);
+                    }
                 } catch (Throwable $e) {
                     $setsFailed++;
                     $failedSets[] = [
                         'set_id' => $setId,
                         'error' => $e->getMessage(),
                     ];
+                    
+                    // Ensure any pending transaction is closed
+                    if (DB::transactionLevel() > 0) {
+                        DB::rollBack();
+                    }
                     
                     if ($output) {
                         $output("  ❌ Failed: {$e->getMessage()}\n\n");

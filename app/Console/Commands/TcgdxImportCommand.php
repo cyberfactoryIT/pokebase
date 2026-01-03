@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\PipelineRun;
 use App\Models\Tcgdx\TcgdxCard;
 use App\Models\Tcgdx\TcgdxImportRun;
 use App\Models\Tcgdx\TcgdxSet;
@@ -19,6 +20,9 @@ class TcgdxImportCommand extends Command
 
     public function handle(TcgdxImportService $service): int
     {
+        // Start pipeline tracking
+        $pipelineRun = PipelineRun::start('tcgdx:import');
+
         $this->info('🎴 TCGdex Import');
         $this->newLine();
 
@@ -67,7 +71,7 @@ class TcgdxImportCommand extends Command
         // Import all sets
         $run = $service->runImportAll(function($message) {
             $this->line($message);
-        });
+        }, $pipelineRun);
 
         $this->newLine();
         
@@ -90,11 +94,21 @@ class TcgdxImportCommand extends Command
                 }
             }
             
+            // Mark pipeline run as success
+            $pipelineRun->markSuccess([
+                'rows_processed' => $stats['sets_imported'] ?? 0,
+                'rows_created' => $stats['cards_total'] ?? 0,
+                'errors_count' => $stats['sets_failed'] ?? 0,
+            ]);
+            
             return self::SUCCESS;
         }
 
         $this->error('❌ Import failed');
         $this->line("Error: {$run->error_message}");
+        
+        // Mark pipeline run as failed
+        $pipelineRun->markFailed($run->error_message ?? 'Import failed');
         
         return self::FAILURE;
     }

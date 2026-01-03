@@ -4,6 +4,7 @@ namespace App\Console\Commands\Cardmarket;
 
 use App\Jobs\DownloadCardmarketFilesJob;
 use App\Models\CardmarketImportRun;
+use App\Models\PipelineRun;
 use App\Services\Cardmarket\CardmarketDownloader;
 use App\Services\Cardmarket\CardmarketImporter;
 use Illuminate\Console\Command;
@@ -72,8 +73,14 @@ class CardmarketEtlCommand extends Command
      */
     protected function runSync(?string $asOfDate, bool $forceDownload): int
     {
+        // Increase memory limit for large JSON files
+        ini_set('memory_limit', '512M');
+        
         $runUuid = (string) Str::uuid();
         $startTime = microtime(true);
+
+        // Start pipeline tracking
+        $pipelineRun = PipelineRun::start('cardmarket:etl');
 
         // Create import run
         $run = CardmarketImportRun::create([
@@ -87,61 +94,73 @@ class CardmarketEtlCommand extends Command
             $this->info('📥 STEP 1: Downloading files...');
             $this->line('─────────────────────────────────');
             
-            $catalogueResult = $this->downloader->downloadCatalogue($runUuid, $forceDownload);
-            $priceGuideResult = $this->downloader->downloadPriceGuide($runUuid, $forceDownload);
-
-            if (!$catalogueResult['success']) {
-                throw new \Exception("Catalogue download failed: {$catalogueResult['message']}");
+            // Download products and prices for Pokemon
+            $productsResult = $this->downloader->downloadProducts('pokemon', $forceDownload);
+            $pricesResult = $this->downloader->downloadPrices('pokemon', $forceDownload);
+            
+            if (!$productsResult['success']) {
+                throw new \Exception("Products download failed: {$productsResult['message']}");
             }
-
-            if (!$priceGuideResult['success']) {
-                throw new \Exception("Price guide download failed: {$priceGuideResult['message']}");
+            
+            if (!$pricesResult['success']) {
+                throw new \Exception("Prices download failed: {$pricesResult['message']}");
             }
-
+            
             $this->info('✅ Downloads complete');
+            $this->line("   Products: {$productsResult['path']}");
+            $this->line("   Prices: {$pricesResult['path']}");
             $this->newLine();
 
-            // Store versions in run metadata
+            // Store in run metadata
             $run->update([
-                'source_catalogue_version' => $catalogueResult['version'],
-                'source_priceguide_version' => $priceGuideResult['version'],
                 'meta' => [
-                    'catalogue_path' => $catalogueResult['path'],
-                    'priceguide_path' => $priceGuideResult['path'],
+                    'products_path' => $productsResult['path'],
+                    'prices_path' => $pricesResult['path'],
+                    'products_version' => $productsResult['version'] ?? null,
+                    'prices_version' => $pricesResult['version'] ?? null,
                 ],
             ]);
 
-            // Step 2: Import catalogue
+            // Step 2: Import products
             $this->info('📦 STEP 2: Importing product catalogue...');
             $this->line('─────────────────────────────────');
             
-            $catalogueImportResult = $this->importer->importCatalogue($catalogueResult['path'], $run);
-
-            if (!$catalogueImportResult['success']) {
-                throw new \Exception("Catalogue import failed: {$catalogueImportResult['message']}");
+            $productsImportResult = $this->importer->importProducts($productsResult['path'], $run);
+            
+            if (!$productsImportResult['success']) {
+                throw new \Exception("Products import failed: {$productsImportResult['message']}");
             }
-
-            $this->info("✅ Catalogue: {$catalogueImportResult['rows_upserted']} products imported");
+            
+            $this->info("✅ Catalogue: {$productsImportResult['rows_upserted']} products imported");
             $this->newLine();
 
-            // Step 3: Import price guide
+            // Step 3: Import prices
             $this->info('💰 STEP 3: Importing price guide...');
             $this->line('─────────────────────────────────');
             
-            $priceGuideImportResult = $this->importer->importPriceGuide($priceGuideResult['path'], $run, $asOfDate);
-
-            if (!$priceGuideImportResult['success']) {
-                throw new \Exception("Price guide import failed: {$priceGuideImportResult['message']}");
+            $pricesImportResult = $this->importer->importPrices($pricesResult['path'], $run, $asOfDate);
+            
+            if (!$pricesImportResult['success']) {
+                throw new \Exception("Prices import failed: {$pricesImportResult['message']}");
             }
 
-            $this->info("✅ Prices: {$priceGuideImportResult['rows_upserted']} quotes imported");
-            if (isset($priceGuideImportResult['as_of_date'])) {
-                $this->line("   Snapshot date: {$priceGuideImportResult['as_of_date']}");
+            $this->info("✅ Prices: {$pricesImportResult['rows_upserted']} quotes imported");
+            if ($asOfDate) {
+                $this->line("   Snapshot date: {$asOfDate}");
             }
             $this->newLine();
 
             // Mark success
             $run->markSuccess();
+
+            // Mark pipeline run as success
+            $totalProcessed = $productsImportResult['rows_read'] + $pricesImportResult['rows_read'];
+            $totalImported = $productsImportResult['rows_upserted'] + $pricesImportResult['rows_upserted'];
+            
+            $pipelineRun->markSuccess([
+                'rows_processed' => $totalProcessed,
+                'rows_created' => $totalImported,
+            ]);
 
             // Summary
             $duration = round(microtime(true) - $startTime, 2);
@@ -153,9 +172,9 @@ class CardmarketEtlCommand extends Command
                 [
                     ['Run UUID', $runUuid],
                     ['Duration', "{$duration} seconds"],
-                    ['Products Imported', number_format($catalogueImportResult['rows_upserted'])],
-                    ['Prices Imported', number_format($priceGuideImportResult['rows_upserted'])],
-                    ['Total Rows Read', number_format($catalogueImportResult['rows_read'] + $priceGuideImportResult['rows_read'])],
+                    ['Products Imported', number_format($productsImportResult['rows_upserted'])],
+                    ['Prices Imported', number_format($pricesImportResult['rows_upserted'])],
+                    ['Total Rows Read', number_format($totalProcessed)],
                     ['Status', '✅ SUCCESS'],
                 ]
             );
@@ -164,6 +183,7 @@ class CardmarketEtlCommand extends Command
 
         } catch (\Exception $e) {
             $run->markFailed($e->getMessage());
+            $pipelineRun->markFailed($e->getMessage(), ['trace' => $e->getTraceAsString()]);
             
             $this->newLine();
             $this->error('❌ ETL pipeline failed!');

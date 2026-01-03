@@ -155,6 +155,9 @@ Route::prefix('superadmin')->middleware(['auth'])->group(function () {
     Route::get('/superadmin/billing/invoices/export', [\App\Http\Controllers\SuperAdminBillingController::class, 'exportInvoices'])->name('superadmin.billing.invoices.export');
     Route::resource('helps', HelpController::class)->except(['show']);
     
+    // Import Dashboard
+    Route::get('/imports', [\App\Http\Controllers\Admin\ImportDashboardController::class, 'index'])->name('admin.imports.dashboard');
+    
     // Articles management (SuperAdmin only)
     Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)->names([
         'index' => 'admin.articles.index',

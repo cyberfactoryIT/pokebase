@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use App\Models\PipelineRun;
 
 class EnrichTcgcsvDataCommand extends Command
 {
@@ -15,6 +16,8 @@ class EnrichTcgcsvDataCommand extends Command
                             {--all : Enrich with all available data}';
 
     protected $description = 'Enrich TCGCSV data with best data from RapidAPI and Cardmarket';
+
+    protected $totalUpdated = 0;
 
     public function handle(): int
     {
@@ -28,8 +31,17 @@ class EnrichTcgcsvDataCommand extends Command
             return self::FAILURE;
         }
 
+        $pipelineRun = PipelineRun::start('tcgcsv:enrich', [
+            'images' => $enrichImages,
+            'prices' => $enrichPrices,
+            'links' => $enrichLinks,
+            'details' => $enrichDetails,
+        ]);
+
         $this->info('🚀 Enriching TCGCSV data...');
         $this->newLine();
+
+        $this->totalUpdated = 0;
 
         if ($enrichImages) {
             $this->enrichImages();
@@ -46,6 +58,11 @@ class EnrichTcgcsvDataCommand extends Command
         if ($enrichDetails) {
             $this->enrichDetails();
         }
+
+        // Mark pipeline run as success
+        $pipelineRun->markSuccess([
+            'rows_updated' => $this->totalUpdated,
+        ]);
 
         return self::SUCCESS;
     }
@@ -84,6 +101,7 @@ class EnrichTcgcsvDataCommand extends Command
         $progressBar->finish();
         $this->newLine(2);
         $this->info("✅ Updated {$updated} cards with HD images");
+        $this->totalUpdated += $updated;
     }
 
     protected function enrichPrices(): void
@@ -130,6 +148,7 @@ class EnrichTcgcsvDataCommand extends Command
         $progressBar->finish();
         $this->newLine(2);
         $this->info("✅ Updated {$updated} cards with Cardmarket prices");
+        $this->totalUpdated += $updated;
     }
 
     protected function enrichLinks(): void
@@ -175,6 +194,7 @@ class EnrichTcgcsvDataCommand extends Command
         $progressBar->finish();
         $this->newLine(2);
         $this->info("✅ Updated {$updated} cards with external links");
+        $this->totalUpdated += $updated;
     }
 
     protected function enrichDetails(): void
@@ -233,5 +253,6 @@ class EnrichTcgcsvDataCommand extends Command
         $progressBar->finish();
         $this->newLine(2);
         $this->info("✅ Updated {$updated} cards with details");
+        $this->totalUpdated += $updated;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use App\Models\PipelineRun;
 
 class MapRapidApiEpisodesToGroupsCommand extends Command
 {
@@ -17,6 +18,11 @@ class MapRapidApiEpisodesToGroupsCommand extends Command
     {
         $dryRun = $this->option('dry-run');
         $force = $this->option('force');
+
+        $pipelineRun = PipelineRun::start('rapidapi:map-episodes', [
+            'dry_run' => $dryRun,
+            'force' => $force,
+        ]);
 
         $this->info('🔗 Mapping RapidAPI Episodes to TCGCSV Groups...');
         $this->newLine();
@@ -97,6 +103,12 @@ class MapRapidApiEpisodesToGroupsCommand extends Command
         } else {
             $this->warn("   (Dry run - no changes made)");
         }
+
+        // Mark pipeline run as success
+        $pipelineRun->markSuccess([
+            'rows_processed' => $episodes->count(),
+            'rows_updated' => $dryRun ? 0 : $updated,
+        ]);
 
         return self::SUCCESS;
     }

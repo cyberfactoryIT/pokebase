@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\Tcgcsv\TcgcsvImportService;
 use App\Services\Tcgcsv\TcgcsvClient;
+use App\Models\PipelineRun;
 
 class TcgcsvImportPokemon extends Command
 {
@@ -16,6 +17,11 @@ class TcgcsvImportPokemon extends Command
 
     public function handle(): int
     {
+        $pipelineRun = PipelineRun::start('tcgcsv:import-pokemon', [
+            'group_id' => $this->option('groupId'),
+            'only' => $this->option('only') ?? 'all',
+        ]);
+
         $this->info('╔════════════════════════════════════════════════════════╗');
         $this->info('║  TCGCSV Pokemon Import (TCGplayer Category 3)         ║');
         $this->info('╚════════════════════════════════════════════════════════╝');
@@ -57,14 +63,16 @@ class TcgcsvImportPokemon extends Command
                 'only' => $only,
             ];
             
+            $stats = null;
+            
             if ($only === 'all') {
-                $this->importAll($service, $groupId, $options);
+                $stats = $this->importAll($service, $groupId, $options);
             } elseif ($only === 'groups') {
-                $this->importGroups($service);
+                $stats = $this->importGroups($service);
             } elseif ($only === 'products') {
-                $this->importProducts($service, $groupId);
+                $stats = $this->importProducts($service, $groupId);
             } elseif ($only === 'prices') {
-                $this->importPrices($service, $groupId);
+                $stats = $this->importPrices($service, $groupId);
             }
             
             $duration = round(microtime(true) - $startTime, 2);
@@ -72,16 +80,59 @@ class TcgcsvImportPokemon extends Command
             $this->newLine();
             $this->info("✓ Import completed in {$duration}s");
             
+            // Mark pipeline run as success
+            if ($stats) {
+                $rowsProcessed = 0;
+                $rowsCreated = 0;
+                $rowsUpdated = 0;
+                $errorsCount = 0;
+                
+                if (isset($stats['groups'])) {
+                    $rowsProcessed += $stats['groups']['total'] ?? 0;
+                    $rowsCreated += $stats['groups']['new'] ?? 0;
+                    $rowsUpdated += $stats['groups']['updated'] ?? 0;
+                    $errorsCount += $stats['groups']['failed'] ?? 0;
+                }
+                
+                if (isset($stats['products'])) {
+                    $rowsProcessed += $stats['products']['total'] ?? 0;
+                    $rowsCreated += $stats['products']['new'] ?? 0;
+                    $rowsUpdated += $stats['products']['updated'] ?? 0;
+                    $errorsCount += $stats['products']['failed'] ?? 0;
+                }
+                
+                if (isset($stats['prices'])) {
+                    $rowsProcessed += $stats['prices']['total'] ?? 0;
+                    $rowsCreated += $stats['prices']['new'] ?? 0;
+                    $rowsUpdated += $stats['prices']['updated'] ?? 0;
+                    $errorsCount += $stats['prices']['failed'] ?? 0;
+                }
+                
+                $pipelineRun->markSuccess([
+                    'rows_processed' => $rowsProcessed,
+                    'rows_created' => $rowsCreated,
+                    'rows_updated' => $rowsUpdated,
+                    'errors_count' => $errorsCount,
+                ]);
+            } else {
+                $pipelineRun->markSuccess();
+            }
+            
             return self::SUCCESS;
             
         } catch (\Exception $e) {
             $this->error('Import failed: ' . $e->getMessage());
             $this->line($e->getTraceAsString());
+            
+            $pipelineRun->markFailed($e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
             return self::FAILURE;
         }
     }
     
-    protected function importAll(TcgcsvImportService $service, ?int $groupId, array $options = []): void
+    protected function importAll(TcgcsvImportService $service, ?int $groupId, array $options = []): array
     {
         $this->line('Starting full import...');
         $this->newLine();
@@ -89,9 +140,11 @@ class TcgcsvImportPokemon extends Command
         $stats = $service->importAll($groupId, $options);
         
         $this->displayResults($stats);
+        
+        return $stats;
     }
     
-    protected function importGroups(TcgcsvImportService $service): void
+    protected function importGroups(TcgcsvImportService $service): array
     {
         $this->line('Importing groups...');
         $this->newLine();
@@ -107,13 +160,15 @@ class TcgcsvImportPokemon extends Command
                 ['Failed', $stats['failed'] > 0 ? "<fg=red>{$stats['failed']}</>" : $stats['failed']],
             ]
         );
+        
+        return ['groups' => $stats];
     }
     
-    protected function importProducts(TcgcsvImportService $service, ?int $groupId): void
+    protected function importProducts(TcgcsvImportService $service, ?int $groupId): array
     {
         if (!$groupId) {
             $this->error('Must specify --groupId when using --only=products');
-            return;
+            return [];
         }
         
         $this->line("Importing products for group {$groupId}...");
@@ -131,13 +186,15 @@ class TcgcsvImportPokemon extends Command
                 ['Failed', $stats['failed'] > 0 ? "<fg=red>{$stats['failed']}</>" : $stats['failed']],
             ]
         );
+        
+        return ['products' => $stats];
     }
     
-    protected function importPrices(TcgcsvImportService $service, ?int $groupId): void
+    protected function importPrices(TcgcsvImportService $service, ?int $groupId): array
     {
         if (!$groupId) {
             $this->error('Must specify --groupId when using --only=prices');
-            return;
+            return [];
         }
         
         $this->line("Importing prices for group {$groupId}...");
@@ -155,6 +212,8 @@ class TcgcsvImportPokemon extends Command
                 ['Failed', $stats['failed'] > 0 ? "<fg=red>{$stats['failed']}</>" : $stats['failed']],
             ]
         );
+        
+        return ['prices' => $stats];
     }
     
     protected function displayResults(array $stats): void
