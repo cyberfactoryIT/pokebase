@@ -15,7 +15,7 @@ class CardmarketMatchMetacards extends Command
                             {--threshold=85 : Minimum similarity score (0-100)}
                             {--auto-confirm : Automatically apply high-confidence matches}
                             {--dry-run : Show matches without saving}
-                            {--limit=1000 : Maximum products to process}';
+                            {--limit= : Maximum products to process (default: all)}';
 
     protected $description = 'Match TCGCSV products to Cardmarket metacards (enables one-to-many variant mapping)';
 
@@ -41,8 +41,11 @@ class CardmarketMatchMetacards extends Command
         $this->info('🔍 PHASE 2: Fuzzy matching for remaining unmapped products...');
         $this->newLine();
 
-        // Get unmapped TCGCSV products
+        // Get unmapped TCGCSV products (exclude those with rapidapiCard.cardmarket_id as Phase 1 handled them)
         $query = TcgcsvProduct::whereDoesntHave('cardmarketMapping')
+            ->whereDoesntHave('rapidapiCard', function($q) {
+                $q->whereNotNull('cardmarket_id');
+            })
             ->where('game_id', 1); // Pokemon only for now
 
         if ($expansionId) {
@@ -233,43 +236,43 @@ class CardmarketMatchMetacards extends Command
 
     private function mapFromRapidAPI(bool $dryRun): int
     {
-        // Get TCGCSV products that have RapidAPI mapping with cardmarket_id but no cardmarket mapping yet
-        $products = TcgcsvProduct::whereDoesntHave('cardmarketMapping')
+        $mapped = 0;
+
+        // Use chunking to avoid memory exhaustion with large datasets
+        TcgcsvProduct::whereDoesntHave('cardmarketMapping')
             ->whereHas('rapidapiCard', function($q) {
                 $q->whereNotNull('cardmarket_id');
             })
             ->with('rapidapiCard')
-            ->get();
+            ->chunk(100, function($products) use (&$mapped, $dryRun) {
+                foreach ($products as $product) {
+                    $cardmarketId = $product->rapidapiCard->cardmarket_id ?? null;
 
-        $mapped = 0;
+                    if (!$cardmarketId) {
+                        continue;
+                    }
 
-        foreach ($products as $product) {
-            $cardmarketId = $product->rapidapiCard->cardmarket_id;
+                    // Find the metacard_id from cardmarket_products table
+                    $cardmarketProduct = \App\Models\CardmarketProduct::where('cardmarket_product_id', $cardmarketId)
+                        ->first();
 
-            if (!$cardmarketId) {
-                continue;
-            }
+                    if (!$cardmarketProduct || !$cardmarketProduct->id_metacard) {
+                        continue;
+                    }
 
-            // Find the metacard_id from cardmarket_products table
-            $cardmarketProduct = \App\Models\CardmarketProduct::where('id_product', $cardmarketId)
-                ->first();
+                    if (!$dryRun) {
+                        TcgcsvCardmarketMapping::create([
+                            'tcgcsv_product_id' => $product->id,
+                            'cardmarket_metacard_id' => $cardmarketProduct->id_metacard,
+                            'confidence_score' => 100.0,
+                            'match_method' => 'rapidapi',
+                            'match_notes' => 'Direct mapping from RapidAPI cardmarket_id',
+                        ]);
+                    }
 
-            if (!$cardmarketProduct || !$cardmarketProduct->id_metacard) {
-                continue;
-            }
-
-            if (!$dryRun) {
-                TcgcsvCardmarketMapping::create([
-                    'tcgcsv_product_id' => $product->id,
-                    'cardmarket_metacard_id' => $cardmarketProduct->id_metacard,
-                    'confidence_score' => 100.0,
-                    'match_method' => 'rapidapi',
-                    'match_notes' => 'Direct mapping from RapidAPI cardmarket_id',
-                ]);
-            }
-
-            $mapped++;
-        }
+                    $mapped++;
+                }
+            });
 
         return $mapped;
     }

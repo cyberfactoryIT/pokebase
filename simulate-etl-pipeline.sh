@@ -119,20 +119,38 @@ echo -e "${GREEN}✅ STEP 6 completato in ${step6_duration}s${NC}"
 echo ""
 sleep 2
 
-# Step 7: RapidAPI Cards Mapping
+# Step 5: RapidAPI Cards Mapping
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 7/11: RapidAPI Cards Mapping (After Sync)${NC}"
+echo -e "${GREEN}STEP 5/11: RapidAPI Cards Mapping (After Sync)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📝 Mapping RapidAPI cards to TCGCSV products${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
 echo ""
-step7_start=$(date +%s)
+step5_start=$(date +%s)
 php artisan cards:map
-step7_end=$(date +%s)
-step7_duration=$((step7_end - step7_start))
+step5_end=$(date +%s)
+step5_duration=$((step5_end - step5_start))
 echo ""
-echo -e "${GREEN}✅ STEP 7 completato in ${step7_duration}s${NC}"
+echo -e "${GREEN}✅ STEP 5 completato in ${step5_duration}s${NC}"
+echo ""
+sleep 2
+
+# Step 6: Cardmarket Match Metacards
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 6/11: Cardmarket Match Metacards (Direct + Fuzzy)${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Phase 1: Direct mapping from RapidAPI cardmarket_id${NC}"
+echo -e "${CYAN}📝 Phase 2: Fuzzy matching for remaining products${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~2-3 minutes (tutti i prodotti, no limit)${NC}"
+echo ""
+step6_start=$(date +%s)
+php artisan cardmarket:match-metacards --auto-confirm
+step6_end=$(date +%s)
+step6_duration=$((step6_end - step6_start))
+echo ""
+echo -e "${GREEN}✅ STEP 6 completato in ${step6_duration}s${NC}"
 echo ""
 sleep 2
 
