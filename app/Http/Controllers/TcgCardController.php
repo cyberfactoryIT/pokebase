@@ -93,10 +93,28 @@ class TcgCardController extends Controller
     {
         $cardmarketProductId = $card->cardmarket_product_id;
         
-        if (!$cardmarketProductId) {
-            return ['trend' => [], 'trend_holo' => []];
+        // Priority 1: Try Cardmarket price quotes if available
+        if ($cardmarketProductId) {
+            $cardmarketHistory = $this->getCardmarketPriceHistory($cardmarketProductId);
+            // If we have data, use it
+            if (!empty($cardmarketHistory['trend']) || !empty($cardmarketHistory['trend_holo'])) {
+                return $cardmarketHistory;
+            }
         }
-
+        
+        // Priority 2: Fallback to RapidAPI price history if Cardmarket has no data
+        if ($card->rapidapi_card_id) {
+            return $this->getRapidApiPriceHistory($card->rapidapi_card_id);
+        }
+        
+        return ['trend' => [], 'trend_holo' => []];
+    }
+    
+    /**
+     * Get price history from Cardmarket quotes
+     */
+    private function getCardmarketPriceHistory($cardmarketProductId): array
+    {
         // Get last 30 days of quotes
         $quotes = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $cardmarketProductId)
             ->where('as_of_date', '>=', now()->subDays(30))
@@ -188,6 +206,52 @@ class TcgCardController extends Controller
         return [
             'trend' => $trendData,
             'trend_holo' => $trendHoloData
+        ];
+    }
+    
+    /**
+     * Get price history from RapidAPI price history
+     */
+    private function getRapidApiPriceHistory($rapidapiCardId): array
+    {
+        // Get rapidapi_id from rapidapi_cards
+        $rapidapiCard = \App\Models\RapidapiCard::where('id', $rapidapiCardId)->first();
+        
+        if (!$rapidapiCard || !$rapidapiCard->rapidapi_id) {
+            return ['trend' => [], 'trend_holo' => []];
+        }
+        
+        // Get last 30 days of price history
+        $priceHistory = \DB::table('rapidapi_price_history')
+            ->where('card_id', $rapidapiCard->rapidapi_id)
+            ->where('snapshot_date', '>=', now()->subDays(30))
+            ->orderBy('snapshot_date', 'asc')
+            ->get();
+        
+        if ($priceHistory->isEmpty()) {
+            return ['trend' => [], 'trend_holo' => []];
+        }
+        
+        // Build trend data (prefer cardmarket_trend, fallback to cardmarket_avg)
+        $trendData = [];
+        
+        foreach ($priceHistory as $history) {
+            $price = $history->cardmarket_trend ?? $history->cardmarket_avg ?? null;
+            
+            if ($price !== null) {
+                $trendData[] = [
+                    'x' => $history->snapshot_date,
+                    'y' => (float) $price
+                ];
+            }
+        }
+        
+        // Sort by date
+        usort($trendData, fn($a, $b) => strcmp($a['x'], $b['x']));
+        
+        return [
+            'trend' => $trendData,
+            'trend_holo' => [] // RapidAPI price history doesn't have holo distinction
         ];
     }
 }

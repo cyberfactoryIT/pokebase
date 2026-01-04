@@ -5,8 +5,8 @@
             <span>🇪🇺</span>
             <span>EU PRICES</span>
         </h3>
-        @if($cardmarketUrl)
-        <a href="{{ $cardmarketUrl }}" target="_blank" rel="noopener" class="text-emerald-400 hover:text-emerald-300 text-sm flex items-center gap-1">
+        @if($cardmarketPriceUrl)
+        <a href="{{ $cardmarketPriceUrl }}" target="_blank" rel="noopener" class="text-emerald-400 hover:text-emerald-300 text-sm flex items-center gap-1">
             <span>CARDMARKET</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
@@ -15,7 +15,6 @@
         @endif
     </div>
     
-    @if($latestQuote)
     <!-- Price History Chart -->
     @if(!empty($priceHistory['trend']) || !empty($priceHistory['trend_holo']))
     <div class="mb-6 border border-white/10 rounded-lg p-4 bg-black/20">
@@ -119,6 +118,7 @@
     </script>
     @endif
     
+    @if($latestQuote)
     <!-- Cardmarket Price Quotes Table (Primary Source) -->
     <div class="border border-white/10 rounded-lg overflow-hidden">
         <table class="w-full text-sm">

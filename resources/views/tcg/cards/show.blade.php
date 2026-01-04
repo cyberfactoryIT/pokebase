@@ -437,14 +437,15 @@
                         
                         // Get Cardmarket prices from cardmarket_price_quotes using direct field
                         $latestQuote = null;
-                        $cardmarketUrl = null;
                         $cardmarketProductId = $card->cardmarket_product_id ?? null;
+                        
+                        // Use the same link as the external links section
+                        $cardmarketPriceUrl = $card->rapidapiCard && $card->rapidapiCard->links ? ($card->rapidapiCard->links['cardmarket'] ?? null) : null;
                         
                         if ($cardmarketProductId) {
                             $latestQuote = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $cardmarketProductId)
                                 ->latest('as_of_date')
                                 ->first();
-                            $cardmarketUrl = "https://www.cardmarket.com/en/Pokemon/Products/Singles/" . $cardmarketProductId;
                         }
                         
                         // Extract price data from quote
