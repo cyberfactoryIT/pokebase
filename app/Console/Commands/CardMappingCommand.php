@@ -82,14 +82,7 @@ class CardMappingCommand extends Command
 
         $this->info("📊 Current Mapping Statistics for {$game}:");
         $this->line("   Total mappings: {$stats['total_mappings']}");
-        $this->line("   Average confidence: {$stats['avg_confidence']}");
-        
-        if (!empty($stats['by_method'])) {
-            $this->newLine();
-            $this->line("   By method:");
-            foreach ($stats['by_method'] as $method => $count) {
-                $this->line("      - {$method}: {$count}");
-            }
-        }
+        $this->line("   With RapidAPI: {$stats['with_rapidapi']}");
+        $this->line("   With Cardmarket: {$stats['with_cardmarket']}");
     }
 }

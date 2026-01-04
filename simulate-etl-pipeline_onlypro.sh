@@ -46,72 +46,9 @@ echo -e "${GREEN}🚀 Avvio pipeline...${NC}"
 echo ""
 
 # Clean pipeline_runs table for fresh start
-echo -e "${BLUE}🧹 Pulizia tabella pipeline_runs per test pulito...${NC}"
-php artisan tinker --execute="\DB::table('pipeline_runs')->truncate(); echo '✓ Pipeline runs cleared';"
-echo ""
-
-# Step 1: Cardmarket Download & Process (02:10)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 1/11: Cardmarket Download & Process (Schedule: 02:10)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📥 Step 1a: Download Cardmarket catalogue + prices${NC}"
-echo ""
-php artisan cardmarket:download-products
-echo ""
-echo -e "${CYAN}📥 Step 1b: Download Cardmarket price quotes${NC}"
-echo ""
-php artisan cardmarket:download-price-quotes
-echo ""
-echo -e "${CYAN}📝 Step 1c: Process and import to database${NC}"
-echo ""
-step1_start=$(date +%s)
-php artisan cardmarket:process-products
-php artisan cardmarket:process-price-quotes
-step1_end=$(date +%s)
-step1_duration=$((step1_end - step1_start))
-echo ""
-echo -e "${GREEN}✅ STEP 1 completato in ${step1_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 2: TCGCSV Download & Import Pokemon (02:40)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 2/11: TCGCSV Download & Import Pokemon (Schedule: 02:40)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📥 Step 2a: Download TCGCSV Pokemon data${NC}"
-echo ""
-php artisan tcgcsv:download-pokemon
-echo ""
-echo -e "${CYAN}📝 Step 2b: Import Pokemon TCG data from tcgcsv.com (TCGplayer)${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~5-10 minutes${NC}"
-echo ""
-step2_start=$(date +%s)
-php artisan tcgcsv:import-pokemon
-step2_end=$(date +%s)
-step2_duration=$((step2_end - step2_start))
-echo ""
-echo -e "${GREEN}✅ STEP 2 completato in ${step2_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 3: RapidAPI Import Episodes (03:30)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 5/11: RapidAPI Import Episodes (Schedule: 03:30)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Importing Pokemon episodes list from RapidAPI${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
-echo ""
-step5_start=$(date +%s)
-php artisan rapidapi:import-episodes pokemon
-step5_end=$(date +%s)
-step5_duration=$((step5_end - step5_start))
-echo ""
-echo -e "${GREEN}✅ STEP 5 completato in ${step5_duration}s${NC}"
-echo ""
-sleep 2
+//echo -e "${BLUE}🧹 Pulizia tabella pipeline_runs per test pulito...${NC}"
+//php artisan tinker --execute="\DB::table('pipeline_runs')->truncate(); echo '✓ Pipeline runs cleared';"
+//
 
 # Step 6: RapidAPI Sync Cards (03:35)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
@@ -166,26 +103,7 @@ echo -e "${GREEN}✅ STEP 6 completato in ${step6_duration}s${NC}"
 echo ""
 sleep 2
 
-# Step 7: TCGdex Download & Import (04:45)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 7/11: TCGdex Download & Import (Schedule: 04:45)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📥 Step 7a: Download TCGdex sets and cards from API${NC}"
-echo ""
-php artisan tcgdx:download
-echo ""
-echo -e "${CYAN}📝 Step 7b: Import Pokemon sets and cards to database${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~1-2 minutes${NC}"
-echo ""
-step7_start=$(date +%s)
-php artisan tcgdx:import
-step7_end=$(date +%s)
-step7_duration=$((step7_end - step7_start))
-echo ""
-echo -e "${GREEN}✅ STEP 7 completato in ${step7_duration}s${NC}"
-echo ""
-sleep 2
+
 
 # Step 8: RapidAPI Episodes Mapping (05:30)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
