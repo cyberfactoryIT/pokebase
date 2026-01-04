@@ -65,6 +65,13 @@ Schedule::command('tcgcsv:enrich --all')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Cardmarket Price Sync: Run daily at 6:30 AM after all imports complete (Europe/Copenhagen)
+Schedule::command('cardmarket:sync-prices --force')
+    ->dailyAt('06:30')
+    ->timezone('Europe/Copenhagen')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 // Artisan Commands
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

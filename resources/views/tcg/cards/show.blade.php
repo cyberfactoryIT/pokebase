@@ -381,9 +381,9 @@
                         
                         // Cardmarket from RapidAPI
                         $cardmarketPricesRapid = $allPricesRapid['cardmarket'] ?? [];
-                        $cardmarketAvgRapid = $cardmarketPricesRapid['avg'] ?? null;
-                        $cardmarketLowRapid = $cardmarketPricesRapid['low'] ?? null;
-                        $cardmarketTrendRapid = $cardmarketPricesRapid['trend'] ?? null;
+                        $cardmarketAvgRapid = $cardmarketPricesRapid['7d_average'] ?? $cardmarketPricesRapid['30d_average'] ?? null;
+                        $cardmarketLowRapid = $cardmarketPricesRapid['lowest_near_mint'] ?? null;
+                        $cardmarketTrendRapid = $cardmarketPricesRapid['7d_average'] ?? null;
                         
                         // Get TCGdex prices from raw field
                         $tcgdxCard = $card->tcgdxCard;

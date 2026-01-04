@@ -57,7 +57,12 @@ php artisan db:seed --class=GamesSeeder --force
 echo -e "${GREEN}✓ Games seeded${NC}"
 
 echo ""
-echo -e "${BLUE}[7/9]${NC} Clearing caches..."
+echo -e "${BLUE}[7/10]${NC} Syncing Cardmarket prices..."
+php artisan cardmarket:sync-prices --force
+echo -e "${GREEN}✓ Cardmarket prices synced${NC}"
+
+echo ""
+echo -e "${BLUE}[8/10]${NC} Clearing caches..."
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
@@ -65,7 +70,7 @@ php artisan route:clear
 echo -e "${GREEN}✓ Caches cleared${NC}"
 
 echo ""
-echo -e "${BLUE}[8/9]${NC} Rebuilding caches..."
+echo -e "${BLUE}[9/10]${NC} Rebuilding caches..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -73,7 +78,7 @@ composer dump-autoload --optimize
 echo -e "${GREEN}✓ Caches rebuilt${NC}"
 
 echo ""
-echo -e "${BLUE}[9/9]${NC} Verifying deployment..."
+echo -e "${BLUE}[10/10]${NC} Verifying deployment..."
 GAMES_COUNT=$(php artisan tinker --execute="echo DB::table('games')->count();")
 echo "   Games in database: $GAMES_COUNT"
 
