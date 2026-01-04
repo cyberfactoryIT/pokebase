@@ -25,13 +25,40 @@ class TcgCardController extends Controller
             ])
             ->firstOrFail();
 
+        // Add user interaction flags if authenticated
+        if (auth()->check()) {
+            $userId = auth()->id();
+            
+            $card->is_liked = \DB::table('user_likes')
+                ->where('user_id', $userId)
+                ->where('product_id', $card->product_id)
+                ->exists();
+                
+            $card->is_in_wishlist = \DB::table('user_wishlist_items')
+                ->where('user_id', $userId)
+                ->where('product_id', $card->product_id)
+                ->exists();
+                
+            $card->is_watched = \DB::table('user_watch_items')
+                ->where('user_id', $userId)
+                ->where('product_id', $card->product_id)
+                ->exists();
+        } else {
+            $card->is_liked = false;
+            $card->is_in_wishlist = false;
+            $card->is_watched = false;
+        }
+
         // Get card image with fallbacks
         $imageUrl = $this->getCardImage($card);
 
         // Get latest price if available
         $latestPrice = $card->prices->first();
 
-        return view('tcg.cards.show', compact('card', 'imageUrl', 'latestPrice'));
+        // Prepare price history for chart (last 30 days)
+        $priceHistory = $this->preparePriceHistory($card);
+
+        return view('tcg.cards.show', compact('card', 'imageUrl', 'latestPrice', 'priceHistory'));
     }
 
     /**
@@ -57,5 +84,88 @@ class TcgCardController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Prepare price history data for chart
+     */
+    private function preparePriceHistory($card): array
+    {
+        $cardmarketProductId = $card->cardmarket_product_id;
+        
+        if (!$cardmarketProductId) {
+            return ['trend' => [], 'trend_holo' => []];
+        }
+
+        // Get last 30 days of quotes
+        $quotes = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $cardmarketProductId)
+            ->where('as_of_date', '>=', now()->subDays(30))
+            ->orderBy('as_of_date', 'asc')
+            ->get();
+
+        if ($quotes->isEmpty()) {
+            return ['trend' => [], 'trend_holo' => []];
+        }
+
+        // Calculate days of data we have
+        $firstQuoteDate = $quotes->first()->as_of_date;
+        $daysOfData = now()->startOfDay()->diffInDays($firstQuoteDate);
+
+        // Build trend data
+        $trendData = [];
+        $trendHoloData = [];
+
+        foreach ($quotes as $quote) {
+            if ($quote->trend !== null) {
+                $trendData[] = [
+                    'x' => $quote->as_of_date->format('Y-m-d'),
+                    'y' => (float) $quote->trend
+                ];
+            }
+            
+            if ($quote->trend_holo !== null) {
+                $trendHoloData[] = [
+                    'x' => $quote->as_of_date->format('Y-m-d'),
+                    'y' => (float) $quote->trend_holo
+                ];
+            }
+        }
+
+        // Get latest quote for avg7 and avg30
+        $latestQuote = $quotes->last();
+
+        // Add synthetic points based on data availability
+        if ($daysOfData < 7) {
+            // Less than 7 days: add avg7 at -7d and avg30 at -30d
+            if ($latestQuote->avg7 !== null) {
+                $trendData[] = [
+                    'x' => now()->subDays(7)->format('Y-m-d'),
+                    'y' => (float) $latestQuote->avg7
+                ];
+            }
+            if ($latestQuote->avg30 !== null) {
+                $trendData[] = [
+                    'x' => now()->subDays(30)->format('Y-m-d'),
+                    'y' => (float) $latestQuote->avg30
+                ];
+            }
+        } elseif ($daysOfData < 30) {
+            // Between 7 and 30 days: add only avg30 at -30d
+            if ($latestQuote->avg30 !== null) {
+                $trendData[] = [
+                    'x' => now()->subDays(30)->format('Y-m-d'),
+                    'y' => (float) $latestQuote->avg30
+                ];
+            }
+        }
+
+        // Sort trend data by date
+        usort($trendData, fn($a, $b) => strcmp($a['x'], $b['x']));
+        usort($trendHoloData, fn($a, $b) => strcmp($a['x'], $b['x']));
+
+        return [
+            'trend' => $trendData,
+            'trend_holo' => $trendHoloData
+        ];
     }
 }

@@ -211,6 +211,46 @@
                         @endif
                     </div>
 
+                    <!-- Like / Wishlist / Watch Actions -->
+                    <div class="flex gap-2 pt-4 border-t border-white/10">
+                        @auth
+                            <!-- Like Button -->
+                            <button type="button" 
+                                    onclick="toggleLike({{ $card->product_id }}, this)" 
+                                    class="flex-1 px-3 py-2 {{ $card->is_liked ?? false ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-700 hover:bg-gray-600' }} text-white rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                                <svg class="w-4 h-4" fill="{{ $card->is_liked ?? false ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                <span>{{ $card->is_liked ?? false ? __('Unlike') : __('Like') }}</span>
+                            </button>
+
+                            <!-- Wishlist Button -->
+                            <button type="button" 
+                                    onclick="toggleWishlist({{ $card->product_id }}, this)" 
+                                    class="flex-1 px-3 py-2 {{ $card->is_in_wishlist ?? false ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-700 hover:bg-gray-600' }} text-white rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                                <svg class="w-4 h-4" fill="{{ $card->is_in_wishlist ?? false ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                </svg>
+                                <span>{{ $card->is_in_wishlist ?? false ? __('In Wishlist') : __('Wishlist') }}</span>
+                            </button>
+
+                            <!-- Watch Button -->
+                            <button type="button" 
+                                    onclick="toggleWatch({{ $card->product_id }}, this)" 
+                                    class="flex-1 px-3 py-2 {{ $card->is_watched ?? false ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-gray-700 hover:bg-gray-600' }} text-white rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span>{{ $card->is_watched ?? false ? __('Watching') : __('Watch') }}</span>
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}" class="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition text-center text-sm">
+                                {{ __('Login to interact') }}
+                            </a>
+                        @endauth
+                    </div>
+
                     <!-- Collection Actions -->
                     <div class="flex gap-3 pt-4 border-t border-white/10" x-data="{ showDeckModal: false }">
                         <form method="POST" action="{{ route('collection.add') }}" class="flex-1">
@@ -395,10 +435,10 @@
                         $tcgdxCardmarket = $tcgdxPricing['cardmarket'] ?? [];
                         $tcgdxUpdated = $tcgdxTcgplayer['updated'] ?? null;
                         
-                        // Get Cardmarket prices from cardmarket_price_quotes using rapidapi_cards.cardmarket_id
+                        // Get Cardmarket prices from cardmarket_price_quotes using direct field
                         $latestQuote = null;
                         $cardmarketUrl = null;
-                        $cardmarketProductId = $rapidapiCard?->cardmarket_id ?? null;
+                        $cardmarketProductId = $card->cardmarket_product_id ?? null;
                         
                         if ($cardmarketProductId) {
                             $latestQuote = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $cardmarketProductId)
@@ -431,4 +471,119 @@
         </div>
     </div>
 </div>
+
+<script>
+// Interaction toggles
+async function toggleLike(productId, button) {
+    try {
+        const response = await fetch(`/tcg/items/${productId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            const svg = button.querySelector('svg');
+            const span = button.querySelector('span');
+            if (data.status === 'liked') {
+                button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                button.classList.add('bg-red-600', 'hover:bg-red-700');
+                svg.setAttribute('fill', 'currentColor');
+                span.textContent = 'Unlike';
+            } else {
+                button.classList.remove('bg-red-600', 'hover:bg-red-700');
+                button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                svg.setAttribute('fill', 'none');
+                span.textContent = 'Like';
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling like:', error);
+    }
+}
+
+async function toggleWishlist(productId, button) {
+    try {
+        const response = await fetch(`/tcg/items/${productId}/wishlist`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            const svg = button.querySelector('svg');
+            const span = button.querySelector('span');
+            if (data.status === 'added') {
+                button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                button.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                svg.setAttribute('fill', 'currentColor');
+                span.textContent = 'In Wishlist';
+            } else {
+                button.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                svg.setAttribute('fill', 'none');
+                span.textContent = 'Wishlist';
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling wishlist:', error);
+    }
+}
+
+async function toggleWatch(productId, button) {
+    try {
+        const response = await fetch(`/tcg/items/${productId}/watch`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            const svg = button.querySelector('svg');
+            const span = button.querySelector('span');
+            if (data.status === 'added') {
+                button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                button.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
+                span.textContent = 'Watching';
+            } else {
+                button.classList.remove('bg-yellow-600', 'hover:bg-yellow-700');
+                button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                span.textContent = 'Watch';
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling watch:', error);
+    }
+}
+</script>
 @endsection

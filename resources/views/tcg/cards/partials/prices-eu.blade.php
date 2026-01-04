@@ -16,6 +16,109 @@
     </div>
     
     @if($latestQuote)
+    <!-- Price History Chart -->
+    @if(!empty($priceHistory['trend']) || !empty($priceHistory['trend_holo']))
+    <div class="mb-6 border border-white/10 rounded-lg p-4 bg-black/20">
+        <h4 class="text-sm font-semibold text-gray-300 mb-3">Price Trend (Last 30 Days)</h4>
+        <canvas id="cardmarketPriceChart" height="80"></canvas>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+    <script>
+    (function() {
+        const ctx = document.getElementById('cardmarketPriceChart');
+        if (!ctx) return;
+        
+        const trendData = @json($priceHistory['trend'] ?? []);
+        const trendHoloData = @json($priceHistory['trend_holo'] ?? []);
+        
+        const datasets = [];
+        
+        if (trendData.length > 0) {
+            datasets.push({
+                label: 'Trend',
+                data: trendData,
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+            });
+        }
+        
+        if (trendHoloData.length > 0) {
+            datasets.push({
+                label: 'Trend Holo',
+                data: trendHoloData,
+                borderColor: 'rgb(168, 85, 247)',
+                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                tension: 0.4,
+                fill: true
+            });
+        }
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: { datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            parser: 'yyyy-MM-dd',
+                            tooltipFormat: 'MMM d, yyyy',
+                            displayFormats: {
+                                day: 'MMM d'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return '€' + value.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.9)'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': €' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    })();
+    </script>
+    @endif
+    
     <!-- Cardmarket Price Quotes Table (Primary Source) -->
     <div class="border border-white/10 rounded-lg overflow-hidden">
         <table class="w-full text-sm">
