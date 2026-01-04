@@ -46,9 +46,9 @@ echo -e "${GREEN}🚀 Avvio pipeline...${NC}"
 echo ""
 
 # Clean pipeline_runs table for fresh start
-//echo -e "${BLUE}🧹 Pulizia tabella pipeline_runs per test pulito...${NC}"
-//php artisan tinker --execute="\DB::table('pipeline_runs')->truncate(); echo '✓ Pipeline runs cleared';"
-//
+#echo -e "${BLUE}🧹 Pulizia tabella pipeline_runs per test pulito...${NC}"
+#php artisan tinker --execute="\DB::table('pipeline_runs')->truncate(); echo '✓ Pipeline runs cleared';"
+#
 
 # Step 6: RapidAPI Sync Cards (03:35)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
