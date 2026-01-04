@@ -149,12 +149,34 @@ class TcgCardController extends Controller
                     'y' => (float) $latestQuote->avg30
                 ];
             }
+            
+            // Add holo synthetic points if available
+            if ($latestQuote->avg7_holo !== null) {
+                $trendHoloData[] = [
+                    'x' => now()->subDays(7)->format('Y-m-d'),
+                    'y' => (float) $latestQuote->avg7_holo
+                ];
+            }
+            if ($latestQuote->avg30_holo !== null) {
+                $trendHoloData[] = [
+                    'x' => now()->subDays(30)->format('Y-m-d'),
+                    'y' => (float) $latestQuote->avg30_holo
+                ];
+            }
         } elseif ($daysOfData < 30) {
             // Between 7 and 30 days: add only avg30 at -30d
             if ($latestQuote->avg30 !== null) {
                 $trendData[] = [
                     'x' => now()->subDays(30)->format('Y-m-d'),
                     'y' => (float) $latestQuote->avg30
+                ];
+            }
+            
+            // Add holo synthetic point if available
+            if ($latestQuote->avg30_holo !== null) {
+                $trendHoloData[] = [
+                    'x' => now()->subDays(30)->format('Y-m-d'),
+                    'y' => (float) $latestQuote->avg30_holo
                 ];
             }
         }
