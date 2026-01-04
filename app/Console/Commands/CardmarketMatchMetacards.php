@@ -31,6 +31,16 @@ class CardmarketMatchMetacards extends Command
             $this->warn('🔍 DRY RUN MODE - No changes will be saved');
         }
 
+        // PHASE 1: Direct mapping from RapidAPI cardmarket_id
+        $this->info('🎯 PHASE 1: Direct mapping from RapidAPI cardmarket_id...');
+        $directMapped = $this->mapFromRapidAPI($dryRun);
+        $this->info("✅ Mapped {$directMapped} products directly from RapidAPI");
+        $this->newLine();
+
+        // PHASE 2: Fuzzy matching for remaining products
+        $this->info('🔍 PHASE 2: Fuzzy matching for remaining unmapped products...');
+        $this->newLine();
+
         // Get unmapped TCGCSV products
         $query = TcgcsvProduct::whereDoesntHave('cardmarketMapping')
             ->where('game_id', 1); // Pokemon only for now
@@ -56,6 +66,7 @@ class CardmarketMatchMetacards extends Command
             'low_confidence' => 0,
             'no_match' => 0,
             'saved' => 0,
+            'direct_mapped' => $directMapped,
         ];
 
         $progressBar = $this->output->createProgressBar($tcgcsvProducts->count());
@@ -218,5 +229,48 @@ class CardmarketMatchMetacards extends Command
     {
         if ($total === 0) return '0%';
         return round(($value / $total) * 100, 1) . '%';
+    }
+
+    private function mapFromRapidAPI(bool $dryRun): int
+    {
+        // Get TCGCSV products that have RapidAPI mapping with cardmarket_id but no cardmarket mapping yet
+        $products = TcgcsvProduct::whereDoesntHave('cardmarketMapping')
+            ->whereHas('rapidapiCard', function($q) {
+                $q->whereNotNull('cardmarket_id');
+            })
+            ->with('rapidapiCard')
+            ->get();
+
+        $mapped = 0;
+
+        foreach ($products as $product) {
+            $cardmarketId = $product->rapidapiCard->cardmarket_id;
+
+            if (!$cardmarketId) {
+                continue;
+            }
+
+            // Find the metacard_id from cardmarket_products table
+            $cardmarketProduct = \App\Models\CardmarketProduct::where('id_product', $cardmarketId)
+                ->first();
+
+            if (!$cardmarketProduct || !$cardmarketProduct->id_metacard) {
+                continue;
+            }
+
+            if (!$dryRun) {
+                TcgcsvCardmarketMapping::create([
+                    'tcgcsv_product_id' => $product->id,
+                    'cardmarket_metacard_id' => $cardmarketProduct->id_metacard,
+                    'confidence_score' => 100.0,
+                    'match_method' => 'rapidapi',
+                    'match_notes' => 'Direct mapping from RapidAPI cardmarket_id',
+                ]);
+            }
+
+            $mapped++;
+        }
+
+        return $mapped;
     }
 }
