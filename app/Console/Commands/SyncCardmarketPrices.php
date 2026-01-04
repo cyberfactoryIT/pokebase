@@ -30,10 +30,8 @@ class SyncCardmarketPrices extends Command
         
         $this->info('Starting Cardmarket price sync...');
         
-        // Count total products first
-        $query = TcgcsvProduct::whereHas('rapidapiCard', function($q) {
-            $q->whereNotNull('cardmarket_id');
-        });
+        // Count total products first - now using cardmarket_product_id directly
+        $query = TcgcsvProduct::whereNotNull('cardmarket_product_id');
         
         if (!$force) {
             $query->whereNull('cardmarket_price_eur');
@@ -51,11 +49,8 @@ class SyncCardmarketPrices extends Command
         $notFound = 0;
         $processed = 0;
         
-        // Process in chunks to avoid memory issues
-        TcgcsvProduct::with('rapidapiCard')
-            ->whereHas('rapidapiCard', function($q) {
-                $q->whereNotNull('cardmarket_id');
-            })
+        // Process in chunks to avoid memory issues - using cardmarket_product_id directly
+        TcgcsvProduct::whereNotNull('cardmarket_product_id')
             ->when(!$force, function($q) {
                 $q->whereNull('cardmarket_price_eur');
             })
@@ -68,14 +63,8 @@ class SyncCardmarketPrices extends Command
                         return false; // Stop chunking
                     }
                     
-                    $cardmarketId = $product->rapidapiCard->cardmarket_id ?? null;
-                    
-                    if (!$cardmarketId) {
-                        $skipped++;
-                        $processed++;
-                        $progressBar->advance();
-                        continue;
-                    }
+                    // Use cardmarket_product_id directly from tcgcsv_products
+                    $cardmarketId = $product->cardmarket_product_id;
                     
                     // Get latest price quote
                     $quote = CardmarketPriceQuote::where('cardmarket_product_id', $cardmarketId)

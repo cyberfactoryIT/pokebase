@@ -72,11 +72,11 @@ class EnrichTcgcsvDataCommand extends Command
         $this->info('🖼️  Enriching images with HD versions from RapidAPI...');
 
         // Get all mapped cards with RapidAPI images
-        $mappings = DB::table('card_mappings as m')
-            ->join('rapidapi_cards as r', 'm.rapidapi_card_id', '=', 'r.id')
+        $mappings = DB::table('tcgcsv_products as tcp')
+            ->join('rapidapi_cards as r', 'tcp.rapidapi_card_id', '=', 'r.id')
+            ->whereNotNull('tcp.rapidapi_card_id')
             ->whereNotNull('r.image_url')
-            ->whereNotNull('m.tcgcsv_product_id')
-            ->select('m.tcgcsv_product_id', 'r.image_url')
+            ->select('tcp.product_id', 'r.image_url')
             ->get();
 
         $this->line("Found {$mappings->count()} cards with HD images");
@@ -87,7 +87,7 @@ class EnrichTcgcsvDataCommand extends Command
 
         foreach ($mappings as $mapping) {
             DB::table('tcgcsv_products')
-                ->where('product_id', $mapping->tcgcsv_product_id)
+                ->where('product_id', $mapping->product_id)
                 ->update([
                     'hd_image_url' => $mapping->image_url,
                     'image_source' => 'rapidapi',
@@ -119,11 +119,11 @@ class EnrichTcgcsvDataCommand extends Command
         }
 
         // Get prices from RapidAPI
-        $mappings = DB::table('card_mappings as m')
-            ->join('rapidapi_cards as r', 'm.rapidapi_card_id', '=', 'r.id')
+        $mappings = DB::table('tcgcsv_products as tcp')
+            ->join('rapidapi_cards as r', 'tcp.rapidapi_card_id', '=', 'r.id')
+            ->whereNotNull('tcp.rapidapi_card_id')
             ->whereNotNull('r.price_eur')
-            ->whereNotNull('m.tcgcsv_product_id')
-            ->select('m.tcgcsv_product_id', 'r.price_eur', 'r.last_synced_at')
+            ->select('tcp.product_id', 'r.price_eur', 'r.last_synced_at')
             ->get();
 
         $this->line("Found {$mappings->count()} cards with prices");
@@ -134,7 +134,7 @@ class EnrichTcgcsvDataCommand extends Command
 
         foreach ($mappings as $mapping) {
             DB::table('tcgcsv_products')
-                ->where('product_id', $mapping->tcgcsv_product_id)
+                ->where('product_id', $mapping->product_id)
                 ->update([
                     'cardmarket_price_eur' => $mapping->price_eur,
                     'cardmarket_price_updated_at' => $mapping->last_synced_at,
@@ -156,11 +156,11 @@ class EnrichTcgcsvDataCommand extends Command
         $this->info('🔗 Enriching with external links (TCGO, Cardmarket)...');
 
         // Get mapped cards with URLs
-        $mappings = DB::table('card_mappings as m')
-            ->join('rapidapi_cards as r', 'm.rapidapi_card_id', '=', 'r.id')
-            ->whereNotNull('m.tcgcsv_product_id')
+        $mappings = DB::table('tcgcsv_products as tcp')
+            ->join('rapidapi_cards as r', 'tcp.rapidapi_card_id', '=', 'r.id')
+            ->whereNotNull('tcp.rapidapi_card_id')
             ->select(
-                'm.tcgcsv_product_id',
+                'tcp.product_id',
                 'r.image_url as tcgo_url',
                 'r.cardmarket_url'
             )
@@ -184,7 +184,7 @@ class EnrichTcgcsvDataCommand extends Command
             }
 
             DB::table('tcgcsv_products')
-                ->where('product_id', $mapping->tcgcsv_product_id)
+                ->where('product_id', $mapping->product_id)
                 ->update($updateData);
             
             $updated++;
@@ -202,11 +202,11 @@ class EnrichTcgcsvDataCommand extends Command
         $this->info('📝 Enriching with card details (HP, artist, supertype, rarity)...');
 
         // Get mapped cards with details
-        $mappings = DB::table('card_mappings as m')
-            ->join('rapidapi_cards as r', 'm.rapidapi_card_id', '=', 'r.id')
-            ->whereNotNull('m.tcgcsv_product_id')
+        $mappings = DB::table('tcgcsv_products as tcp')
+            ->join('rapidapi_cards as r', 'tcp.rapidapi_card_id', '=', 'r.id')
+            ->whereNotNull('tcp.rapidapi_card_id')
             ->select(
-                'm.tcgcsv_product_id',
+                'tcp.product_id',
                 'r.hp',
                 'r.artist',
                 'r.supertype',
@@ -243,7 +243,7 @@ class EnrichTcgcsvDataCommand extends Command
             }
 
             DB::table('tcgcsv_products')
-                ->where('product_id', $mapping->tcgcsv_product_id)
+                ->where('product_id', $mapping->product_id)
                 ->update($updateData);
             
             $updated++;

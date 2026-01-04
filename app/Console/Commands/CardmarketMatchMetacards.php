@@ -17,7 +17,7 @@ class CardmarketMatchMetacards extends Command
                             {--dry-run : Show matches without saving}
                             {--limit= : Maximum products to process (default: all)}';
 
-    protected $description = 'Match TCGCSV products to Cardmarket metacards (enables one-to-many variant mapping)';
+    protected $description = 'Fuzzy match TCGCSV products to Cardmarket products (sets cardmarket_product_id)';
 
     public function handle(): int
     {
@@ -41,18 +41,19 @@ class CardmarketMatchMetacards extends Command
         $this->info('🔍 PHASE 2: Fuzzy matching for remaining unmapped products...');
         $this->newLine();
 
-        // Get unmapped TCGCSV products (exclude those with rapidapiCard.cardmarket_id as Phase 1 handled them)
-        $query = TcgcsvProduct::whereDoesntHave('cardmarketMapping')
-            ->whereDoesntHave('rapidapiCard', function($q) {
-                $q->whereNotNull('cardmarket_id');
-            })
+        // Get unmapped TCGCSV products (without cardmarket_product_id)
+        $query = TcgcsvProduct::whereNull('cardmarket_product_id')
             ->where('game_id', 1); // Pokemon only for now
 
         if ($expansionId) {
             $query->where('group_id', $expansionId);
         }
 
-        $tcgcsvProducts = $query->limit($limit)->get();
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        $tcgcsvProducts = $query->get();
 
         if ($tcgcsvProducts->isEmpty()) {
             $this->info('✅ No unmapped products found!');
@@ -83,10 +84,9 @@ class CardmarketMatchMetacards extends Command
             $firstWord = explode(' ', $tcgcsvProduct->name)[0];
             
             $cardmarketProducts = CardmarketProduct::where('name', 'like', $firstWord . '%')
-                ->select('id_metacard', 'name')
+                ->select('cardmarket_product_id', 'id_metacard', 'name')
                 ->get()
-                ->unique('id_metacard')
-                ->take(100); // Limit to first 100 unique metacards
+                ->take(100); // Limit to first 100 products
 
             if ($cardmarketProducts->isEmpty()) {
                 $stats['no_match']++;
@@ -128,13 +128,8 @@ class CardmarketMatchMetacards extends Command
 
             // Save high confidence matches if auto-confirm is enabled
             if (!$dryRun && $autoConfirm && $bestScore >= 95) {
-                TcgcsvCardmarketMapping::create([
-                    'tcgcsv_product_id' => $tcgcsvProduct->id,
-                    'cardmarket_metacard_id' => $bestMatch->id_metacard,
-                    'confidence_score' => $bestScore,
-                    'match_method' => 'auto',
-                    'match_notes' => "Auto-matched with {$bestScore}% confidence",
-                ]);
+                TcgcsvProduct::where('product_id', $tcgcsvProduct->product_id)
+                    ->update(['cardmarket_product_id' => $bestMatch->cardmarket_product_id]);
                 $stats['saved']++;
             }
 
@@ -165,15 +160,7 @@ class CardmarketMatchMetacards extends Command
             $this->warn('🔍 DRY RUN: No changes were saved');
             $this->info("Would have saved {$stats['high_confidence']} high-confidence matches");
         } elseif ($autoConfirm) {
-            $this->info("✅ Saved {$stats['saved']} high-confidence matches");
-            
-            // Show variant count
-            $variantCount = CardmarketProduct::whereIn(
-                'id_metacard',
-                TcgcsvCardmarketMapping::pluck('cardmarket_metacard_id')
-            )->count();
-            
-            $this->info("🎯 Total Cardmarket variants accessible: {$variantCount}");
+            $this->info("✅ Saved {$stats['saved']} high-confidence matches to cardmarket_product_id");
         } else {
             $this->warn('💡 Use --auto-confirm to save high-confidence matches automatically');
         }
@@ -239,11 +226,8 @@ class CardmarketMatchMetacards extends Command
         $mapped = 0;
 
         // Use chunking to avoid memory exhaustion with large datasets
-        TcgcsvProduct::whereDoesntHave('cardmarketMapping')
-            ->whereHas('rapidapiCard', function($q) {
-                $q->whereNotNull('cardmarket_id');
-            })
-            ->with('rapidapiCard')
+        TcgcsvProduct::whereNull('cardmarket_product_id')
+            ->whereNotNull('rapidapi_card_id')
             ->chunk(100, function($products) use (&$mapped, $dryRun) {
                 foreach ($products as $product) {
                     $cardmarketId = $product->rapidapiCard->cardmarket_id ?? null;
@@ -252,22 +236,17 @@ class CardmarketMatchMetacards extends Command
                         continue;
                     }
 
-                    // Find the metacard_id from cardmarket_products table
+                    // Verify it exists in cardmarket_products
                     $cardmarketProduct = \App\Models\CardmarketProduct::where('cardmarket_product_id', $cardmarketId)
                         ->first();
 
-                    if (!$cardmarketProduct || !$cardmarketProduct->id_metacard) {
+                    if (!$cardmarketProduct) {
                         continue;
                     }
 
                     if (!$dryRun) {
-                        TcgcsvCardmarketMapping::create([
-                            'tcgcsv_product_id' => $product->id,
-                            'cardmarket_metacard_id' => $cardmarketProduct->id_metacard,
-                            'confidence_score' => 100.0,
-                            'match_method' => 'rapidapi',
-                            'match_notes' => 'Direct mapping from RapidAPI cardmarket_id',
-                        ]);
+                        TcgcsvProduct::where('product_id', $product->product_id)
+                            ->update(['cardmarket_product_id' => $cardmarketId]);
                     }
 
                     $mapped++;

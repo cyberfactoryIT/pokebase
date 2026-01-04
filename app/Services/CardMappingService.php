@@ -151,29 +151,25 @@ class CardMappingService
     }
 
     /**
-     * Save mapping to database
+     * Save mapping to direct fields in tcgcsv_products
      */
     protected function saveMapping(int $rapidCardId, array $mapping): void
     {
         $rapidCard = DB::table('rapidapi_cards')->find($rapidCardId);
-        
-        DB::table('card_mappings')->updateOrInsert(
-            ['rapidapi_card_id' => $rapidCardId],
-            [
-                'rapidapi_card_id' => $rapidCardId,
-                'cardmarket_product_id' => $mapping['cardmarket_product_id'],
-                'tcgcsv_product_id' => $mapping['tcgcsv_product_id'],
-                'game' => $rapidCard->game,
-                'match_method' => $mapping['method'],
-                'confidence' => $mapping['confidence'],
-                'card_name' => $rapidCard->name,
-                'card_number' => $rapidCard->card_number,
-                'expansion_name' => $rapidCard->episode_name,
-                'mapped_at' => now(),
-                'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
-            ]
-        );
+
+        // Update tcgcsv_products with direct foreign keys
+        if ($mapping['tcgcsv_product_id']) {
+            $updateData = ['rapidapi_card_id' => $rapidCardId];
+            
+            // If we have cardmarket_id, also set it directly
+            if ($rapidCard->cardmarket_id) {
+                $updateData['cardmarket_product_id'] = $rapidCard->cardmarket_id;
+            }
+            
+            DB::table('tcgcsv_products')
+                ->where('product_id', $mapping['tcgcsv_product_id'])
+                ->update($updateData);
+        }
     }
 
     /**
@@ -194,24 +190,18 @@ class CardMappingService
      */
     public function getStatistics(string $game = 'pokemon'): array
     {
-        $total = DB::table('card_mappings')->where('game', $game)->count();
-        
-        $byMethod = DB::table('card_mappings')
-            ->where('game', $game)
-            ->select('match_method', DB::raw('COUNT(*) as count'))
-            ->groupBy('match_method')
-            ->get()
-            ->pluck('count', 'match_method')
-            ->toArray();
-        
-        $avgConfidence = DB::table('card_mappings')
-            ->where('game', $game)
-            ->avg('confidence');
+        $total = DB::table('tcgcsv_products')
+            ->where('game_id', $this->getGameId($game))
+            ->whereNotNull('rapidapi_card_id')
+            ->count();
 
         return [
             'total_mappings' => $total,
-            'by_method' => $byMethod,
-            'avg_confidence' => round($avgConfidence, 2),
+            'with_rapidapi' => $total,
+            'with_cardmarket' => DB::table('tcgcsv_products')
+                ->where('game_id', $this->getGameId($game))
+                ->whereNotNull('cardmarket_product_id')
+                ->count(),
         ];
     }
 }

@@ -46,49 +46,28 @@ class TcgcsvProduct extends Model
     }
     
     /**
-     * Get the Cardmarket metacard mapping for this product
-     */
-    public function cardmarketMapping()
-    {
-        return $this->hasOne(\App\Models\TcgcsvCardmarketMapping::class, 'tcgcsv_product_id', 'id');
-    }
-    
-    /**
-     * Get the RapidAPI card mapping
-     */
-    public function cardMapping()
-    {
-        return $this->hasOne(\App\Models\CardMapping::class, 'tcgcsv_product_id', 'product_id');
-    }
-    
-    /**
-     * Get the RapidAPI card data through mapping
+     * Get the RapidAPI card data directly via rapidapi_card_id
      */
     public function rapidapiCard()
     {
-        return $this->hasOneThrough(
-            \App\Models\RapidapiCard::class,
-            \App\Models\CardMapping::class,
-            'tcgcsv_product_id',  // Foreign key on card_mappings
-            'id',                  // Foreign key on rapidapi_cards
-            'product_id',          // Local key on tcgcsv_products
-            'rapidapi_card_id'     // Local key on card_mappings
-        );
+        return $this->belongsTo(\App\Models\RapidapiCard::class, 'rapidapi_card_id', 'id');
     }
     
     /**
-     * Get all Cardmarket product variants through the metacard mapping
+     * Get the Cardmarket product directly via cardmarket_product_id
+     */
+    public function cardmarketProduct()
+    {
+        return $this->belongsTo(\App\Models\CardmarketProduct::class, 'cardmarket_product_id', 'cardmarket_product_id');
+    }
+    
+    /**
+     * Get all Cardmarket product variants (same metacard, different versions)
      */
     public function cardmarketVariants()
     {
-        return $this->hasManyThrough(
-            \App\Models\CardmarketProduct::class,
-            \App\Models\TcgcsvCardmarketMapping::class,
-            'tcgcsv_product_id', // Foreign key on mapping table
-            'id_metacard',       // Foreign key on cardmarket_products table
-            'id',                // Local key on tcgcsv_products table
-            'cardmarket_metacard_id' // Local key on mapping table
-        );
+        return $this->hasMany(\App\Models\CardmarketProduct::class, 'id_metacard', 'cardmarket_product_id')
+            ->where('cardmarket_product_id', '!=', $this->cardmarket_product_id);
     }
     
     /**
@@ -104,8 +83,17 @@ class TcgcsvProduct extends Model
      */
     public function hasCardmarketVariants(): bool
     {
-        return $this->cardmarketMapping()->exists() 
-            && $this->cardmarketVariants()->exists();
+        if (!$this->cardmarket_product_id) {
+            return false;
+        }
+        
+        return \App\Models\CardmarketProduct::where('id_metacard', function($query) {
+            $query->select('id_metacard')
+                  ->from('cardmarket_products')
+                  ->where('cardmarket_product_id', $this->cardmarket_product_id)
+                  ->limit(1);
+        })->where('cardmarket_product_id', '!=', $this->cardmarket_product_id)
+          ->exists();
     }
     
     /**

@@ -33,10 +33,10 @@ class RapidapiCard extends Model
     ];
     
     /**
-     * Get the card mappings
+     * Get TCGCSV products that map to this RapidAPI card
      */
-    public function cardMappings(): HasMany
+    public function tcgcsvProducts(): HasMany
     {
-        return $this->hasMany(CardMapping::class, 'rapidapi_card_id', 'id');
+        return $this->hasMany(\App\Models\TcgcsvProduct::class, 'rapidapi_card_id', 'id');
     }
 }
