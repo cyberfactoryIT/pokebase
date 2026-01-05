@@ -57,17 +57,17 @@ echo -e "${GREEN}═════════════════════
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📥 Step 1a: Download Cardmarket catalogue + prices${NC}"
 echo ""
-php artisan cardmarket:download-products
+php artisan cardmarket:download --products
 echo ""
 echo -e "${CYAN}📥 Step 1b: Download Cardmarket price quotes${NC}"
 echo ""
-php artisan cardmarket:download-price-quotes
+php artisan cardmarket:download --prices
 echo ""
 echo -e "${CYAN}📝 Step 1c: Process and import to database${NC}"
 echo ""
 step1_start=$(date +%s)
-php artisan cardmarket:process-products
-php artisan cardmarket:process-price-quotes
+php artisan cardmarket:import --products
+php artisan cardmarket:import --prices
 step1_end=$(date +%s)
 step1_duration=$((step1_end - step1_start))
 echo ""
