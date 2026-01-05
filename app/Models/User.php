@@ -123,7 +123,6 @@ class User extends Authenticatable
     public function likedProducts()
     {
         return $this->belongsToMany(\App\Models\TcgcsvProduct::class, 'user_likes', 'user_id', 'product_id')
-            ->withTimestamps()
             ->withPivot('created_at');
     }
 
@@ -133,7 +132,6 @@ class User extends Authenticatable
     public function wishlistProducts()
     {
         return $this->belongsToMany(\App\Models\TcgcsvProduct::class, 'user_wishlist_items', 'user_id', 'product_id')
-            ->withTimestamps()
             ->withPivot('created_at');
     }
 
@@ -143,7 +141,6 @@ class User extends Authenticatable
     public function watchedProducts()
     {
         return $this->belongsToMany(\App\Models\TcgcsvProduct::class, 'user_watch_items', 'user_id', 'product_id')
-            ->withTimestamps()
             ->withPivot('created_at');
     }
 
