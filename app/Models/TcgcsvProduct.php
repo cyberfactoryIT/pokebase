@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TcgcsvProduct extends Model
 {
     protected $table = 'tcgcsv_products';
+    protected $primaryKey = 'product_id';
+    public $incrementing = true;
     
     protected $fillable = [
         'category_id',
