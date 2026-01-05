@@ -572,7 +572,7 @@ async function toggleWatch(productId, button) {
         if (data.status) {
             const svg = button.querySelector('svg');
             const span = button.querySelector('span');
-            if (data.status === 'added') {
+            if (data.status === 'watched') {
                 button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
                 button.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
                 span.textContent = 'Watching';
