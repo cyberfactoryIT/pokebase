@@ -80,11 +80,7 @@ echo -e "${GREEN}═════════════════════
 echo -e "${GREEN}STEP 2/11: TCGCSV Download & Import Pokemon (Schedule: 02:40)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📥 Step 2a: Download TCGCSV Pokemon data${NC}"
-echo ""
-php artisan tcgcsv:download-pokemon
-echo ""
-echo -e "${CYAN}📝 Step 2b: Import Pokemon TCG data from tcgcsv.com (TCGplayer)${NC}"
+echo -e "${CYAN}📥 Download & import Pokemon TCG data from tcgcsv.com (TCGplayer)${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~5-10 minutes${NC}"
 echo ""
 step2_start=$(date +%s)
@@ -171,11 +167,7 @@ echo -e "${GREEN}═════════════════════
 echo -e "${GREEN}STEP 7/11: TCGdex Download & Import (Schedule: 04:45)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📥 Step 7a: Download TCGdex sets and cards from API${NC}"
-echo ""
-php artisan tcgdx:download
-echo ""
-echo -e "${CYAN}📝 Step 7b: Import Pokemon sets and cards to database${NC}"
+echo -e "${CYAN}📥 Download & import Pokemon sets and cards from TCGdex API${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~1-2 minutes${NC}"
 echo ""
 step7_start=$(date +%s)
