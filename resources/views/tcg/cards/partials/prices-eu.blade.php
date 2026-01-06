@@ -217,7 +217,15 @@
     
     <div class="mt-3 text-xs text-gray-500">
         @if($latestQuote->as_of_date)
-        <p>{{ __('Cardmarket last updated') }}: {{ $latestQuote->as_of_date->diffForHumans() }}</p>
+        <p class="flex items-center gap-1">
+            {{ __('Cardmarket last updated') }}: {{ $latestQuote->as_of_date->diffForHumans() }}
+            <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-700 text-gray-400 cursor-help" 
+                  title="{{ __('Prices are snapshots from Cardmarket taken daily at midnight') }}">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+            </span>
+        </p>
         @endif
     </div>
     @elseif($cardmarketAvgRapid || !empty($tcgdxCardmarket))
