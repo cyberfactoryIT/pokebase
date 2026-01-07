@@ -50,9 +50,7 @@
             </div>
         </div>
         @else
-            <div class="mb-4 p-4 bg-yellow-900/30 border border-yellow-500/30 rounded">
-                <p class="text-sm text-yellow-300">{{ __('messages.organizations_disabled_notice', ['name' => auth()->user()->name ?? 'User']) }}</p>
-            </div>
+            
         @endif
 
         <!-- Name -->
