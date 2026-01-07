@@ -513,4 +513,10 @@ return [
 'footer_contact' => 'Contact',
 'footer_dummy' => 'Dummy footer content: :privacy | :terms | :contact',
 
+// Email messages
+'Visit_our_website' => 'Visit our website',
+'If_you_did_not_create_an_account_no_further_action_is_required' => 'If you did not create an account, no further action is required.',
+'If_you_did_not_request_a_password_reset_no_further_action_is_required' => 'If you did not request a password reset, no further action is required.',
+'Back_to_home' => 'Back to Dashboard',
+
 ];

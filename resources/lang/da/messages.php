@@ -507,4 +507,10 @@ return [
 'footer_contact' => 'Kontakt',
 'footer_dummy' => 'Dummy footer content: :privacy | :terms | :contact',
 
+// Email messages
+'Visit_our_website' => 'Besøg vores hjemmeside',
+'If_you_did_not_create_an_account_no_further_action_is_required' => 'Hvis du ikke har oprettet en konto, er der ingen yderligere handling påkrævet.',
+'If_you_did_not_request_a_password_reset_no_further_action_is_required' => 'Hvis du ikke har anmodet om nulstilling af adgangskode, er der ingen yderligere handling påkrævet.',
+'Back_to_home' => 'Tilbage til Dashboard',
+
 ];

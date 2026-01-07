@@ -4,7 +4,7 @@
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center gap-6">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                    <img src="/images/logo_basecard.jpg" alt="Logo" class="h-8 w-auto">
+                    <img src="/images/logo_basecard.svg" alt="Logo" class="h-8 w-auto">
                     <span class="font-bold text-lg text-white">Basecard</span>
                 </a>
             </div>
