@@ -3,6 +3,13 @@
 @section('content')
 <div class="bg-black min-h-screen py-8 flex items-center justify-center">
     <div class="w-full max-w-md">
+        <!-- Logo -->
+        <div class="flex justify-center mb-6">
+            <a href="/">
+                <x-application-logo class="w-32 h-32" />
+            </a>
+        </div>
+        
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
             <!-- Session Status -->
             <x-auth-session-status class="mb-4" :status="session('status')" />

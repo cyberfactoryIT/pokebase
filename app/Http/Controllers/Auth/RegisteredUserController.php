@@ -80,6 +80,10 @@ class RegisteredUserController extends Controller
             // 2. Crea utente con token di verifica
             $token = \Str::random(32);
             $expires = now()->addHours(24);
+            
+            // Recupera l'ID del gioco Pokemon come default
+            $pokemonGameId = \DB::table('games')->where('code', 'pokemon')->value('id');
+            
             $user = \App\Models\User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -87,6 +91,7 @@ class RegisteredUserController extends Controller
                 'organization_id' => $organization ? $organization->id : null,
                 'email_verification_token' => $token,
                 'email_verification_expires_at' => $expires,
+                'default_game_id' => $pokemonGameId,
             ]);
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
