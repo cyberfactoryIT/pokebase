@@ -10,12 +10,22 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register', function (Request $request) {
+        Log::info('=== POST REGISTER ROUTE HIT ===', [
+            'authenticated' => Auth::check(),
+            'method' => $request->method(),
+            'has_csrf' => $request->hasHeader('X-CSRF-TOKEN') || $request->has('_token'),
+        ]);
+        return app(RegisteredUserController::class)->store($request);
+    });
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

@@ -20,6 +20,11 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        \Log::info('=== REGISTER PAGE LOADED (GET) ===', [
+            'authenticated' => \Auth::check(),
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
         return view('auth.register');
     }
 
@@ -30,7 +35,10 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        
+        \Log::info('=== REGISTRATION ATTEMPT ===', [
+            'all_data' => $request->all(),
+            'organizations_enabled' => config('organizations.enabled'),
+        ]);
 
         if(!config('organizations.enabled')) {
             $request->merge([
@@ -45,6 +53,7 @@ class RegisteredUserController extends Controller
 
 
         $validated = $request->validate([
+            'organization_cvr' => ['nullable', 'string', 'max:20'],
             'organization_name' => ['required', 'string', 'max:191'],
             'organization_code' => ['required', 'string', 'max:191'],
             'organization_address' => ['required', 'string', 'max:255'],
