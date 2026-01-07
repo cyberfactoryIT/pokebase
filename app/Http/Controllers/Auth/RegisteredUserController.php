@@ -81,18 +81,24 @@ class RegisteredUserController extends Controller
             $token = \Str::random(32);
             $expires = now()->addHours(24);
             
-            // Recupera l'ID del gioco Pokemon come default
+            // Recupera l'ID del gioco Pokemon come default (se esiste)
             $pokemonGameId = \DB::table('games')->where('code', 'pokemon')->value('id');
             
-            $user = \App\Models\User::create([
+            $userData = [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => \Hash::make($validated['password']),
                 'organization_id' => $organization ? $organization->id : null,
                 'email_verification_token' => $token,
                 'email_verification_expires_at' => $expires,
-                'default_game_id' => $pokemonGameId,
-            ]);
+            ];
+            
+            // Aggiungi default_game_id solo se il gioco Pokemon esiste
+            if ($pokemonGameId) {
+                $userData['default_game_id'] = $pokemonGameId;
+            }
+            
+            $user = \App\Models\User::create($userData);
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
