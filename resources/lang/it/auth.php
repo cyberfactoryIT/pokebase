@@ -47,4 +47,5 @@ return [
     'or_recovery_code' => 'Oppure codice di recupero',
     'verify' => 'Verifica',
     'forgot_password_description' => 'Password dimenticata? Nessun problema. Comunicaci il tuo indirizzo email e ti invieremo un link per reimpostare la password che ti permetterà di sceglierne una nuova.',
+    'create_new_account' => 'Crea un nuovo account',
 ];

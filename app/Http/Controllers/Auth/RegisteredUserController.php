@@ -82,7 +82,7 @@ class RegisteredUserController extends Controller
             $expires = now()->addHours(24);
             
             // Recupera l'ID del gioco Pokemon come default (se esiste)
-            $pokemonGameId = \DB::table('games')->where('code', 'pokemon')->value('id');
+            $pokemonGameId = 1;
             
             $userData = [
                 'name' => $validated['name'],

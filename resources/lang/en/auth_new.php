@@ -47,7 +47,3 @@ return [
     'or_recovery_code' => 'Or recovery code',
     'verify' => 'Verify',
 ];
-    'forgot_password_description' => 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.',
-    'forgot_password_description' => 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.',
-    'create_new_account' => 'Create new account',
-];

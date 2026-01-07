@@ -47,4 +47,5 @@ return [
     'or_recovery_code' => 'Eller gendannelseskode',
     'verify' => 'Verificer',
     'forgot_password_description' => 'Glemt din adgangskode? Intet problem. Bare fortæl os din e-mailadresse, så sender vi dig et link til nulstilling af adgangskode, som giver dig mulighed for at vælge en ny.',
+    'create_new_account' => 'Opret ny konto',
 ];

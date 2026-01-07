@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="flex justify-end items-center mb-4">
-        <a href="{{ url()->previous() }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-gray-300 font-semibold shadow hover:bg-white/20">
+        <a href="{{ url('/') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-gray-300 font-semibold shadow hover:bg-white/20">
             <i class="fa fa-arrow-left"></i> {{ __('auth.back') }}
         </a>
     </div>
