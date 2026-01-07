@@ -24,4 +24,29 @@ return [
         'invalid_or_expired' => 'Your session has expired or the device token is invalid.',
         'revoked' => 'Your device session has been revoked.',
     ],
+    
+    // Registration & Auth links
+    'already_registered' => 'Already registered?',
+    'back' => 'Back',
+    
+    // Two-Factor Authentication
+    'two_factor_authentication' => 'Two-Factor Authentication',
+    'two_factor_challenge' => 'Two-Factor Challenge',
+    'your_recovery_codes' => 'Your Recovery Codes',
+    'store_recovery_codes_message' => 'Store these codes in a safe place. Each code can be used only once if you lose access to your authenticator app.',
+    'back_to_2fa_settings' => 'Back to 2FA Settings',
+    'scan_qr_code_message' => 'Scan this QR code with Google Authenticator, 1Password, or Authy:',
+    'or_enter_secret_manually' => 'Or enter this secret manually:',
+    'enter_code_from_app' => 'Enter code from your app:',
+    'confirm_and_enable' => 'Confirm & Enable',
+    'two_factor_enabled_message' => 'Two-factor authentication is enabled.',
+    'regenerate_recovery_codes' => 'Regenerate Recovery Codes',
+    'confirm_password_to_disable' => 'Confirm password to disable:',
+    'disable_2fa' => 'Disable 2FA',
+    'authenticator_code' => 'Authenticator code',
+    'or_recovery_code' => 'Or recovery code',
+    'verify' => 'Verify',
+];
+    'forgot_password_description' => 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.',
+    'forgot_password_description' => 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.',
 ];

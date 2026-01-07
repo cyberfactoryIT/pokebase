@@ -1,3 +1,4 @@
+<?php
 return [
     'failed' => 'Queste credenziali non corrispondono ai nostri record.',
     'password' => 'La password fornita non è corretta.',
@@ -23,4 +24,27 @@ return [
         'invalid_or_expired' => 'La sessione è scaduta o il token del dispositivo non è valido.',
         'revoked' => 'La sessione del dispositivo è stata revocata.',
     ],
+    
+    // Registration & Auth links
+    'already_registered' => 'Già registrato?',
+    'back' => 'Indietro',
+    
+    // Two-Factor Authentication
+    'two_factor_authentication' => 'Autenticazione a due fattori',
+    'two_factor_challenge' => 'Verifica a due fattori',
+    'your_recovery_codes' => 'I tuoi codici di recupero',
+    'store_recovery_codes_message' => 'Conserva questi codici in un luogo sicuro. Ogni codice può essere utilizzato una sola volta se perdi l\'accesso alla tua app di autenticazione.',
+    'back_to_2fa_settings' => 'Torna alle impostazioni 2FA',
+    'scan_qr_code_message' => 'Scansiona questo codice QR con Google Authenticator, 1Password o Authy:',
+    'or_enter_secret_manually' => 'Oppure inserisci manualmente questo codice segreto:',
+    'enter_code_from_app' => 'Inserisci il codice dalla tua app:',
+    'confirm_and_enable' => 'Conferma e attiva',
+    'two_factor_enabled_message' => 'L\'autenticazione a due fattori è attiva.',
+    'regenerate_recovery_codes' => 'Rigenera codici di recupero',
+    'confirm_password_to_disable' => 'Conferma la password per disattivare:',
+    'disable_2fa' => 'Disattiva 2FA',
+    'authenticator_code' => 'Codice autenticatore',
+    'or_recovery_code' => 'Oppure codice di recupero',
+    'verify' => 'Verifica',
+    'forgot_password_description' => 'Password dimenticata? Nessun problema. Comunicaci il tuo indirizzo email e ti invieremo un link per reimpostare la password che ti permetterà di sceglierne una nuova.',
 ];
