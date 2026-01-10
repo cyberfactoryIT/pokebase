@@ -10,6 +10,10 @@ return [
     'unmapped_groups' => 'Ikke Mappede',
     'available_expansions' => 'Tilgængelige Udvidelser',
     'mapping_progress' => 'Mapping Fremskridt',
+    'tcgcsv_groups' => 'TCGCSV Grupper',
+    'rapidapi_episodes' => 'RapidAPI Episoder',
+    'mapped' => 'Mappet',
+    'unmapped' => 'Ikke Mappet',
     
     'filters' => [
         'label' => 'Filter',

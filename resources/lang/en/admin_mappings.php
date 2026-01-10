@@ -10,6 +10,14 @@ return [
     'unmapped_groups' => 'Unmapped',
     'available_expansions' => 'Available Expansions',
     'mapping_progress' => 'Mapping Progress',
+    'tcgcsv_groups' => 'TCGCSV Groups',
+    'rapidapi_episodes' => 'RapidAPI Episodes',
+    'mapped' => 'Mapped',
+    'unmapped' => 'Unmapped',
+    'tcgcsv_groups' => 'TCGCSV Groups',
+    'rapidapi_episodes' => 'RapidAPI Episodes',
+    'mapped' => 'Mapped',
+    'unmapped' => 'Unmapped',
     
     'filters' => [
         'label' => 'Filter',
