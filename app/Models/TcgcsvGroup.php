@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TcgcsvGroup extends Model
 {
@@ -26,6 +27,7 @@ class TcgcsvGroup extends Model
     protected $casts = [
         'category_id' => 'integer',
         'group_id' => 'integer',
+        'rapidapi_episode_id' => 'integer',
         'published_on' => 'datetime',
         'modified_on' => 'datetime',
         'raw' => 'array',
@@ -39,5 +41,10 @@ class TcgcsvGroup extends Model
     public function prices(): HasMany
     {
         return $this->hasMany(TcgcsvPrice::class, 'group_id', 'group_id');
+    }
+    
+    public function rapidapiEpisode(): BelongsTo
+    {
+        return $this->belongsTo(RapidapiEpisode::class, 'rapidapi_episode_id', 'episode_id');
     }
 }

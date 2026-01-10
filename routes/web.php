@@ -148,9 +148,15 @@ Route::prefix('superadmin')->middleware(['auth'])->group(function () {
     Route::get('/promotions', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'index'])->name('superadmin.promotions.index');
     Route::get('/promotions/create', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'create'])->name('superadmin.promotions.create');
     Route::get('/promotions/{promotion}/edit', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'edit'])->name('superadmin.promotions.edit');
+    
+    // RapidAPI Group Mapping Console
+    Route::get('/rapidapi-mapping', [\App\Http\Controllers\Superadmin\RapidapiGroupMappingController::class, 'index'])->name('superadmin.rapidapi-mapping.index');
+    Route::post('/rapidapi-mapping/{group}/map', [\App\Http\Controllers\Superadmin\RapidapiGroupMappingController::class, 'map'])->name('superadmin.rapidapi-mapping.map');
+    Route::post('/rapidapi-mapping/{group}/unmap', [\App\Http\Controllers\Superadmin\RapidapiGroupMappingController::class, 'unmap'])->name('superadmin.rapidapi-mapping.unmap');
+    
     Route::delete('/promotions/{promotion}', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'destroy'])->name('superadmin.promotions.destroy');
     Route::post('/promotions', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'store'])->name('superadmin.promotions.store');
-      Route::get('invoices', [\App\Http\Controllers\Admin\AllInvoicesController::class, 'index'])->name('admin.invoices.index');
+    Route::get('invoices', [\App\Http\Controllers\Admin\AllInvoicesController::class, 'index'])->name('admin.invoices.index');
     Route::get('/billing/invoices/{invoice}', [\App\Http\Controllers\SuperAdminBillingController::class, 'showInvoice'])->name('superadmin.billing.invoice.show');
     Route::get('/superadmin/billing/invoices/export', [\App\Http\Controllers\SuperAdminBillingController::class, 'exportInvoices'])->name('superadmin.billing.invoices.export');
     Route::resource('helps', HelpController::class)->except(['show']);
