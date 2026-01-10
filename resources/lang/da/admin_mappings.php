@@ -3,6 +3,7 @@
 return [
     'title' => 'Udvidelsesmappingskonsol',
     'subtitle' => 'Map TCGCSV-grupper til RapidAPI-udvidelser',
+    'manage_mappings' => 'Administrer Mappinger',
     'statistics' => 'Statistik',
     'total_groups' => 'Samlede Grupper',
     'mapped_groups' => 'Mappede',
@@ -27,6 +28,7 @@ return [
         'group_id' => 'Gruppe ID',
         'abbreviation' => 'Kode',
         'published_date' => 'Udgivet',
+        'cards_count' => 'Kort',
         'game' => 'Spil',
         'rapidapi' => 'RapidAPI Udvidelse',
         'status' => 'Status',

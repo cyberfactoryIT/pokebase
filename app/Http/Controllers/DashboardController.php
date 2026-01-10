@@ -10,14 +10,23 @@ use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
 {
     /**
      * Display the user dashboard
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
+        // Check if user is superadmin and redirect to superadmin dashboard
+        $user = auth()->user();
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
+        if ($user->hasRole('superadmin')) {
+            return redirect()->route('superadmin.dashboard');
+        }
+        
         $currentGame = $request->attributes->get('currentGame');
         
         // If no game selected, show empty state

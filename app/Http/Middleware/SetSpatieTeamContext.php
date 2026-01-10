@@ -10,9 +10,11 @@ class SetSpatieTeamContext
     public function handle($request, Closure $next)
     {
         if (Auth::check()) {
-            app(PermissionRegistrar::class)->setPermissionsTeamId(
-                config('organizations.enabled') ? Auth::user()->organization_id : null
-            );
+            $teamId = config('organizations.enabled') ? Auth::user()->organization_id : null;
+            app(PermissionRegistrar::class)->setPermissionsTeamId($teamId);
+            
+            // Store in request attributes for persistence
+            $request->attributes->set('spatie_team_id', $teamId);
         }
         return $next($request);
     }

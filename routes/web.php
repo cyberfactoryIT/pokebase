@@ -60,6 +60,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('faqs/{faq}/toggle', [\App\Http\Controllers\FaqController::class, 'togglePublish'])->name('faqs.toggle');
 });
 
+// Superadmin dashboard
+Route::get('/superadmin/dashboard', [\App\Http\Controllers\Superadmin\DashboardController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('superadmin.dashboard');
+
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

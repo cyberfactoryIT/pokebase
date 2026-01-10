@@ -22,6 +22,7 @@ class RapidapiGroupMappingService
     {
         $query = TcgcsvGroup::query()
             ->with('rapidapiEpisode:episode_id,name,code,game')
+            ->withCount('products as cards_count')
             ->orderBy('published_on', 'desc')
             ->orderBy('name', 'asc');
 

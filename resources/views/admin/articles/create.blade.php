@@ -49,9 +49,9 @@
 
                     <!-- Category -->
                     <div>
-                        <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
                         <input list="categories" name="category" id="category" value="{{ old('category') }}" required 
-                            class="w-full rounded-md border-gray-300 @error('category') border-red-500 @enderror"
+                            class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 @error('category') border-red-500 @enderror"
                             placeholder="e.g. Getting Started, Rules, Collecting...">
                         <datalist id="categories">
                             @foreach($categories as $cat)
@@ -65,9 +65,9 @@
 
                     <!-- Title -->
                     <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title *</label>
                         <input type="text" name="title" id="title" value="{{ old('title') }}" required 
-                            class="w-full rounded-md border-gray-300 @error('title') border-red-500 @enderror">
+                            class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 @error('title') border-red-500 @enderror">
                         @error('title')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -75,9 +75,9 @@
 
                     <!-- Excerpt -->
                     <div>
-                        <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-1">Excerpt (Short Description) *</label>
+                        <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Excerpt (Short Description) *</label>
                         <textarea name="excerpt" id="excerpt" rows="2" required 
-                            class="w-full rounded-md border-gray-300 @error('excerpt') border-red-500 @enderror">{{ old('excerpt') }}</textarea>
+                            class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 @error('excerpt') border-red-500 @enderror">{{ old('excerpt') }}</textarea>
                         <p class="text-sm text-gray-500 mt-1">Brief summary shown on cards (1-2 sentences)</p>
                         @error('excerpt')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -99,9 +99,9 @@
 
                     <!-- Image Upload -->
                     <div>
-                        <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Image (optional, max 1MB)</label>
+                        <label for="image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image (optional, max 1MB)</label>
                         <input type="file" name="image" id="image" accept="image/*" 
-                            class="w-full rounded-md border-gray-300 @error('image') border-red-500 @enderror">
+                            class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 @error('image') border-red-500 @enderror">
                         <p class="text-sm text-gray-500 mt-1">Small decorative image (will be resized)</p>
                         @error('image')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -110,10 +110,10 @@
 
                     <!-- External URL -->
                     <div>
-                        <label for="external_url" class="block text-sm font-medium text-gray-700 mb-1">External URL (optional)</label>
+                        <label for="external_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">External URL (optional)</label>
                         <input type="url" name="external_url" id="external_url" value="{{ old('external_url') }}" 
                             placeholder="https://example.com"
-                            class="w-full rounded-md border-gray-300 @error('external_url') border-red-500 @enderror">
+                            class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 @error('external_url') border-red-500 @enderror">
                         <p class="text-sm text-gray-500 mt-1">Link to external source (opens in new tab)</p>
                         @error('external_url')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -123,9 +123,9 @@
                     <!-- Sort Order -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="sort_order" class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+                            <label for="sort_order" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort Order</label>
                             <input type="number" name="sort_order" id="sort_order" value="{{ old('sort_order') }}" 
-                                class="w-full rounded-md border-gray-300 @error('sort_order') border-red-500 @enderror"
+                                class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 @error('sort_order') border-red-500 @enderror"
                                 placeholder="Leave empty for automatic">
                             @error('sort_order')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -133,9 +133,9 @@
                         </div>
 
                         <div>
-                            <label for="published_at" class="block text-sm font-medium text-gray-700 mb-1">Publish Date</label>
+                            <label for="published_at" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Publish Date</label>
                             <input type="datetime-local" name="published_at" id="published_at" value="{{ old('published_at') }}" 
-                                class="w-full rounded-md border-gray-300 @error('published_at') border-red-500 @enderror">
+                                class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 @error('published_at') border-red-500 @enderror">
                             @error('published_at')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -147,7 +147,7 @@
                         <input type="checkbox" name="is_published" id="is_published" value="1" 
                             {{ old('is_published', true) ? 'checked' : '' }}
                             class="rounded border-gray-300 text-blue-600">
-                        <label for="is_published" class="ml-2 text-sm text-gray-700">Publish immediately</label>
+                        <label for="is_published" class="ml-2 text-sm text-gray-700 dark:text-gray-300">Publish immediately</label>
                     </div>
 
                     <!-- Submit Buttons -->

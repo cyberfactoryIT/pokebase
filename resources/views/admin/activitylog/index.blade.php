@@ -3,7 +3,7 @@
 @section('content')
 
 <x-card>
-    <h2 class="text-2xl font-bold mb-6">{{ __('messages.activity_log') }}</h2>
+    <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{{ __('messages.activity_log') }}</h2>
         <form method="GET" class="mb-6 flex flex-wrap gap-3 items-center">
         <x-select name="type" :options="$types" placeholder="All types" :value="request('type')" />
         @if(config('organizations.enabled') && !$isAdmin)
@@ -13,37 +13,37 @@
     </form>
     <div class="overflow-x-auto">
         <x-table>
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                    <th class="px-4 py-2">{{ __('messages.type') }}</th>
-                    <th class="px-4 py-2">{{ __('messages.action') }}</th>
+                    <th class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ __('messages.type') }}</th>
+                    <th class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ __('messages.action') }}</th>
                     @if(config('organizations.enabled') && !$isAdmin)
-                        <th class="px-4 py-2">{{ __('messages.organization') }}</th>
+                        <th class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ __('messages.organization') }}</th>
                     @endif
-                    <th class="px-4 py-2">{{ __('messages.user') }}</th>
-                    <th class="px-4 py-2">{{ __('messages.data') }}</th>
-                    <th class="px-4 py-2">{{ __('messages.date') }}</th>
+                    <th class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ __('messages.user') }}</th>
+                    <th class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ __('messages.data') }}</th>
+                    <th class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ __('messages.date') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($logs as $log)
-                <tr class="border-b hover:bg-gray-50">
-                    <td>
+                <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="text-gray-800 dark:text-gray-200">
                         <x-badge variant="primary">{{ __('logmessages.type.'.$log->type) }}</x-badge>
                     </td>
-                    <td>
+                    <td class="text-gray-800 dark:text-gray-200">
                         <x-badge variant="neutral">{{ __('logmessages.action.'.$log->action) }}</x-badge>
                     </td>
                     @if(config('organizations.enabled') && !$isAdmin)
-                        <td>{{ $log->organization_id }} - {{ $organizations[$log->organization_id] ?? '-' }}</td>
+                        <td class="text-gray-800 dark:text-gray-200">{{ $log->organization_id }} - {{ $organizations[$log->organization_id] ?? '-' }}</td>
                     @endif
-                    <td>
+                    <td class="text-gray-800 dark:text-gray-200">
                         @php
                             $user = $log->user_id ? \App\Models\User::find($log->user_id) : null;
                         @endphp
                         {{ $user ? $user->name : '-' }}
                     </td>
-                    <td class="text-xs">
+                    <td class="text-xs text-gray-700 dark:text-gray-300">
                         @if(is_array($log->data))
                             @foreach($log->data as $key => $value)
                                 <div><strong>{{ __("logmessages.data.$key") }}:</strong> {{ $value }}</div>
@@ -52,7 +52,7 @@
                             {{ $log->data }}
                         @endif
                     </td>
-                    <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
+                    <td class="text-gray-800 dark:text-gray-200">{{ $log->created_at->format('Y-m-d H:i') }}</td>
                 </tr>
                 @endforeach
             </tbody>

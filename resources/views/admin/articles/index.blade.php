@@ -39,9 +39,9 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
                         <input type="text" name="search" value="{{ request('search') }}" 
-                            placeholder="Title or excerpt..." class="w-full rounded-md border-gray-300">
+                            placeholder="Title or excerpt..." class="w-full rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600">
                     </div>
                     <div class="flex items-end gap-2">
                         <x-button type="submit" variant="primary">Filter</x-button>

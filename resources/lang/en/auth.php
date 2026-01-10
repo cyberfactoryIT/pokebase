@@ -1,7 +1,8 @@
 <?php
 return [
     'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
+    'password' => 'Password',
+    'password_incorrect' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'login' => 'Log in',
     'register' => 'Register',
@@ -9,7 +10,6 @@ return [
     'organization_code' => 'Organization Code',
     'name' => 'Name',
     'email' => 'Email',
-    'password' => 'Password',
     'confirm_password' => 'Confirm Password',
     'organization_zipcode' => 'Zip code',
     'organization_address' => 'Address',
@@ -46,8 +46,6 @@ return [
     'authenticator_code' => 'Authenticator code',
     'or_recovery_code' => 'Or recovery code',
     'verify' => 'Verify',
-];
-    'forgot_password_description' => 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.',
     'forgot_password_description' => 'Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.',
     'create_new_account' => 'Create new account',
 ];

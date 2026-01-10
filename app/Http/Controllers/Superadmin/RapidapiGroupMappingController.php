@@ -12,8 +12,6 @@ use Illuminate\View\View;
 
 class RapidapiGroupMappingController extends Controller
 {
-    use EnforcesSuperAdmin;
-
     protected RapidapiGroupMappingService $mappingService;
 
     public function __construct(RapidapiGroupMappingService $mappingService)
@@ -26,8 +24,14 @@ class RapidapiGroupMappingController extends Controller
      */
     public function index(Request $request): View
     {
-        $this->enforceSuperAdmin();
-
+        // Check superadmin role with team context
+        $user = auth()->user();
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
+        if (!$user->hasRole('superadmin')) {
+            abort(403, 'Unauthorized. SuperAdmin access required.');
+        }
+        
         $filter = $request->get('filter', 'all');
         $search = $request->get('search');
 
@@ -64,8 +68,14 @@ class RapidapiGroupMappingController extends Controller
      */
     public function map(Request $request, TcgcsvGroup $group): RedirectResponse
     {
-        $this->enforceSuperAdmin();
-
+        // Check superadmin role with team context
+        $user = auth()->user();
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
+        if (!$user->hasRole('superadmin')) {
+            abort(403, 'Unauthorized. SuperAdmin access required.');
+        }
+        
         $request->validate([
             'rapidapi_episode_id' => 'required|integer|exists:rapidapi_episodes,episode_id',
         ]);
@@ -88,8 +98,14 @@ class RapidapiGroupMappingController extends Controller
      */
     public function unmap(TcgcsvGroup $group): RedirectResponse
     {
-        $this->enforceSuperAdmin();
-
+        // Check superadmin role with team context
+        $user = auth()->user();
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
+        if (!$user->hasRole('superadmin')) {
+            abort(403, 'Unauthorized. SuperAdmin access required.');
+        }
+        
         $result = $this->mappingService->unmapGroup($group->id, auth()->id());
 
         if ($result['success']) {

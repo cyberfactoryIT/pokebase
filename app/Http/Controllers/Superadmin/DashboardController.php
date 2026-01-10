@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Http\Controllers\Superadmin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\EnforcesSuperAdmin;
+use App\Models\User;
+use App\Models\Organization;
+use App\Models\TcgcsvProduct;
+use App\Models\TcgcsvGroup;
+use App\Models\RapidapiEpisode;
+use App\Models\Article;
+use App\Models\Invoice;
+use App\Models\Game;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class DashboardController extends Controller
+{
+
+    /**
+     * Display the superadmin dashboard
+     */
+    public function index(Request $request): View
+    {
+        // Check superadmin role with team context
+        $user = auth()->user();
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
+        if (!$user->hasRole('superadmin')) {
+            abort(403, 'Unauthorized. SuperAdmin access required.');
+        }
+        
+        // System-wide statistics
+        $stats = [
+            'total_users' => User::count(),
+            'total_organizations' => Organization::count(),
+            'total_games' => Game::count(),
+            'total_cards' => TcgcsvProduct::count(),
+            'total_expansions' => TcgcsvGroup::count(),
+            'total_articles' => Article::count(),
+        ];
+
+        // Mapping statistics
+        $mappingStats = [
+            'tcgcsv_groups' => TcgcsvGroup::count(),
+            'rapidapi_episodes' => RapidapiEpisode::count(),
+            'mapped_groups' => TcgcsvGroup::whereNotNull('rapidapi_episode_id')->count(),
+            'unmapped_groups' => TcgcsvGroup::whereNull('rapidapi_episode_id')->count(),
+        ];
+        
+        $mappingStats['mapping_percentage'] = $mappingStats['tcgcsv_groups'] > 0 
+            ? round(($mappingStats['mapped_groups'] / $mappingStats['tcgcsv_groups']) * 100, 1)
+            : 0;
+
+        // Recent users (last 10)
+        $recentUsers = User::with('organization')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Revenue statistics (last 30 days)
+        $revenueStats = [
+            'last_30_days' => Invoice::where('created_at', '>=', now()->subDays(30))
+                ->sum('total_cents') / 100,
+            'last_month' => Invoice::whereYear('created_at', now()->year)
+                ->whereMonth('created_at', now()->month)
+                ->sum('total_cents') / 100,
+            'this_year' => Invoice::whereYear('created_at', now()->year)
+                ->sum('total_cents') / 100,
+        ];
+
+        // Active subscriptions (organizations with a pricing plan and not cancelled)
+        $activeSubscriptions = Organization::whereNotNull('pricing_plan_id')
+            ->where(function($q) {
+                $q->where('subscription_cancelled', false)
+                  ->orWhereNull('subscription_cancelled');
+            })
+            ->count();
+
+        // Games breakdown - manual counting since tcgcsvGroups/Products aren't true relations
+        $gameStats = Game::with('articles')->get()->map(function($game) {
+            return [
+                'id' => $game->id,
+                'name' => $game->name,
+                'code' => $game->code,
+                'articles_count' => $game->articles->count(),
+                'tcgcsv_groups_count' => TcgcsvGroup::where('category_id', $game->tcgcsv_category_id)->count(),
+                'tcgcsv_products_count' => TcgcsvProduct::where('category_id', $game->tcgcsv_category_id)->count(),
+            ];
+        });
+
+        return view('superadmin.dashboard', compact(
+            'stats',
+            'mappingStats',
+            'recentUsers',
+            'revenueStats',
+            'activeSubscriptions',
+            'gameStats'
+        ));
+    }
+}

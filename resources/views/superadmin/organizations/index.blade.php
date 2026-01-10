@@ -1,38 +1,31 @@
 @extends('layouts.app')
 
 @section('content')
-@if(!config('organizations.enabled'))
-<div class="bg-gray-50 min-h-screen py-8">
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
     <div class="max-w-7xl mx-auto">
-         
-    </div>
-</div>
-@else
-<div class="bg-gray-50 min-h-screen py-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="bg-white rounded-lg shadow p-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Organizations</h2>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Organizations</h2>
                 <form method="GET" class="flex gap-2">
-                    <input name="search" value="{{ $search }}" placeholder="Search name, code, email..." class="px-3 py-2 rounded-lg border border-gray-300 shadow-sm bg-white text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" />
+                    <input name="search" value="{{ $search }}" placeholder="Search name, code, email..." class="px-3 py-2 rounded-lg border border-gray-300 shadow-sm bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition" />
                     <x-button type="submit" icon="search" variant="primary">Search</x-button>
                 </form>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border rounded">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-4 py-2 text-left">Name</th>
-                            <th class="px-4 py-2 text-left">Code</th>
-                            <th class="px-4 py-2 text-left">Current Plan</th>
-                            <th class="px-4 py-2 text-left">Billing Email</th>
+                            <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Name</th>
+                            <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Code</th>
+                            <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Current Plan</th>
+                            <th class="px-4 py-2 text-left text-gray-700 dark:text-gray-300">Billing Email</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($organizations as $org)
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-2 font-medium text-gray-800">{{ $org->name }}</td>
-                                <td class="px-4 py-2 text-gray-700">{{ $org->code }}</td>
+                            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-2 font-medium text-gray-800 dark:text-gray-200">{{ $org->name }}</td>
+                                <td class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ $org->code }}</td>
                                 <td class="px-4 py-2">
                                     @if($org->pricingPlan)
                                         <x-badge>{{ $org->pricingPlan->code }}</x-badge>
@@ -40,13 +33,13 @@
                                         <x-badge variant="neutral">None</x-badge>
                                     @endif
                                 </td>
-                                <td class="px-4 py-2 text-gray-700">{{ $org->admin_email }}</td>
+                                <td class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ $org->admin_email }}</td>
                             </tr>
                         @endforeach
                     </tbody>
-                    <tfoot class="bg-gray-50">
+                    <tfoot class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <td colspan="4" class="px-4 py-2 text-right text-sm text-gray-500">
+                            <td colspan="4" class="px-4 py-2 text-right text-sm text-gray-500 dark:text-gray-400">
                                 Showing {{ $organizations->count() }} of {{ $organizations->total() }} organizations
                             </td>
                         </tr>

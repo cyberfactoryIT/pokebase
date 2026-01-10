@@ -36,7 +36,7 @@
                 {{-- Filter --}}
                 <div class="flex-shrink-0">
                     <label for="filter" class="block text-sm font-medium text-gray-700 mb-1">{{ __('admin_mappings.filters.label') }}</label>
-                    <select name="filter" id="filter" onchange="this.form.submit()" class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <select name="filter" id="filter" onchange="this.form.submit()" class="block w-full sm:w-48 rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="all" {{ $filter === 'all' ? 'selected' : '' }}>{{ __('admin_mappings.filters.all') }}</option>
                         <option value="mapped" {{ $filter === 'mapped' ? 'selected' : '' }}>{{ __('admin_mappings.filters.mapped') }}</option>
                         <option value="unmapped" {{ $filter === 'unmapped' ? 'selected' : '' }}>{{ __('admin_mappings.filters.unmapped') }}</option>
@@ -83,6 +83,7 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin_mappings.table.group') }}</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin_mappings.table.abbreviation') }}</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin_mappings.table.published_date') }}</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin_mappings.table.cards_count') }}</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin_mappings.table.status') }}</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin_mappings.table.rapidapi') }}</th>
                                 <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('admin_mappings.table.actions') }}</th>
@@ -100,6 +101,9 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $group->published_on ? $group->published_on->format('Y-m-d') : '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">
+                                        <span class="font-semibold">{{ number_format($group->cards_count) }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($group->rapidapi_episode_id)
@@ -155,7 +159,7 @@
                                             
                                             <form method="POST" action="{{ route('superadmin.rapidapi-mapping.map', $group) }}" class="flex flex-col gap-2">
                                                 @csrf
-                                                <select name="rapidapi_episode_id" class="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                                <select name="rapidapi_episode_id" class="block w-full text-sm rounded-md border-gray-300 bg-white text-gray-900 dark:bg-gray-800 dark:text-white dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                                     <option value="">{{ __('admin_mappings.actions.select_expansion') }}</option>
                                                     @foreach($availableForGroup as $expansion)
                                                         @php

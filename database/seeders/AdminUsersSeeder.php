@@ -36,22 +36,20 @@ class AdminUsersSeeder extends Seeder
             ]
         );
 
-        // Crea il ruolo superadmin se non esiste
+        // Crea il ruolo superadmin come GLOBALE (team_id = null)
+        $registrar = app(PermissionRegistrar::class);
+        
+        // Set to NULL to create a global role
+        $registrar->setPermissionsTeamId(null);
+        
         $saRole = Role::firstOrCreate([
             'name'       => 'superadmin',
             'guard_name' => 'web',
         ]);
 
-        // Imposta il team per Spatie Permission (multi-tenant)
-        $registrar = app(PermissionRegistrar::class);
-
-        if (config('organizations.enabled') && $org) {
-            $registrar->setPermissionsTeamId($org->id);
-        } else {
-            $registrar->setPermissionsTeamId(1);
-        }
-
-        // Assegna il ruolo al superadmin
+        // Assegna il ruolo superadmin con il team dell'utente (required by DB)
+        // ma il ruolo stesso è globale, quindi funzionerà su tutte le org
+        $registrar->setPermissionsTeamId($org ? $org->id : 1);
         $superadmin->assignRole($saRole);
     }
 }

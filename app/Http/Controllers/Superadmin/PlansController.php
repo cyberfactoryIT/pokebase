@@ -8,12 +8,6 @@ use Illuminate\Http\Request;
 
 class PlansController extends Controller
 {
-    use EnforcesSuperAdmin;
-
-    public function __construct()
-    {
-        $this->enforceSuperAdmin();
-    }
 
     public function index()
     {

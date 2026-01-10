@@ -3,6 +3,7 @@
 return [
     'title' => 'Expansion Mapping Console',
     'subtitle' => 'Map TCGCSV groups to RapidAPI expansions',
+    'manage_mappings' => 'Manage Mappings',
     'statistics' => 'Statistics',
     'total_groups' => 'Total Groups',
     'mapped_groups' => 'Mapped',
@@ -27,6 +28,7 @@ return [
         'group_id' => 'Group ID',
         'abbreviation' => 'Code',
         'published_date' => 'Published',
+        'cards_count' => 'Cards',
         'game' => 'Game',
         'rapidapi' => 'RapidAPI Expansion',
         'status' => 'Status',

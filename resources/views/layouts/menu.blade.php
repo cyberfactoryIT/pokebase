@@ -9,6 +9,10 @@
     @endauth
     @if(auth()->user() && auth()->user()->hasRole('superadmin'))
     <div class="mt-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ __('messages.superadmin') }}</div>
+        <a href="{{ route('superadmin.dashboard') }}" class="flex items-center gap-3 px-3 py-2 text-gray-300 rounded-lg hover:bg-white/10 transition {{ request()->routeIs('superadmin.dashboard') ? 'bg-white/20 font-bold text-white' : '' }}">
+            <i class="fa fa-crown text-yellow-400"></i>
+            <span>{{ __('messages.nav.dashboard') }}</span>
+        </a>
         <a href="{{ route('admin.activitylog.index') }}" class="flex items-center gap-3 px-3 py-2 text-gray-300 rounded-lg hover:bg-white/10 transition {{ request()->routeIs('admin.activitylog.index') ? 'bg-white/20 font-bold text-white' : '' }}">
             <i class="fa fa-history text-purple-500"></i>
             <span>{{ __('messages.nav.activity_log') }}</span>

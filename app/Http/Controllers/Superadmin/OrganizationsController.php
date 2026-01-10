@@ -8,12 +8,19 @@ use Illuminate\Http\Request;
 
 class OrganizationsController extends Controller
 {
-    use EnforcesSuperAdmin;
-
-    
+    protected function checkSuperAdmin()
+    {
+        $user = auth()->user();
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
+        if (!$user->hasRole('superadmin')) {
+            abort(403, 'Unauthorized. SuperAdmin access required.');
+        }
+    }
 
     public function store(Request $request)
     {
+        $this->checkSuperAdmin();
         $data = $request->validate([
             'name' => 'required|string',
             'code' => 'required|string|unique:organizations,code',
@@ -31,6 +38,7 @@ class OrganizationsController extends Controller
 
     public function update(Request $request, Organization $organization)
     {
+        $this->checkSuperAdmin();
         $data = $request->validate([
             'name' => 'required|string',
             'code' => 'required|string|unique:organizations,code,' . $organization->id,
@@ -46,13 +54,10 @@ class OrganizationsController extends Controller
         return redirect()->route('superadmin.organizations.index')->with('status', 'Organization updated');
     }
 
-    public function __construct()
-    {
-        $this->enforceSuperAdmin();
-    }
-
     public function index(Request $request)
     {
+        $this->checkSuperAdmin();
+        
         $query = Organization::with('pricingPlan');
         if ($search = $request->input('search')) {
             $query->where(function($q) use ($search) {
