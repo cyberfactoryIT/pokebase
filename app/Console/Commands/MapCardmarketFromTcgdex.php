@@ -57,13 +57,15 @@ class MapCardmarketFromTcgdex extends Command
                 $raw = $tcgdexCard->raw;
                 $cardmarketProductId = $raw['pricing']['cardmarket']['idProduct'] ?? null;
                 
-                // Extract TCGPlayer productId from raw JSON (try different variants)
+                // Extract TCGPlayer productId from raw JSON (try all variants)
                 $tcgplayerProductId = null;
                 if (isset($raw['pricing']['tcgplayer'])) {
                     $tcgplayerData = $raw['pricing']['tcgplayer'];
-                    foreach (['normal', 'holofoil', 'reverse-holofoil', '1st-edition-holofoil'] as $variant) {
-                        if (isset($tcgplayerData[$variant]['productId'])) {
-                            $tcgplayerProductId = $tcgplayerData[$variant]['productId'];
+                    
+                    // Iterate through all variant keys to find productId
+                    foreach ($tcgplayerData as $key => $variant) {
+                        if (is_array($variant) && isset($variant['productId'])) {
+                            $tcgplayerProductId = $variant['productId'];
                             break;
                         }
                     }
