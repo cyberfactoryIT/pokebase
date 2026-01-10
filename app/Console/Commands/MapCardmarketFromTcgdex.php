@@ -42,7 +42,8 @@ class MapCardmarketFromTcgdex extends Command
         $this->newLine();
         
         $stats = [
-            'mapped' => 0,
+            'tcgdex_cards_updated' => 0,
+            'products_mapped' => 0,
             'skipped_no_cardmarket_id' => 0,
             'skipped_no_products' => 0,
             'errors' => 0,
@@ -86,6 +87,10 @@ class MapCardmarketFromTcgdex extends Command
                     $tcgdexCard->save();
                 }
                 
+                if ($needsUpdate) {
+                    $stats['tcgdex_cards_updated']++;
+                }
+                
                 // Skip if no CardMarket ID
                 if (!$cardmarketProductId) {
                     $stats['skipped_no_cardmarket_id']++;
@@ -111,7 +116,7 @@ class MapCardmarketFromTcgdex extends Command
                         ->update(['cardmarket_product_id' => $cardmarketProductId]);
                 }
                 
-                $stats['mapped'] += $products->count();
+                $stats['products_mapped'] += $products->count();
                 
             } catch (\Exception $e) {
                 $stats['errors']++;
@@ -132,9 +137,10 @@ class MapCardmarketFromTcgdex extends Command
         $this->table(
             ['Status', 'Count'],
             [
-                ['Products Mapped', $stats['mapped']],
+                ['TCGdex cards updated with product IDs', $stats['tcgdex_cards_updated']],
+                ['TCGCSV products mapped', $stats['products_mapped']],
                 ['TCGdex cards without CardMarket ID', $stats['skipped_no_cardmarket_id']],
-                ['TCGdex cards without products', $stats['skipped_no_products']],
+                ['TCGdex cards without linked products', $stats['skipped_no_products']],
                 ['Errors', $stats['errors']],
             ]
         );
