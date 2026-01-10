@@ -21,16 +21,25 @@ class RapidapiGroupMappingService
     public function listGroups(?string $filter = 'all', ?string $search = null, int $perPage = 25): LengthAwarePaginator
     {
         $query = TcgcsvGroup::query()
-            ->with('rapidapiEpisode:episode_id,name,code,game')
+            ->with(['rapidapiEpisode:episode_id,name,code,game', 'rapidapiEpisodes:episode_id,name,code,game'])
             ->withCount('products as cards_count')
+            // Exclude coming soon groups (future release dates)
+            ->where(function ($q) {
+                $q->whereNull('published_on')
+                  ->orWhere('published_on', '<=', now());
+            })
             ->orderBy('published_on', 'desc')
             ->orderBy('name', 'asc');
 
-        // Apply filter
+        // Apply filter - now checks both old single mapping and new many-to-many
         if ($filter === 'mapped') {
-            $query->whereNotNull('rapidapi_episode_id');
+            $query->where(function ($q) {
+                $q->whereNotNull('rapidapi_episode_id')
+                  ->orWhereHas('rapidapiEpisodes');
+            });
         } elseif ($filter === 'unmapped') {
-            $query->whereNull('rapidapi_episode_id');
+            $query->whereNull('rapidapi_episode_id')
+                  ->whereDoesntHave('rapidapiEpisodes');
         }
 
         // Apply search
@@ -51,27 +60,24 @@ class RapidapiGroupMappingService
     /**
      * Get available RapidAPI episodes not yet mapped to any group
      *
-     * @param TcgcsvGroup|null $forGroup If provided, prioritize expansions with matching release date
+     * @param TcgcsvGroup|null $forGroup If provided, filter by same year and order by date
      * @return Collection
      */
     public function listAvailableRapidapiExpansions(?TcgcsvGroup $forGroup = null): Collection
     {
-        // Get episode_ids that are already assigned
-        $assignedEpisodeIds = TcgcsvGroup::whereNotNull('rapidapi_episode_id')
-            ->pluck('rapidapi_episode_id')
-            ->toArray();
+        $query = RapidapiEpisode::query();
 
-        $query = RapidapiEpisode::whereNotIn('episode_id', $assignedEpisodeIds);
-
-        // If we have a group with published_on date, prioritize matching dates
+        // If we have a group with published_on date, filter by same year (including already assigned)
         if ($forGroup && $forGroup->published_on) {
-            $publishedDate = $forGroup->published_on->format('Y-m-d');
+            $year = $forGroup->published_on->year;
             
-            // Order by date match first, then by release date desc
-            $query->orderByRaw("CASE WHEN DATE(released_at) = ? THEN 0 ELSE 1 END", [$publishedDate])
+            // Show ALL episodes from the same year (including those already mapped)
+            // Order by date desc (most recent first)
+            $query->whereYear('released_at', $year)
                   ->orderBy('released_at', 'desc')
                   ->orderBy('name', 'asc');
         } else {
+            // Show all episodes
             $query->orderBy('released_at', 'desc')
                   ->orderBy('name', 'asc');
         }
@@ -149,41 +155,33 @@ class RapidapiGroupMappingService
                 return ['success' => false, 'message' => __('admin_mappings.errors.group_not_found')];
             }
 
-            // Check if group is already mapped
-            if ($group->rapidapi_episode_id !== null) {
-                return ['success' => false, 'message' => __('admin_mappings.errors.group_already_mapped')];
-            }
-
             // Validate RapidAPI episode exists
             $episode = RapidapiEpisode::where('episode_id', $rapidapiEpisodeId)->first();
             if (!$episode) {
                 return ['success' => false, 'message' => __('admin_mappings.errors.rapidapi_not_found')];
             }
 
-            // Check if this RapidAPI episode is already assigned to another group
-            $existingMapping = TcgcsvGroup::where('rapidapi_episode_id', $rapidapiEpisodeId)
-                ->where('id', '!=', $group->id)
-                ->lockForUpdate()
-                ->first();
-
-            if ($existingMapping) {
-                return [
-                    'success' => false,
-                    'message' => __('admin_mappings.errors.rapidapi_already_assigned', [
-                        'group' => $existingMapping->name
-                    ])
-                ];
+            // Check if this episode is already mapped to this group
+            if ($group->rapidapiEpisodes()->where('rapidapi_episode_id', $rapidapiEpisodeId)->exists()) {
+                return ['success' => false, 'message' => 'This episode is already mapped to this group'];
             }
 
-            // Perform the mapping
-            $group->rapidapi_episode_id = $rapidapiEpisodeId;
+            // Add the mapping using many-to-many relationship
+            $group->rapidapiEpisodes()->attach($rapidapiEpisodeId);
             
             // Also copy logo_url if group doesn't have one
             if (empty($group->logo_url) && !empty($episode->logo_url)) {
                 $group->logo_url = $episode->logo_url;
+                $group->save();
             }
             
-            $group->save();
+            // For backward compatibility, set the old column to the first mapped episode if empty
+            if ($group->rapidapi_episode_id === null) {
+                $group->rapidapi_episode_id = $rapidapiEpisodeId;
+                $group->save();
+            }
+
+            $mappedCount = $group->rapidapiEpisodes()->count();
 
             return [
                 'success' => true,
@@ -237,8 +235,19 @@ class RapidapiGroupMappingService
      */
     public function getStatistics(): array
     {
-        $totalGroups = TcgcsvGroup::count();
-        $mappedGroups = TcgcsvGroup::whereNotNull('rapidapi_episode_id')->count();
+        // Exclude coming soon groups (future release dates) from statistics
+        $totalGroups = TcgcsvGroup::where(function ($q) {
+            $q->whereNull('published_on')
+              ->orWhere('published_on', '<=', now());
+        })->count();
+        
+        $mappedGroups = TcgcsvGroup::whereNotNull('rapidapi_episode_id')
+            ->where(function ($q) {
+                $q->whereNull('published_on')
+                  ->orWhere('published_on', '<=', now());
+            })
+            ->count();
+        
         $totalEpisodes = RapidapiEpisode::count();
         $usedEpisodes = TcgcsvGroup::whereNotNull('rapidapi_episode_id')->distinct('rapidapi_episode_id')->count('rapidapi_episode_id');
 

@@ -94,6 +94,9 @@
                 <a href="{{ route('admin.articles.index') }}" class="px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('admin.articles.*') ? 'text-white font-semibold' : '' }}">
                     {{ __('messages.nav.articles') }}
                 </a>
+                <a href="{{ route('superadmin.unmapped-collection.index') }}" class="px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('superadmin.unmapped-collection.*') ? 'text-white font-semibold' : '' }}">
+                    Unmapped Cards
+                </a>
                 @endif
                 
                 @if(auth()->user()->hasRole('admin'))

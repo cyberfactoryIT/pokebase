@@ -106,9 +106,12 @@
                                         <span class="font-semibold">{{ number_format($group->cards_count) }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($group->rapidapi_episode_id)
+                                        @if($group->rapidapiEpisodes->count() > 0 || $group->rapidapi_episode_id)
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                 {{ __('admin_mappings.table.mapped') }}
+                                                @if($group->rapidapiEpisodes->count() > 1)
+                                                    <span class="ml-1">({{ $group->rapidapiEpisodes->count() }})</span>
+                                                @endif
                                             </span>
                                         @else
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
@@ -117,7 +120,24 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4">
-                                        @if($group->rapidapi_episode_id && $group->rapidapiEpisode)
+                                        @if($group->rapidapiEpisodes->count() > 0)
+                                            {{-- Show all mapped episodes using many-to-many relationship --}}
+                                            @foreach($group->rapidapiEpisodes as $episode)
+                                                <div class="mb-2 {{ !$loop->last ? 'pb-2 border-b border-gray-200' : '' }}">
+                                                    <div class="text-sm font-medium text-gray-900">{{ $episode->name }}</div>
+                                                    <div class="text-xs text-gray-500">
+                                                        ID: {{ $episode->episode_id }}
+                                                        @if($episode->code)
+                                                            | Code: {{ $episode->code }}
+                                                        @endif
+                                                        @if($episode->game)
+                                                            | {{ ucfirst($episode->game) }}
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @elseif($group->rapidapi_episode_id && $group->rapidapiEpisode)
+                                            {{-- Fallback to old single relationship for backward compatibility --}}
                                             <div class="text-sm text-gray-900">{{ $group->rapidapiEpisode->name }}</div>
                                             <div class="text-xs text-gray-500">
                                                 ID: {{ $group->rapidapiEpisode->episode_id }}

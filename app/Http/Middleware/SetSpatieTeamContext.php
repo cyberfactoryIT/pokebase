@@ -10,7 +10,8 @@ class SetSpatieTeamContext
     public function handle($request, Closure $next)
     {
         if (Auth::check()) {
-            $teamId = config('organizations.enabled') ? Auth::user()->organization_id : null;
+            // Always use organization_id for team context (required for team-based roles)
+            $teamId = Auth::user()->organization_id;
             app(PermissionRegistrar::class)->setPermissionsTeamId($teamId);
             
             // Store in request attributes for persistence

@@ -159,6 +159,9 @@ Route::prefix('superadmin')->middleware(['auth'])->group(function () {
     Route::post('/rapidapi-mapping/{group}/map', [\App\Http\Controllers\Superadmin\RapidapiGroupMappingController::class, 'map'])->name('superadmin.rapidapi-mapping.map');
     Route::post('/rapidapi-mapping/{group}/unmap', [\App\Http\Controllers\Superadmin\RapidapiGroupMappingController::class, 'unmap'])->name('superadmin.rapidapi-mapping.unmap');
     
+    // Unmapped Collection Cards
+    Route::get('/unmapped-collection', [\App\Http\Controllers\Admin\UnmappedCollectionController::class, 'index'])->name('superadmin.unmapped-collection.index');
+    
     Route::delete('/promotions/{promotion}', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'destroy'])->name('superadmin.promotions.destroy');
     Route::post('/promotions', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'store'])->name('superadmin.promotions.store');
     Route::get('invoices', [\App\Http\Controllers\Admin\AllInvoicesController::class, 'index'])->name('admin.invoices.index');

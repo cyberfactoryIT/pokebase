@@ -158,11 +158,19 @@
                         </div>
                     </div>
                     
-                    <a href="{{ route('superadmin.rapidapi-mapping.index') }}" 
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                        <i class="fa fa-link"></i>
-                        <span>{{ __('admin_mappings.manage_mappings') }}</span>
-                    </a>
+                    <div class="flex gap-3">
+                        <a href="{{ route('superadmin.rapidapi-mapping.index') }}" 
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                            <i class="fa fa-link"></i>
+                            <span>{{ __('admin_mappings.manage_mappings') }}</span>
+                        </a>
+                        
+                        <a href="{{ route('superadmin.unmapped-collection.index') }}" 
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <span>Unmapped Collection Cards</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class TcgcsvGroup extends Model
 {
@@ -46,5 +47,21 @@ class TcgcsvGroup extends Model
     public function rapidapiEpisode(): BelongsTo
     {
         return $this->belongsTo(RapidapiEpisode::class, 'rapidapi_episode_id', 'episode_id');
+    }
+    
+    /**
+     * Many-to-many relationship with RapidAPI episodes
+     * Allows a group to be mapped to multiple episodes (e.g., Latias & Latios)
+     */
+    public function rapidapiEpisodes(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            RapidapiEpisode::class,
+            'tcgcsv_group_rapidapi_episode',
+            'tcgcsv_group_id',
+            'rapidapi_episode_id',
+            'id',
+            'episode_id'
+        )->withTimestamps();
     }
 }
