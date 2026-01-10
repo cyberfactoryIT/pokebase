@@ -24,6 +24,8 @@ class TcgdxCard extends Model
         'supertype',
         'hp',
         'evolves_from',
+        'tcgplayer_product_id',
+        'cardmarket_product_id',
         'raw',
     ];
 

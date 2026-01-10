@@ -57,6 +57,34 @@ class MapCardmarketFromTcgdex extends Command
                 $raw = $tcgdexCard->raw;
                 $cardmarketProductId = $raw['pricing']['cardmarket']['idProduct'] ?? null;
                 
+                // Extract TCGPlayer productId from raw JSON (try different variants)
+                $tcgplayerProductId = null;
+                if (isset($raw['pricing']['tcgplayer'])) {
+                    $tcgplayerData = $raw['pricing']['tcgplayer'];
+                    foreach (['normal', 'holofoil', 'reverse-holofoil', '1st-edition-holofoil'] as $variant) {
+                        if (isset($tcgplayerData[$variant]['productId'])) {
+                            $tcgplayerProductId = $tcgplayerData[$variant]['productId'];
+                            break;
+                        }
+                    }
+                }
+                
+                // Update TCGdex card with extracted IDs if not already set
+                $needsUpdate = false;
+                if ($cardmarketProductId && !$tcgdexCard->cardmarket_product_id) {
+                    $tcgdexCard->cardmarket_product_id = $cardmarketProductId;
+                    $needsUpdate = true;
+                }
+                if ($tcgplayerProductId && !$tcgdexCard->tcgplayer_product_id) {
+                    $tcgdexCard->tcgplayer_product_id = $tcgplayerProductId;
+                    $needsUpdate = true;
+                }
+                
+                if ($needsUpdate && !$dryRun) {
+                    $tcgdexCard->save();
+                }
+                
+                // Skip if no CardMarket ID
                 if (!$cardmarketProductId) {
                     $stats['skipped_no_cardmarket_id']++;
                     $progressBar->advance();
