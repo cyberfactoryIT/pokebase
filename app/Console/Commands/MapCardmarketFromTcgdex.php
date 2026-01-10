@@ -23,14 +23,14 @@ class MapCardmarketFromTcgdex extends Command
      *
      * @var string
      */
-    protected $description = 'Map CardMarket product IDs from TCGdex data to TCGCSV products';
+    protected $description = 'Map CardMarket product IDs from TCGdex data to TCGCSV products cardmarket_product_id column';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('🔗 Mapping CardMarket IDs from TCGdex to TCGCSV products...');
+        $this->info('🔗 Mapping CardMarket IDs from TCGdex to TCGCSV products (cardmarket_product_id column)...');
         $this->newLine();
         
         $dryRun = $this->option('dry-run');
@@ -53,11 +53,11 @@ class MapCardmarketFromTcgdex extends Command
         
         foreach ($tcgdexCards as $tcgdexCard) {
             try {
-                // Extract CardMarket ID from raw JSON
+                // Extract CardMarket idProduct from raw JSON
                 $raw = $tcgdexCard->raw;
-                $cardmarketId = $raw['pricing']['cardmarket']['idProduct'] ?? null;
+                $cardmarketProductId = $raw['pricing']['cardmarket']['idProduct'] ?? null;
                 
-                if (!$cardmarketId) {
+                if (!$cardmarketProductId) {
                     $stats['skipped_no_cardmarket_id']++;
                     $progressBar->advance();
                     continue;
@@ -78,7 +78,7 @@ class MapCardmarketFromTcgdex extends Command
                 if (!$dryRun) {
                     TcgcsvProduct::where('tcgdex_card_id', $tcgdexCard->tcgdex_id)
                         ->whereNull('cardmarket_product_id')
-                        ->update(['cardmarket_product_id' => $cardmarketId]);
+                        ->update(['cardmarket_product_id' => $cardmarketProductId]);
                 }
                 
                 $stats['mapped'] += $products->count();
