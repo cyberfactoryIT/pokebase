@@ -35,58 +35,58 @@ class MapCardmarketFromTcgdex extends Command
         
         $dryRun = $this->option('dry-run');
         
-        // Get all tcgcsv products that have a tcgdex mapping but no cardmarket_product_id
-        $products = TcgcsvProduct::whereNotNull('tcgdex_card_id')
-            ->whereNull('cardmarket_product_id')
-            ->with('tcgdxCard')
-            ->get();
+        // Get all TCGdex cards
+        $tcgdexCards = TcgdxCard::all();
         
-        $this->info("Found {$products->count()} products with TCGdex mapping but no CardMarket ID");
+        $this->info("Found {$tcgdexCards->count()} TCGdex cards to process");
         $this->newLine();
         
         $stats = [
             'mapped' => 0,
-            'skipped_no_tcgdex' => 0,
-            'skipped_no_id' => 0,
+            'skipped_no_cardmarket_id' => 0,
+            'skipped_no_products' => 0,
             'errors' => 0,
         ];
         
-        $progressBar = $this->output->createProgressBar($products->count());
+        $progressBar = $this->output->createProgressBar($tcgdexCards->count());
         $progressBar->start();
         
-        foreach ($products as $product) {
+        foreach ($tcgdexCards as $tcgdexCard) {
             try {
-                // Get the tcgdex card
-                $tcgdexCard = $product->tcgdxCard;
-                
-                if (!$tcgdexCard) {
-                    $stats['skipped_no_tcgdex']++;
-                    $progressBar->advance();
-                    continue;
-                }
-                
                 // Extract CardMarket ID from raw JSON
                 $raw = $tcgdexCard->raw;
                 $cardmarketId = $raw['pricing']['cardmarket']['idProduct'] ?? null;
                 
                 if (!$cardmarketId) {
-                    $stats['skipped_no_id']++;
+                    $stats['skipped_no_cardmarket_id']++;
                     $progressBar->advance();
                     continue;
                 }
                 
-                // Update the product
-                if (!$dryRun) {
-                    $product->cardmarket_product_id = $cardmarketId;
-                    $product->save();
+                // Find all TCGCSV products mapped to this TCGdex card
+                $products = TcgcsvProduct::where('tcgdex_card_id', $tcgdexCard->tcgdex_id)
+                    ->whereNull('cardmarket_product_id')
+                    ->get();
+                
+                if ($products->isEmpty()) {
+                    $stats['skipped_no_products']++;
+                    $progressBar->advance();
+                    continue;
                 }
                 
-                $stats['mapped']++;
+                // Update all matching products
+                if (!$dryRun) {
+                    TcgcsvProduct::where('tcgdex_card_id', $tcgdexCard->tcgdex_id)
+                        ->whereNull('cardmarket_product_id')
+                        ->update(['cardmarket_product_id' => $cardmarketId]);
+                }
+                
+                $stats['mapped'] += $products->count();
                 
             } catch (\Exception $e) {
                 $stats['errors']++;
                 $this->newLine();
-                $this->error("Error processing product {$product->product_id}: {$e->getMessage()}");
+                $this->error("Error processing TCGdex card {$tcgdexCard->tcgdex_id}: {$e->getMessage()}");
             }
             
             $progressBar->advance();
@@ -102,9 +102,9 @@ class MapCardmarketFromTcgdex extends Command
         $this->table(
             ['Status', 'Count'],
             [
-                ['Mapped', $stats['mapped']],
-                ['Skipped (no TCGdex card)', $stats['skipped_no_tcgdex']],
-                ['Skipped (no CardMarket ID)', $stats['skipped_no_id']],
+                ['Products Mapped', $stats['mapped']],
+                ['TCGdex cards without CardMarket ID', $stats['skipped_no_cardmarket_id']],
+                ['TCGdex cards without products', $stats['skipped_no_products']],
                 ['Errors', $stats['errors']],
             ]
         );
