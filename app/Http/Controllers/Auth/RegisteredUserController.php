@@ -30,8 +30,6 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        
-
         if(!config('organizations.enabled')) {
             $request->merge([
                 'organization_name' => $request->input('name') . ' Org',
@@ -45,6 +43,7 @@ class RegisteredUserController extends Controller
 
 
         $validated = $request->validate([
+            'organization_cvr' => ['nullable', 'string', 'max:20'],
             'organization_name' => ['required', 'string', 'max:191'],
             'organization_code' => ['required', 'string', 'max:191'],
             'organization_address' => ['required', 'string', 'max:255'],
@@ -80,14 +79,25 @@ class RegisteredUserController extends Controller
             // 2. Crea utente con token di verifica
             $token = \Str::random(32);
             $expires = now()->addHours(24);
-            $user = \App\Models\User::create([
+            
+            // Recupera l'ID del gioco Pokemon come default (se esiste)
+            $pokemonGameId = 1;
+            
+            $userData = [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => \Hash::make($validated['password']),
                 'organization_id' => $organization ? $organization->id : null,
                 'email_verification_token' => $token,
                 'email_verification_expires_at' => $expires,
-            ]);
+            ];
+            
+            // Aggiungi default_game_id solo se il gioco Pokemon esiste
+            if ($pokemonGameId) {
+                $userData['default_game_id'] = $pokemonGameId;
+            }
+            
+            $user = \App\Models\User::create($userData);
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(

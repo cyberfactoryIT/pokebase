@@ -7,9 +7,7 @@
     <div class="max-w-6xl mx-auto">
     <x-card>
             @if(!config('organizations.enabled'))
-                <div class="p-6 bg-yellow-50 rounded">
-                    <p class="text-sm text-yellow-800">{{ __('messages.organizations_disabled_notice', ['name' => Auth::user()->name ?? 'User']) }}</p>
-                </div>
+               
             @else
                 {{-- Organizations enabled: render the edit form --}}
                 @if(Auth::user()->hasRole('admin'))

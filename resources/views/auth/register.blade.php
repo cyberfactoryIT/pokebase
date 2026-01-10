@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="flex justify-end items-center mb-4">
-        <a href="{{ url()->previous() }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-gray-300 font-semibold shadow hover:bg-white/20">
-            <i class="fa fa-arrow-left"></i> {{ __('Back') }}
+        <a href="{{ url('/') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-gray-300 font-semibold shadow hover:bg-white/20">
+            <i class="fa fa-arrow-left"></i> {{ __('auth.back') }}
         </a>
     </div>
     <form method="POST" action="{{ route('register') }}">
@@ -50,9 +50,7 @@
             </div>
         </div>
         @else
-            <div class="mb-4 p-4 bg-yellow-900/30 border border-yellow-500/30 rounded">
-                <p class="text-sm text-yellow-300">{{ __('messages.organizations_disabled_notice', ['name' => auth()->user()->name ?? 'User']) }}</p>
-            </div>
+            
         @endif
 
         <!-- Name -->
@@ -94,11 +92,11 @@
 
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-400 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
+                {{ __('auth.already_registered') }}
             </a>
 
             <x-primary-button class="ms-4">
-                {{ __('Register') }}
+                {{ __('auth.register') }}
             </x-primary-button>
         </div>
     </form>

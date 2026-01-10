@@ -3,6 +3,13 @@
 @section('content')
 <div class="bg-black min-h-screen py-8 flex items-center justify-center">
     <div class="w-full max-w-md">
+        <!-- Logo -->
+        <div class="flex justify-center mb-6">
+            <a href="/">
+                <x-application-logo class="w-32 h-32" />
+            </a>
+        </div>
+        
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
             <!-- Session Status -->
             <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -37,12 +44,19 @@
                     </label>
                 </div>
 
-                <div class="flex items-center justify-end mt-4">
-                    @if (Route::has('password.request'))
-                        <a class="underline text-sm text-gray-400 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('password.request') }}">
-                            {{ __('messages.forgot_password') }}
-                        </a>
-                    @endif
+                <div class="flex items-center justify-between mt-4">
+                    <div class="flex flex-col gap-2">
+                        @if (Route::has('password.request'))
+                            <a class="underline text-sm text-gray-400 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('password.request') }}">
+                                {{ __('messages.forgot_password') }}
+                            </a>
+                        @endif
+                        @if (Route::has('register'))
+                            <a class="underline text-sm text-gray-400 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('register') }}">
+                                {{ __('auth.create_new_account') }}
+                            </a>
+                        @endif
+                    </div>
 
                     <x-primary-button class="ms-3">
                         {{ __('messages.log_in') }}

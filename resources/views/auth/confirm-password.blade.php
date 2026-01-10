@@ -1,6 +1,6 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('messages.This_is_a_secure_area_of_the_application._Please_confirm_your_password_before_continuing.') }}
+    <div class="mb-4 text-sm text-gray-400">
+        {{ __('auth.confirm_password_secure_area') }}
     </div>
 
     <form method="POST" action="{{ route('password.confirm') }}">
@@ -8,9 +8,9 @@
 
         <!-- Password -->
         <div>
-            <x-input-label for="password" :value="__('messages.Password')" />
+            <x-input-label for="password" :value="__('auth.password')" class="text-gray-300" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
+            <x-text-input id="password" class="block mt-1 w-full bg-black/50 border-white/20 text-white"
                             type="password"
                             name="password"
                             required autocomplete="current-password" />
@@ -20,7 +20,7 @@
 
         <div class="flex justify-end mt-4">
             <x-primary-button>
-                {{ __('messages.Confirm') }}
+                {{ __('auth.confirm') }}
             </x-primary-button>
         </div>
     </form>

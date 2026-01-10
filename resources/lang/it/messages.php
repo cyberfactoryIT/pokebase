@@ -508,4 +508,10 @@ return [
 'footer_contact' => 'Contatto',
 'footer_dummy' => 'Contenuto del footer di esempio: :privacy | :terms | :contact',
 
+// Email messages
+'Visit_our_website' => 'Visita il nostro sito web',
+'If_you_did_not_create_an_account_no_further_action_is_required' => 'Se non hai creato un account, non è richiesta alcuna azione.',
+'If_you_did_not_request_a_password_reset_no_further_action_is_required' => 'Se non hai richiesto un reset della password, non è richiesta alcuna azione.',
+'Back_to_home' => 'Torna alla Dashboard',
+
 ];

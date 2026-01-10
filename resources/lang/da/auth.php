@@ -24,4 +24,28 @@ return [
         'invalid_or_expired' => 'Din session er udløbet, eller enhedens token er ugyldig.',
         'revoked' => 'Din enhedssession er blevet tilbagekaldt.',
     ],
+    
+    // Registration & Auth links
+    'already_registered' => 'Allerede registreret?',
+    'back' => 'Tilbage',
+    
+    // Two-Factor Authentication
+    'two_factor_authentication' => 'To-faktor autentificering',
+    'two_factor_challenge' => 'To-faktor udfordring',
+    'your_recovery_codes' => 'Dine gendannelseskoder',
+    'store_recovery_codes_message' => 'Gem disse koder et sikkert sted. Hver kode kan kun bruges én gang, hvis du mister adgang til din autentificeringsapp.',
+    'back_to_2fa_settings' => 'Tilbage til 2FA-indstillinger',
+    'scan_qr_code_message' => 'Scan denne QR-kode med Google Authenticator, 1Password eller Authy:',
+    'or_enter_secret_manually' => 'Eller indtast denne hemmelige kode manuelt:',
+    'enter_code_from_app' => 'Indtast kode fra din app:',
+    'confirm_and_enable' => 'Bekræft og aktiver',
+    'two_factor_enabled_message' => 'To-faktor autentificering er aktiveret.',
+    'regenerate_recovery_codes' => 'Regenerer gendannelseskoder',
+    'confirm_password_to_disable' => 'Bekræft adgangskode for at deaktivere:',
+    'disable_2fa' => 'Deaktiver 2FA',
+    'authenticator_code' => 'Autentificeringskode',
+    'or_recovery_code' => 'Eller gendannelseskode',
+    'verify' => 'Verificer',
+    'forgot_password_description' => 'Glemt din adgangskode? Intet problem. Bare fortæl os din e-mailadresse, så sender vi dig et link til nulstilling af adgangskode, som giver dig mulighed for at vælge en ny.',
+    'create_new_account' => 'Opret ny konto',
 ];
