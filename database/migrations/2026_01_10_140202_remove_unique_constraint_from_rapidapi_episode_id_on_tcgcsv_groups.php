@@ -12,10 +12,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tcgcsv_groups', function (Blueprint $table) {
-            // Remove unique constraint to allow many-to-many relationship
-            $table->dropUnique('tcgcsv_groups_rapidapi_episode_id_unique');
-        });
+        // Check if the unique constraint exists before attempting to drop it
+        $indexExists = DB::select("
+            SELECT COUNT(*) as count
+            FROM information_schema.statistics
+            WHERE table_schema = DATABASE()
+            AND table_name = 'tcgcsv_groups'
+            AND index_name = 'tcgcsv_groups_rapidapi_episode_id_unique'
+        ");
+        
+        if ($indexExists[0]->count > 0) {
+            Schema::table('tcgcsv_groups', function (Blueprint $table) {
+                // Remove unique constraint to allow many-to-many relationship
+                $table->dropUnique('tcgcsv_groups_rapidapi_episode_id_unique');
+            });
+        }
     }
 
     /**
