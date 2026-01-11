@@ -171,6 +171,12 @@
                             <span>Unmapped Cards</span>
                             <span class="ml-2 px-2 py-1 bg-white/20 rounded-full text-sm font-bold">{{ number_format($unmappedCardsStats['unmapped_count']) }}</span>
                         </a>
+                        
+                        <a href="{{ route('superadmin.cardmarket-comparison.index') }}" 
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
+                            <i class="fa fa-balance-scale"></i>
+                            <span>CardMarket Comparison</span>
+                        </a>
                     </div>
                 </div>
             </div>

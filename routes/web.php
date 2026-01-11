@@ -162,6 +162,9 @@ Route::prefix('superadmin')->middleware(['auth'])->group(function () {
     // Unmapped Collection Cards
     Route::get('/unmapped-collection', [\App\Http\Controllers\Admin\UnmappedCollectionController::class, 'index'])->name('superadmin.unmapped-collection.index');
     
+    // CardMarket Mapping Comparison
+    Route::get('/cardmarket-comparison', [\App\Http\Controllers\Admin\CardMarketMappingComparisonController::class, 'index'])->name('superadmin.cardmarket-comparison.index');
+    
     Route::delete('/promotions/{promotion}', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'destroy'])->name('superadmin.promotions.destroy');
     Route::post('/promotions', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'store'])->name('superadmin.promotions.store');
     Route::get('invoices', [\App\Http\Controllers\Admin\AllInvoicesController::class, 'index'])->name('admin.invoices.index');

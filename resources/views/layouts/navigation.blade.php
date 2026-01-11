@@ -97,6 +97,9 @@
                 <a href="{{ route('superadmin.unmapped-collection.index') }}" class="px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('superadmin.unmapped-collection.*') ? 'text-white font-semibold' : '' }}">
                     Unmapped Cards
                 </a>
+                <a href="{{ route('superadmin.cardmarket-comparison.index') }}" class="px-3 py-2 text-gray-300 hover:text-white transition {{ request()->routeIs('superadmin.cardmarket-comparison.*') ? 'text-white font-semibold' : '' }}">
+                    CM Comparison
+                </a>
                 @endif
                 
                 @if(auth()->user()->hasRole('admin'))
