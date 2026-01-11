@@ -139,6 +139,23 @@ echo -e "${GREEN}✅ STEP 9 completato in ${step9_duration}s${NC}"
 echo ""
 sleep 2
 
+# Step 9b: TCGdex CardMarket Product IDs Mapping
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 9b/11: TCGdex CardMarket Product IDs Mapping${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Extracting CardMarket product IDs from TCGdex JSON${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~5-15 seconds${NC}"
+echo ""
+step9b_start=$(date +%s)
+php artisan tcgdex:map-cardmarket
+step9b_end=$(date +%s)
+step9b_duration=$((step9b_end - step9b_start))
+echo ""
+echo -e "${GREEN}✅ STEP 9b completato in ${step9b_duration}s${NC}"
+echo ""
+sleep 2
+
 # Step 10: TCGCSV Enrichment (06:00)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}STEP 10/11: TCGCSV Enrichment (Schedule: 06:00)${NC}"
@@ -196,6 +213,7 @@ echo -e "   6️⃣  Cardmarket Match (Direct+Fuzzy) ....... ${step6_duration}s"
 echo -e "   7️⃣  TCGdex Download & Import .............. ${step7_duration}s"
 echo -e "   8️⃣  RapidAPI Episodes Mapping ............. ${step8_duration}s"
 echo -e "   9️⃣  TCGdex Mapping ........................ ${step9_duration}s"
+echo -e "   9️⃣🅱️ TCGdex CardMarket IDs ................ ${step9b_duration}s"
 echo -e "   🔟  TCGCSV Enrichment ..................... ${step10_duration}s"
 echo -e "   1️⃣1️⃣ Cardmarket Sync Prices ................ ${step11_duration}s"
 echo ""

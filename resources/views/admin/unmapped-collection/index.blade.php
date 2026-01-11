@@ -10,17 +10,25 @@
         </div>
 
         {{-- Statistics --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                <div class="text-sm text-gray-600 dark:text-gray-400">Total in Collections</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Collections</div>
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($stats['total_in_collections']) }}</div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                <div class="text-sm text-gray-600 dark:text-gray-400">Unmapped Cards</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Decks</div>
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($stats['total_in_decks']) }}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="text-sm text-gray-600 dark:text-gray-400">Unique Cards</div>
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ number_format($stats['total_unique']) }}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                <div class="text-sm font-semibold text-gray-600 dark:text-gray-400">❌ Unmapped</div>
                 <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ number_format($stats['unmapped_count']) }}</div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                <div class="text-sm text-gray-600 dark:text-gray-400">Mapped Cards</div>
+                <div class="text-sm font-semibold text-gray-600 dark:text-gray-400">✅ Mapped</div>
                 <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ number_format($stats['mapped_count']) }}</div>
             </div>
         </div>

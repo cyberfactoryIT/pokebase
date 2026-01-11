@@ -12,6 +12,8 @@ use App\Models\RapidapiEpisode;
 use App\Models\Article;
 use App\Models\Invoice;
 use App\Models\Game;
+use App\Models\UserCollection;
+use App\Models\DeckCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -53,6 +55,20 @@ class DashboardController extends Controller
         $mappingStats['mapping_percentage'] = $mappingStats['tcgcsv_groups'] > 0 
             ? round(($mappingStats['mapped_groups'] / $mappingStats['tcgcsv_groups']) * 100, 1)
             : 0;
+        
+        // Unmapped collection/deck cards statistics
+        $collectionProductIds = UserCollection::distinct('product_id')->pluck('product_id');
+        $deckProductIds = DeckCard::distinct('product_id')->pluck('product_id');
+        $allProductIds = $collectionProductIds->merge($deckProductIds)->unique();
+        
+        $unmappedCardsStats = [
+            'total_in_collections' => $collectionProductIds->count(),
+            'total_in_decks' => $deckProductIds->count(),
+            'total_unique' => $allProductIds->count(),
+            'unmapped_count' => TcgcsvProduct::whereIn('product_id', $allProductIds)
+                ->whereNull('cardmarket_product_id')
+                ->count(),
+        ];
 
         // Recent users (last 10)
         $recentUsers = User::with('organization')
@@ -94,6 +110,7 @@ class DashboardController extends Controller
         return view('superadmin.dashboard', compact(
             'stats',
             'mappingStats',
+            'unmappedCardsStats',
             'recentUsers',
             'revenueStats',
             'activeSubscriptions',
