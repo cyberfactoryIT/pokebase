@@ -98,9 +98,24 @@ return [
     'pricing_enterprise_text' => 'Vuoi saperne di più?',
     'pricing_enterprise_link' => 'Contattaci',
     'pricing_enterprise_text2' => 'per ricevere consulenza personalizzata e trovare il piano giusto per te.',
+    'pricing_enterprise_title' => 'Hai bisogno di più?',
+    
+    // New pricing translations
+    'pricing_monthly' => 'Mensile',
+    'pricing_yearly' => 'Annuale',
+    'pricing_save_17' => 'Risparmia 17%',
+    'pricing_per_month' => 'al mese',
+    'pricing_per_year' => 'all\'anno',
+    'pricing_save' => 'Risparmia',
+    'pricing_unlimited' => 'Illimitato',
+    'pricing_pro_feat5' => 'Supporto prioritario',
+    'pricing_ultra_feat5' => 'Account manager dedicato',
     
     // Pricing FAQ
     'pricing_faq_title' => 'Domande frequenti',
+    'pricing_faq_subtitle' => 'Tutto quello che devi sapere sui nostri prezzi',
+    'pricing_more_questions' => 'Hai altre domande?',
+    'pricing_contact_support' => 'Contatta il nostro supporto',
     'pricing_faq1_q' => 'Posso cambiare piano in qualsiasi momento?',
     'pricing_faq1_a' => 'Sì, puoi aggiornare o declassare il tuo piano in qualsiasi momento. Le modifiche hanno effetto immediato.',
     'pricing_faq2_q' => 'Cosa succede se supero il mio limite?',
@@ -109,4 +124,13 @@ return [
     'pricing_faq3_a' => 'Sì! Il piano Basic è gratuito per sempre. Puoi aggiornare quando hai bisogno di più capacità.',
     'pricing_faq4_q' => 'Quali metodi di pagamento accettate?',
     'pricing_faq4_a' => 'Accettiamo tutte le principali carte di credito, carte di debito e PayPal.',
+
+    // Features page - NEW Hero Section
+    'features_hero_title' => 'Ogni carta ha una storia. Noi ti diamo gli strumenti per scoprirla.',
+    'features_hero_subtitle' => 'Prezzi in tempo reale • Deck builder intelligente • Analisi avanzate',
+    'features_hero_badge1' => 'Prezzi in tempo reale',
+    'features_hero_badge2' => 'Deck builder intelligente',
+    'features_hero_badge3' => 'Analisi avanzate',
+    'features_hero_cta1' => 'Inizia gratis',
+    'features_hero_cta2' => 'Guarda demo video',
 ];

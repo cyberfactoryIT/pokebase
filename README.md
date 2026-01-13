@@ -25,6 +25,37 @@
 
 ---
 
+## 🆕 Recent Updates (January 2026)
+
+### ✨ Homepage Modular Redesign
+- **4 New Sections** with modular architecture:
+  - 🎯 **The Three Pillars**: Detailed features showcase (Track, Value, Play)
+  - 👥 **Social Proof**: Stats, testimonials, trust badges
+  - 🔄 **How It Works**: 4-step process visualization
+  - 💰 **Pricing Teaser**: Dynamic pricing from database
+
+### 🎨 Pricing Page Modernization
+- Modern card design with gradients (Green/Blue-Purple/Purple-Pink)
+- **Monthly/Yearly toggle** with JavaScript
+- Dynamic prices from `pricing_plans` table
+- Automatic savings calculation
+- Recommended plan highlighting with scale effect
+- Enhanced FAQ section with numbered items
+- Enterprise section with gradient CTA
+
+### 🏗️ Architecture Improvements
+- **Modular blade partials**: `resources/views/home/*.blade.php`
+- **Separate translation files**: `resources/lang/{da,it,en}/home/*.php`
+- Features page fully modularized (7 sections)
+- Easy maintenance and extensibility
+
+### 🔧 Technical Fixes
+- RapidAPI configuration moved to `.env`
+- Cardmarket services null-safety improvements
+- View cache optimization
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Framework**: Laravel 11 (PHP 8.2+)
@@ -200,8 +231,12 @@ pokebase/
 │   ├── Http/Controllers/     # Controllers
 │   ├── Models/              # Eloquent models
 │   ├── Services/            # Business logic
+│   │   ├── RapidApi/        # RapidAPI integration
+│   │   └── Cardmarket/      # Cardmarket services
 │   └── Policies/            # Authorization
 ├── config/                  # Configuration files
+│   ├── rapidapi.php         # RapidAPI config
+│   └── cardmarket.php       # Cardmarket config
 ├── database/
 │   ├── migrations/          # Database migrations
 │   └── seeders/            # Database seeders
@@ -210,7 +245,20 @@ pokebase/
 │   ├── css/                # Stylesheets
 │   ├── js/                 # JavaScript
 │   ├── lang/               # Translations
+│   │   ├── da/            # Danish
+│   │   │   ├── features/  # Features page sections
+│   │   │   └── home/      # Homepage sections
+│   │   ├── it/            # Italian
+│   │   └── en/            # English
 │   └── views/              # Blade templates
+│       ├── home/          # Homepage partials
+│       │   ├── pillars.blade.php
+│       │   ├── social.blade.php
+│       │   ├── howitworks.blade.php
+│       │   └── pricingteaser.blade.php
+│       └── pages/
+│           ├── features/  # Features page partials
+│           └── pricing.blade.php
 ├── routes/
 │   ├── web.php             # Web routes
 │   └── auth.php            # Auth routes
@@ -279,8 +327,20 @@ STRIPE_WEBHOOK_SECRET=whsec_xxx
 
 ### APIs
 ```env
+# Pokemon TCG API
+POKEMON_API_BASE_URL=https://api.pokemontcg.io/v2
+POKEMON_API_KEY=your_pokemon_api_key
+POKEMON_API_PAGE_SIZE=250
+
+# RapidAPI Cardmarket TCG
+RAPIDAPI_CARDMARKET_ENABLED=true
+RAPIDAPI_KEY=your_rapidapi_key
+RAPIDAPI_CARDMARKET_HOST=cardmarket-api-tcg.p.rapidapi.com
+RAPIDAPI_CARDMARKET_BASE_URL=https://cardmarket-api-tcg.p.rapidapi.com
+RAPIDAPI_RATE_LIMIT=50
+
+# Cardmarket (Legacy)
 CARDMARKET_APP_TOKEN=your_token
-RAPIDAPI_KEY=your_key
 ```
 
 ---

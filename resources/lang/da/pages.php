@@ -99,9 +99,24 @@ return [
     'pricing_enterprise_text' => 'Vil du vide mere?',
     'pricing_enterprise_link' => 'Kontakt os',
     'pricing_enterprise_text2' => 'for at få personlig rådgivning og finde den rette plan til dig.',
+    'pricing_enterprise_title' => 'Har du brug for mere?',
+    
+    // New pricing translations
+    'pricing_monthly' => 'Månedlig',
+    'pricing_yearly' => 'Årlig',
+    'pricing_save_17' => 'Spar 17%',
+    'pricing_per_month' => 'pr. måned',
+    'pricing_per_year' => 'pr. år',
+    'pricing_save' => 'Spar',
+    'pricing_unlimited' => 'Ubegrænset',
+    'pricing_pro_feat5' => 'Prioriteret support',
+    'pricing_ultra_feat5' => 'Dedikeret account manager',
     
     // Pricing FAQ
     'pricing_faq_title' => 'Ofte stillede spørgsmål',
+    'pricing_faq_subtitle' => 'Alt hvad du behøver at vide om vores priser',
+    'pricing_more_questions' => 'Har du flere spørgsmål?',
+    'pricing_contact_support' => 'Kontakt vores support',
     'pricing_faq1_q' => 'Kan jeg ændre plan når som helst?',
     'pricing_faq1_a' => 'Ja, du kan opgradere eller nedgradere din plan når som helst. Ændringer træder i kraft umiddelbart.',
     'pricing_faq2_q' => 'Hvad sker der hvis jeg overskrider min grænse?',
@@ -110,4 +125,13 @@ return [
     'pricing_faq3_a' => 'Ja! Basic-planen er gratis for altid. Du kan opgradere når du har brug for mere kapacitet.',
     'pricing_faq4_q' => 'Hvilke betalingsmetoder accepterer I?',
     'pricing_faq4_a' => 'Vi accepterer alle større kreditkort, debetkort og PayPal.',
+
+    // Features page - NEW Hero Section
+    'features_hero_title' => 'Hver kort har en historie. Vi giver dig værktøjerne til at opdage den.',
+    'features_hero_subtitle' => 'Priser i realtid • Intelligent deck builder • Avanceret analyse',
+    'features_hero_badge1' => 'Priser i realtid',
+    'features_hero_badge2' => 'Intelligent deck builder',
+    'features_hero_badge3' => 'Avanceret analyse',
+    'features_hero_cta1' => 'Start gratis',
+    'features_hero_cta2' => 'Se demo video',
 ];

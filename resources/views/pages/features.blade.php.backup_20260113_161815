@@ -1,0 +1,97 @@
+@extends('layouts.public')
+
+@section('title', __('pages.features_title') . ' - ' . config('app.name'))
+
+@section('content')
+<div class="bg-black min-h-screen py-16">
+    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                {{ __('pages.features_title') }}
+            </h1>
+            <p class="text-xl text-gray-400">
+                {{ __('pages.features_subtitle') }}
+            </p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <!-- Feature 1 -->
+            <div class="bg-[#161615] border border-white/15 rounded-2xl p-8 hover:border-white/20 transition">
+                <div class="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">{{ __('pages.feature1_title') }}</h3>
+                <p class="text-gray-400 leading-relaxed">{{ __('pages.feature1_text') }}</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-[#161615] border border-white/15 rounded-2xl p-8 hover:border-white/20 transition">
+                <div class="w-12 h-12 bg-purple-600/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">{{ __('pages.feature2_title') }}</h3>
+                <p class="text-gray-400 leading-relaxed">{{ __('pages.feature2_text') }}</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-[#161615] border border-white/15 rounded-2xl p-8 hover:border-white/20 transition">
+                <div class="w-12 h-12 bg-green-600/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">{{ __('pages.feature3_title') }}</h3>
+                <p class="text-gray-400 leading-relaxed">{{ __('pages.feature3_text') }}</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="bg-[#161615] border border-white/15 rounded-2xl p-8 hover:border-white/20 transition">
+                <div class="w-12 h-12 bg-yellow-600/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">{{ __('pages.feature4_title') }}</h3>
+                <p class="text-gray-400 leading-relaxed">{{ __('pages.feature4_text') }}</p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="bg-[#161615] border border-white/15 rounded-2xl p-8 hover:border-white/20 transition">
+                <div class="w-12 h-12 bg-red-600/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">{{ __('pages.feature5_title') }}</h3>
+                <p class="text-gray-400 leading-relaxed">{{ __('pages.feature5_text') }}</p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="bg-[#161615] border border-white/15 rounded-2xl p-8 hover:border-white/20 transition">
+                <div class="w-12 h-12 bg-pink-600/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-3">{{ __('pages.feature6_title') }}</h3>
+                <p class="text-gray-400 leading-relaxed">{{ __('pages.feature6_text') }}</p>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/20 rounded-2xl p-12">
+            <h2 class="text-3xl font-bold text-white mb-4">{{ __('pages.features_cta_title') }}</h2>
+            <p class="text-gray-400 mb-8">{{ __('pages.features_cta_text') }}</p>
+            <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl text-lg font-semibold transition shadow-lg">
+                {{ __('welcome.cta_start_free') }}
+            </a>
+        </div>
+    </div>
+</div>
+@endsection

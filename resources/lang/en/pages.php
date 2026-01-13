@@ -98,9 +98,24 @@ return [
     'pricing_enterprise_text' => 'Want to know more?',
     'pricing_enterprise_link' => 'Contact us',
     'pricing_enterprise_text2' => 'to get personalized advice and find the right plan for you.',
+    'pricing_enterprise_title' => 'Need more?',
+    
+    // New pricing translations
+    'pricing_monthly' => 'Monthly',
+    'pricing_yearly' => 'Yearly',
+    'pricing_save_17' => 'Save 17%',
+    'pricing_per_month' => 'per month',
+    'pricing_per_year' => 'per year',
+    'pricing_save' => 'Save',
+    'pricing_unlimited' => 'Unlimited',
+    'pricing_pro_feat5' => 'Priority support',
+    'pricing_ultra_feat5' => 'Dedicated account manager',
     
     // Pricing FAQ
     'pricing_faq_title' => 'Frequently Asked Questions',
+    'pricing_faq_subtitle' => 'Everything you need to know about our pricing',
+    'pricing_more_questions' => 'Have more questions?',
+    'pricing_contact_support' => 'Contact our support',
     'pricing_faq1_q' => 'Can I change plans anytime?',
     'pricing_faq1_a' => 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.',
     'pricing_faq2_q' => 'What happens if I exceed my limit?',

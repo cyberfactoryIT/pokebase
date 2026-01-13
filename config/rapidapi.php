@@ -13,7 +13,7 @@ return [
 
     'cardmarket' => [
         'enabled' => env('RAPIDAPI_CARDMARKET_ENABLED', true),
-        'api_key' => env('RAPIDAPI_KEY', '4549717005msh02dfff5f9c87208p1a081fjsnb6ed6ac3cc89'),
+        'api_key' => env('RAPIDAPI_KEY'),
         'host' => env('RAPIDAPI_CARDMARKET_HOST', 'cardmarket-api-tcg.p.rapidapi.com'),
         'base_url' => env('RAPIDAPI_CARDMARKET_BASE_URL', 'https://cardmarket-api-tcg.p.rapidapi.com'),
         

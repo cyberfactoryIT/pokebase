@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Cache;
 
 class CardmarketRapidApiService
 {
-    protected string $apiKey;
-    protected string $host;
-    protected string $baseUrl;
+    protected ?string $apiKey;
+    protected ?string $host;
+    protected ?string $baseUrl;
     protected int $delayMs;
 
     public function __construct()
@@ -19,6 +19,11 @@ class CardmarketRapidApiService
         $this->host = config('rapidapi.cardmarket.host');
         $this->baseUrl = config('rapidapi.cardmarket.base_url');
         $this->delayMs = config('rapidapi.cardmarket.rate_limit.delay_ms', 1200);
+
+        // Validate API key is configured
+        if (empty($this->apiKey)) {
+            Log::warning('RapidAPI key not configured. Please set RAPIDAPI_KEY in .env file.');
+        }
     }
 
     /**
@@ -233,6 +238,17 @@ class CardmarketRapidApiService
      */
     protected function makeRequest(string $endpoint, array $params = []): array
     {
+        // Check if API key is configured
+        if (empty($this->apiKey)) {
+            Log::warning('RapidAPI request skipped: API key not configured', [
+                'endpoint' => $endpoint,
+            ]);
+            return [
+                'error' => 'API key not configured',
+                'data' => [],
+            ];
+        }
+
         try {
             $response = Http::timeout(30)
                 ->withHeaders([

@@ -9,12 +9,23 @@ use Illuminate\Support\Facades\Log;
 class CardmarketDownloader
 {
     protected string $logChannel;
-    protected array $storage;
+    protected ?array $storage;
 
     public function __construct()
     {
         $this->logChannel = config('cardmarket.logging.channel', 'cardmarket');
-        $this->storage = config('cardmarket.storage');
+        $this->storage = config('cardmarket.storage', [
+            'disk' => 'local',
+            'path' => 'cardmarket',
+        ]);
+
+        if (empty($this->storage)) {
+            Log::warning('Cardmarket storage configuration not found. Using defaults.');
+            $this->storage = [
+                'disk' => 'local',
+                'path' => 'cardmarket',
+            ];
+        }
     }
 
     /**

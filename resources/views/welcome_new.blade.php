@@ -188,69 +188,16 @@
         </section>
 
         <!-- The Three Pillars Section -->
-        <section id="features" class="py-20 px-6 lg:px-8 bg-black/30">
-            <div class="max-w-7xl mx-auto">
-                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16">
-                    {{ __('welcome.pillars_title') }}
-                </h2>
+        @include('home.pillars')
 
-                <div class="grid md:grid-cols-3 gap-8">
-                    <!-- Pillar 1 -->
-                    <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition group">
-                        <div class="w-16 h-16 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">{{ __('welcome.pillar1_title') }}</h3>
-                        <p class="text-gray-400 leading-relaxed">{{ __('welcome.pillar1_description') }}</p>
-                    </div>
+        <!-- Social Proof Section -->
+        @include('home.social')
 
-                    <!-- Pillar 2 -->
-                    <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition group">
-                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">{{ __('welcome.pillar2_title') }}</h3>
-                        <p class="text-gray-400 leading-relaxed">{{ __('welcome.pillar2_description') }}</p>
-                    </div>
+        <!-- How It Works Section -->
+        @include('home.howitworks')
 
-                    <!-- Pillar 3 -->
-                    <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition group">
-                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                            <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">{{ __('welcome.pillar3_title') }}</h3>
-                        <p class="text-gray-400 leading-relaxed">{{ __('welcome.pillar3_description') }}</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Social Proof - TEMPORANEAMENTE NASCOSTO (riattivare dopo lancio) -->
-        {{-- 
-        <section class="py-20 px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto text-center">
-                <div class="flex items-center justify-center gap-4 mb-4">
-                    <!-- Avatar circles -->
-                    <div class="flex -space-x-3">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-[#1a1a1a]"></div>
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-[#1a1a1a]"></div>
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border-2 border-[#1a1a1a]"></div>
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 border-2 border-[#1a1a1a]"></div>
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-[#1a1a1a]"></div>
-                    </div>
-                </div>
-                <p class="text-xl text-gray-300">
-                    {{ __('welcome.social_proof') }}
-                </p>
-            </div>
-        </section>
-        --}}
+        <!-- Pricing Teaser Section -->
+        @include('home.pricingteaser')
 
         <!-- Footer -->
         <footer class="border-t border-white/10 py-12 px-6 lg:px-8">
