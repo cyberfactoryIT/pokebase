@@ -16,7 +16,7 @@
                 $q = $faq->question[$lang] ?? reset($faq->question);
                 $a = $faq->answer[$lang] ?? reset($faq->answer);
             @endphp
-            <details class="mb-4 border rounded-lg p-4 bg-white shadow">
+            <details id="faq-{{ $faq->id }}" class="mb-4 border rounded-lg p-4 bg-white shadow">
                 <summary class="font-semibold cursor-pointer">{{ $q }}</summary>
                 <div class="mt-2 prose">{!! \Illuminate\Support\Str::of($a)->markdown()->toHtmlString() !!}</div>
             </details>

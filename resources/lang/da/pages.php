@@ -1,0 +1,113 @@
+<?php
+return [
+    // About page
+    'about_title' => 'Om os',
+    'about_subtitle' => 'Vi bygger fremtidens værktøj for kortsamlere',
+    'about_mission_title' => 'Vores mission',
+    'about_mission_text' => 'Basecard har til formål at give kortsamlere i Skandinavien det bedste værktøj til at administrere, værdsætte og forstå deres samlinger. Vi tror på, at enhver samler fortjener adgang til nøjagtige priser, kraftfulde analyseværktøjer og et intuitivt interface.',
+    'about_story_title' => 'Vores historie',
+    'about_story_text' => 'Startet i 2026 af et team af passionerede samlere og udviklere, Basecard er født ud fra frustrationen over eksisterende løsninger. Vi ønskede at skabe en platform, der forstår de nordiske samleres behov, med lokale priser, lokal support og fokus på brugeroplevelse.',
+    'about_values_title' => 'Vores værdier',
+    'about_value1_title' => 'Transparens',
+    'about_value1_text' => 'Klare priser, ingen skjulte omkostninger, realtidsdata fra pålidelige kilder.',
+    'about_value2_title' => 'Enkelhed',
+    'about_value2_text' => 'Et rent og intuitivt interface, der ikke kræver en manual.',
+    'about_value3_title' => 'Fællesskab',
+    'about_value3_text' => 'Vi lytter til vores brugere og bygger funktioner, som de har brug for.',
+    'about_team_title' => 'Vores team',
+    'about_team_text' => 'Vi er et lille, dedikeret team baseret i Danmark. Alle samlere, alle passionerede om at skabe den bedste oplevelse for vores brugere.',
+
+    // Features page
+    'features_title' => 'Funktioner',
+    'features_subtitle' => 'Alt hvad du har brug for til at administrere din samling',
+    'feature1_title' => 'Samlingsstyring',
+    'feature1_text' => 'Tilføj kort til din samling med detaljer om tilstand, sprog, foliering og mere. Hold styr på alt hvad du ejer.',
+    'feature2_title' => 'Realtidspriser',
+    'feature2_text' => 'Priser fra Cardmarket opdateret dagligt. Se historiske tendenser og forvent fremtidige værdier.',
+    'feature3_title' => 'Deck Builder',
+    'feature3_title' => 'Deck Builder',
+    'feature3_text' => 'Opret og administrer dine decks. Se øjeblikkelig den samlede værdi og manglende kort for at fuldende dit deck.',
+    'feature4_title' => 'Avancerede analyser',
+    'feature4_text' => 'Grafer, rapporter og statistikker for at forstå din samlings udvikling over tid.',
+    'feature5_title' => 'Multi-Game Support',
+    'feature5_text' => 'Pokémon, Magic: The Gathering, Yu-Gi-Oh! og meget mere på vej.',
+    'feature6_title' => 'Flersproget',
+    'feature6_text' => 'Interface tilgængelig på dansk, engelsk og italiensk.',
+    'features_cta_title' => 'Klar til at komme i gang?',
+    'features_cta_text' => 'Opret din gratis konto på 30 sekunder og opdage alle funktioner.',
+
+    // Contact page
+    'contact_title' => 'Hjælpecenter',
+    'contact_subtitle' => 'Hvordan kan vi hjælpe dig i dag?',
+    'contact_search_placeholder' => 'Søg efter hjælp...',
+    'contact_categories_title' => 'Gennemse efter kategori',
+    'contact_or_contact' => 'Eller kontakt os direkte',
+    'contact_email_title' => 'E-mail',
+    'contact_company_title' => 'Firma',
+    'contact_company_vat' => 'CVR',
+    'contact_location_title' => 'Lokation',
+    'contact_form_title' => 'Send os en besked',
+    'contact_form_name' => 'Navn',
+    'contact_form_email' => 'E-mail',
+    'contact_form_subject' => 'Emne',
+    'contact_form_message' => 'Besked',
+    'contact_form_send' => 'Send besked',
+    'contact_all_faqs' => 'Se alle FAQ\'er',
+
+    // Pricing page
+    'pricing_header' => 'PRISER',
+    'pricing_title' => 'Enkle, gennemsigtige priser',
+    'pricing_subtitle' => 'Start gratis, skaler mens du vokser. Drevet af pålidelig fakturering.',
+    'pricing_period' => 'md',
+    'pricing_recommended' => 'ANBEFALET',
+    
+    // Basic Plan
+    'pricing_basic_name' => 'Basic',
+    'pricing_basic_desc' => 'Til at komme i gang',
+    'pricing_basic_feat1' => '100 forespørgsler/dag',
+    'pricing_basic_feat2' => '30 forsp./minut',
+    'pricing_basic_feat3' => 'Alle endpoints',
+    'pricing_basic_feat4' => '+$0.005/ekstra',
+    'pricing_basic_cta' => 'Kom i gang',
+    
+    // Pro Plan
+    'pricing_pro_name' => 'Pro',
+    'pricing_pro_desc' => 'Til voksende projekter',
+    'pricing_pro_feat1' => '3,000 forespørgsler/dag',
+    'pricing_pro_feat2' => '300 forsp./minut',
+    'pricing_pro_feat3' => 'Alle endpoints',
+    'pricing_pro_feat4' => '+$0.0025/ekstra',
+    
+    // Ultra Plan
+    'pricing_ultra_name' => 'Ultra',
+    'pricing_ultra_desc' => 'Til seriøse apps',
+    'pricing_ultra_feat1' => '15,000 forespørgsler/dag',
+    'pricing_ultra_feat2' => '300 forsp./minut',
+    'pricing_ultra_feat3' => 'Alle endpoints',
+    'pricing_ultra_feat4' => '+$0.0015/ekstra',
+    'pricing_ultra_cta' => 'Få Ultra',
+    
+    // Mega Plan
+    'pricing_mega_name' => 'Mega',
+    'pricing_mega_desc' => 'Til store platforme',
+    'pricing_mega_feat1' => '50,000 forespørgsler/dag',
+    'pricing_mega_feat2' => '600 forsp./minut',
+    'pricing_mega_feat3' => 'Alle endpoints',
+    'pricing_mega_feat4' => '+$0.001/ekstra',
+    
+    'pricing_upgrade_cta' => 'Opgrader',
+    'pricing_enterprise_text' => 'Vil du vide mere?',
+    'pricing_enterprise_link' => 'Kontakt os',
+    'pricing_enterprise_text2' => 'for at få personlig rådgivning og finde den rette plan til dig.',
+    
+    // Pricing FAQ
+    'pricing_faq_title' => 'Ofte stillede spørgsmål',
+    'pricing_faq1_q' => 'Kan jeg ændre plan når som helst?',
+    'pricing_faq1_a' => 'Ja, du kan opgradere eller nedgradere din plan når som helst. Ændringer træder i kraft umiddelbart.',
+    'pricing_faq2_q' => 'Hvad sker der hvis jeg overskrider min grænse?',
+    'pricing_faq2_a' => 'Du vil automatisk blive faktureret for ekstra anmodninger i henhold til din plans takst. Ingen overraskelser.',
+    'pricing_faq3_q' => 'Er der en gratis prøveperiode?',
+    'pricing_faq3_a' => 'Ja! Basic-planen er gratis for altid. Du kan opgradere når du har brug for mere kapacitet.',
+    'pricing_faq4_q' => 'Hvilke betalingsmetoder accepterer I?',
+    'pricing_faq4_a' => 'Vi accepterer alle større kreditkort, debetkort og PayPal.',
+];

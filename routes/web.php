@@ -9,9 +9,16 @@ use App\Models\WaitlistEntry;
 
 Route::get('/', function () {
     $waitlistCount = WaitlistEntry::count()+49;
-    return view('welcome', compact('waitlistCount'));
+    return view('welcome_new', compact('waitlistCount'));
 });
-// routes/web.php
+
+// Public pages
+Route::view('/about', 'pages.about')->name('about');
+Route::view('/features', 'pages.features')->name('features');
+Route::get('/pricing', [\App\Http\Controllers\PricingController::class, 'index'])->name('pricing');
+Route::get('/contact', [\App\Http\Controllers\PublicFaqController::class, 'contact'])->name('contact');
+
+// Legal pages
 Route::view('/terms', 'legal.terms')->name('terms');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
 

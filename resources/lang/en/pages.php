@@ -1,0 +1,112 @@
+<?php
+return [
+    // About page
+    'about_title' => 'About Us',
+    'about_subtitle' => 'We\'re building the future of card collecting tools',
+    'about_mission_title' => 'Our Mission',
+    'about_mission_text' => 'Basecard aims to provide card collectors in Scandinavia with the best tool to manage, value, and understand their collections. We believe every collector deserves access to accurate pricing, powerful analytics tools, and an intuitive interface.',
+    'about_story_title' => 'Our Story',
+    'about_story_text' => 'Started in 2026 by a team of passionate collectors and developers, Basecard was born from frustration with existing solutions. We wanted to create a platform that understands Nordic collectors\' needs, with local pricing, local support, and a focus on user experience.',
+    'about_values_title' => 'Our Values',
+    'about_value1_title' => 'Transparency',
+    'about_value1_text' => 'Clear pricing, no hidden costs, real-time data from reliable sources.',
+    'about_value2_title' => 'Simplicity',
+    'about_value2_text' => 'A clean, intuitive interface that doesn\'t require a manual.',
+    'about_value3_title' => 'Community',
+    'about_value3_text' => 'We listen to our users and build features they need.',
+    'about_team_title' => 'Our Team',
+    'about_team_text' => 'We\'re a small, dedicated team based in Denmark. All collectors, all passionate about creating the best experience for our users.',
+
+    // Features page
+    'features_title' => 'Features',
+    'features_subtitle' => 'Everything you need to manage your collection',
+    'feature1_title' => 'Collection Management',
+    'feature1_text' => 'Add cards to your collection with details about condition, language, foiling, and more. Keep track of everything you own.',
+    'feature2_title' => 'Real-time Pricing',
+    'feature2_text' => 'Prices from Cardmarket updated daily. View historical trends and predict future values.',
+    'feature3_title' => 'Deck Builder',
+    'feature3_text' => 'Create and manage your decks. Instantly see the total value and missing cards to complete your deck.',
+    'feature4_title' => 'Advanced Analytics',
+    'feature4_text' => 'Charts, reports, and statistics to understand your collection\'s evolution over time.',
+    'feature5_title' => 'Multi-Game Support',
+    'feature5_text' => 'Pokémon, Magic: The Gathering, Yu-Gi-Oh! and many more coming.',
+    'feature6_title' => 'Multi-Language',
+    'feature6_text' => 'Interface available in Danish, English, and Italian.',
+    'features_cta_title' => 'Ready to get started?',
+    'features_cta_text' => 'Create your free account in 30 seconds and discover all features.',
+
+    // Contact page
+    'contact_title' => 'Help Center',
+    'contact_subtitle' => 'How can we help you today?',
+    'contact_search_placeholder' => 'Search for help...',
+    'contact_categories_title' => 'Browse by category',
+    'contact_or_contact' => 'Or contact us directly',
+    'contact_email_title' => 'Email',
+    'contact_company_title' => 'Company',
+    'contact_company_vat' => 'VAT',
+    'contact_location_title' => 'Location',
+    'contact_form_title' => 'Send us a message',
+    'contact_form_name' => 'Name',
+    'contact_form_email' => 'Email',
+    'contact_form_subject' => 'Subject',
+    'contact_form_message' => 'Message',
+    'contact_form_send' => 'Send message',
+    'contact_all_faqs' => 'See all FAQs',
+
+    // Pricing page
+    'pricing_header' => 'PRICING',
+    'pricing_title' => 'Simple, Transparent Pricing',
+    'pricing_subtitle' => 'Start free, scale as you grow. Powered by reliable billing.',
+    'pricing_period' => 'mo',
+    'pricing_recommended' => 'RECOMMENDED',
+    
+    // Basic Plan
+    'pricing_basic_name' => 'Basic',
+    'pricing_basic_desc' => 'For getting started',
+    'pricing_basic_feat1' => '100 requests/day',
+    'pricing_basic_feat2' => '30 req/minute',
+    'pricing_basic_feat3' => 'All endpoints',
+    'pricing_basic_feat4' => '+$0.005/extra',
+    'pricing_basic_cta' => 'Get Started',
+    
+    // Pro Plan
+    'pricing_pro_name' => 'Pro',
+    'pricing_pro_desc' => 'For growing projects',
+    'pricing_pro_feat1' => '3,000 requests/day',
+    'pricing_pro_feat2' => '300 req/minute',
+    'pricing_pro_feat3' => 'All endpoints',
+    'pricing_pro_feat4' => '+$0.0025/extra',
+    
+    // Ultra Plan
+    'pricing_ultra_name' => 'Ultra',
+    'pricing_ultra_desc' => 'For serious apps',
+    'pricing_ultra_feat1' => '15,000 requests/day',
+    'pricing_ultra_feat2' => '300 req/minute',
+    'pricing_ultra_feat3' => 'All endpoints',
+    'pricing_ultra_feat4' => '+$0.0015/extra',
+    'pricing_ultra_cta' => 'Get Ultra',
+    
+    // Mega Plan
+    'pricing_mega_name' => 'Mega',
+    'pricing_mega_desc' => 'For large platforms',
+    'pricing_mega_feat1' => '50,000 requests/day',
+    'pricing_mega_feat2' => '600 req/minute',
+    'pricing_mega_feat3' => 'All endpoints',
+    'pricing_mega_feat4' => '+$0.001/extra',
+    
+    'pricing_upgrade_cta' => 'Upgrade',
+    'pricing_enterprise_text' => 'Want to know more?',
+    'pricing_enterprise_link' => 'Contact us',
+    'pricing_enterprise_text2' => 'to get personalized advice and find the right plan for you.',
+    
+    // Pricing FAQ
+    'pricing_faq_title' => 'Frequently Asked Questions',
+    'pricing_faq1_q' => 'Can I change plans anytime?',
+    'pricing_faq1_a' => 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.',
+    'pricing_faq2_q' => 'What happens if I exceed my limit?',
+    'pricing_faq2_a' => 'You will be automatically billed for extra requests according to your plan\'s rate. No surprises.',
+    'pricing_faq3_q' => 'Is there a free trial?',
+    'pricing_faq3_a' => 'Yes! The Basic plan is free forever. You can upgrade when you need more capacity.',
+    'pricing_faq4_q' => 'What payment methods do you accept?',
+    'pricing_faq4_a' => 'We accept all major credit cards, debit cards, and PayPal.',
+];

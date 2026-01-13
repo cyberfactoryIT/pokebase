@@ -1,0 +1,112 @@
+<?php
+return [
+    // About page
+    'about_title' => 'Chi siamo',
+    'about_subtitle' => 'Costruiamo il futuro degli strumenti per collezionisti di carte',
+    'about_mission_title' => 'La nostra missione',
+    'about_mission_text' => 'Basecard si propone di fornire ai collezionisti di carte in Scandinavia il miglior strumento per gestire, valutare e comprendere le loro collezioni. Crediamo che ogni collezionista meriti accesso a prezzi accurati, strumenti di analisi potenti e un\'interfaccia intuitiva.',
+    'about_story_title' => 'La nostra storia',
+    'about_story_text' => 'Nato nel 2026 da un team di collezionisti e sviluppatori appassionati, Basecard nasce dalla frustrazione verso le soluzioni esistenti. Volevamo creare una piattaforma che comprendesse le esigenze dei collezionisti nordici, con prezzi locali, supporto locale e focus sull\'esperienza utente.',
+    'about_values_title' => 'I nostri valori',
+    'about_value1_title' => 'Trasparenza',
+    'about_value1_text' => 'Prezzi chiari, nessun costo nascosto, dati in tempo reale da fonti affidabili.',
+    'about_value2_title' => 'Semplicità',
+    'about_value2_text' => 'Un\'interfaccia pulita e intuitiva che non richiede un manuale.',
+    'about_value3_title' => 'Comunità',
+    'about_value3_text' => 'Ascoltiamo i nostri utenti e costruiamo le funzionalità di cui hanno bisogno.',
+    'about_team_title' => 'Il nostro team',
+    'about_team_text' => 'Siamo un piccolo team dedicato con base in Danimarca. Tutti collezionisti, tutti appassionati nel creare la migliore esperienza per i nostri utenti.',
+
+    // Features page
+    'features_title' => 'Funzionalità',
+    'features_subtitle' => 'Tutto ciò di cui hai bisogno per gestire la tua collezione',
+    'feature1_title' => 'Gestione Collezione',
+    'feature1_text' => 'Aggiungi carte alla tua collezione con dettagli su condizione, lingua, foil e altro. Tieni traccia di tutto ciò che possiedi.',
+    'feature2_title' => 'Prezzi in Tempo Reale',
+    'feature2_text' => 'Prezzi da Cardmarket aggiornati quotidianamente. Visualizza tendenze storiche e prevedi valori futuri.',
+    'feature3_title' => 'Deck Builder',
+    'feature3_text' => 'Crea e gestisci i tuoi mazzi. Visualizza istantaneamente il valore totale e le carte mancanti per completare il tuo deck.',
+    'feature4_title' => 'Analisi Avanzate',
+    'feature4_text' => 'Grafici, report e statistiche per comprendere l\'evoluzione della tua collezione nel tempo.',
+    'feature5_title' => 'Supporto Multi-Gioco',
+    'feature5_text' => 'Pokémon, Magic: The Gathering, Yu-Gi-Oh! e molto altro in arrivo.',
+    'feature6_title' => 'Multi-Lingua',
+    'feature6_text' => 'Interfaccia disponibile in danese, inglese e italiano.',
+    'features_cta_title' => 'Pronto per iniziare?',
+    'features_cta_text' => 'Crea il tuo account gratuito in 30 secondi e scopri tutte le funzionalità.',
+
+    // Contact page
+    'contact_title' => 'Centro Assistenza',
+    'contact_subtitle' => 'Come possiamo aiutarti oggi?',
+    'contact_search_placeholder' => 'Cerca aiuto...',
+    'contact_categories_title' => 'Sfoglia per categoria',
+    'contact_or_contact' => 'Oppure contattaci direttamente',
+    'contact_email_title' => 'Email',
+    'contact_company_title' => 'Azienda',
+    'contact_company_vat' => 'P.IVA',
+    'contact_location_title' => 'Posizione',
+    'contact_form_title' => 'Inviaci un messaggio',
+    'contact_form_name' => 'Nome',
+    'contact_form_email' => 'Email',
+    'contact_form_subject' => 'Oggetto',
+    'contact_form_message' => 'Messaggio',
+    'contact_form_send' => 'Invia messaggio',
+    'contact_all_faqs' => 'Vedi tutte le FAQ',
+
+    // Pricing page
+    'pricing_header' => 'PREZZI',
+    'pricing_title' => 'Prezzi semplici e trasparenti',
+    'pricing_subtitle' => 'Inizia gratis, scala man mano che cresci. Fatturazione affidabile e senza sorprese.',
+    'pricing_period' => 'mese',
+    'pricing_recommended' => 'CONSIGLIATO',
+    
+    // Basic Plan
+    'pricing_basic_name' => 'Basic',
+    'pricing_basic_desc' => 'Per iniziare',
+    'pricing_basic_feat1' => '100 richieste/giorno',
+    'pricing_basic_feat2' => '30 rich./minuto',
+    'pricing_basic_feat3' => 'Tutti gli endpoints',
+    'pricing_basic_feat4' => '+$0.005/extra',
+    'pricing_basic_cta' => 'Inizia',
+    
+    // Pro Plan
+    'pricing_pro_name' => 'Pro',
+    'pricing_pro_desc' => 'Per progetti in crescita',
+    'pricing_pro_feat1' => '3,000 richieste/giorno',
+    'pricing_pro_feat2' => '300 rich./minuto',
+    'pricing_pro_feat3' => 'Tutti gli endpoints',
+    'pricing_pro_feat4' => '+$0.0025/extra',
+    
+    // Ultra Plan
+    'pricing_ultra_name' => 'Ultra',
+    'pricing_ultra_desc' => 'Per app serie',
+    'pricing_ultra_feat1' => '15,000 richieste/giorno',
+    'pricing_ultra_feat2' => '300 rich./minuto',
+    'pricing_ultra_feat3' => 'Tutti gli endpoints',
+    'pricing_ultra_feat4' => '+$0.0015/extra',
+    'pricing_ultra_cta' => 'Ottieni Ultra',
+    
+    // Mega Plan
+    'pricing_mega_name' => 'Mega',
+    'pricing_mega_desc' => 'Per grandi piattaforme',
+    'pricing_mega_feat1' => '50,000 richieste/giorno',
+    'pricing_mega_feat2' => '600 rich./minuto',
+    'pricing_mega_feat3' => 'Tutti gli endpoints',
+    'pricing_mega_feat4' => '+$0.001/extra',
+    
+    'pricing_upgrade_cta' => 'Aggiorna',
+    'pricing_enterprise_text' => 'Vuoi saperne di più?',
+    'pricing_enterprise_link' => 'Contattaci',
+    'pricing_enterprise_text2' => 'per ricevere consulenza personalizzata e trovare il piano giusto per te.',
+    
+    // Pricing FAQ
+    'pricing_faq_title' => 'Domande frequenti',
+    'pricing_faq1_q' => 'Posso cambiare piano in qualsiasi momento?',
+    'pricing_faq1_a' => 'Sì, puoi aggiornare o declassare il tuo piano in qualsiasi momento. Le modifiche hanno effetto immediato.',
+    'pricing_faq2_q' => 'Cosa succede se supero il mio limite?',
+    'pricing_faq2_a' => 'Verrai automaticamente fatturato per le richieste extra secondo la tariffa del tuo piano. Nessuna sorpresa.',
+    'pricing_faq3_q' => 'C\'è un periodo di prova gratuito?',
+    'pricing_faq3_a' => 'Sì! Il piano Basic è gratuito per sempre. Puoi aggiornare quando hai bisogno di più capacità.',
+    'pricing_faq4_q' => 'Quali metodi di pagamento accettate?',
+    'pricing_faq4_a' => 'Accettiamo tutte le principali carte di credito, carte di debito e PayPal.',
+];

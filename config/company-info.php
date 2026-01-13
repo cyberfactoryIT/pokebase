@@ -5,6 +5,20 @@ declare(strict_types=1);
 return [
     /*
     |--------------------------------------------------------------------------
+    | Company Details
+    |--------------------------------------------------------------------------
+    |
+    */
+
+    'name' => env('INVOICE_BILLER_NAME', 'Basios Aps'),
+    'vat' => env('INVOICE_BILLER_VAT', 'DK 46023021'),
+    'address' => env('INVOICE_BILLER_ADDRESS', 'Støberigården 11, 2. 1, 7500 Holstebro'),
+    'city' => 'Holstebro, Danmark', // Extracted from address
+    'email' => env('INVOICE_BILLER_EMAIL', 'info@basios.dk'),
+    'phone' => env('INVOICE_BILLER_PHONE', '+45 20 50 35 70'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Supported countries.
     |--------------------------------------------------------------------------
     |
