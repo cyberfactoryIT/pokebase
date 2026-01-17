@@ -182,7 +182,7 @@
                         </div>
                         <h3 class="text-lg font-semibold text-white mb-2">No Active Package</h3>
                         <p class="text-gray-400 text-sm mb-4">Purchase a deck evaluation package to analyze your collection</p>
-                        <a href="{{ route('deck-evaluation.packages') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold">
+                        <a href="{{ route('deck-evaluation.packages.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold">
                             <i class="fas fa-shopping-cart"></i>
                             <span>View Packages</span>
                         </a>
