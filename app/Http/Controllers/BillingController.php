@@ -13,11 +13,8 @@ use Illuminate\Support\Facades\Redirect;
 
 class BillingController extends Controller
 {
-    public function __construct()
-    {
-        // Require authentication for all billing routes
-        $this->middleware('auth');
-    }
+    // No constructor needed - auth middleware is defined in routes/web.php
+}
 
     public function reactivateSubscription(Request $request)
     {
