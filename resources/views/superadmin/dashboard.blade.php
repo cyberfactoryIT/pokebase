@@ -158,7 +158,7 @@
                         </div>
                     </div>
                     
-                    <div class="flex gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <a href="{{ route('superadmin.rapidapi-mapping.index') }}" 
                            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                             <i class="fa fa-link"></i>
@@ -176,6 +176,12 @@
                            class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
                             <i class="fa fa-balance-scale"></i>
                             <span>CardMarket Comparison</span>
+                        </a>
+                        
+                        <a href="{{ route('superadmin.etl-console.index') }}" 
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>ETL Pipeline Console</span>
                         </a>
                     </div>
                 </div>

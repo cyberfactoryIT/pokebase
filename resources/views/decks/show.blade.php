@@ -153,7 +153,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-400 text-sm">Total Cards</p>
-                        <p class="text-3xl font-bold text-white mt-1">{{ $stats['total_cards'] }}</p>
+                        <p class="text-3xl font-bold text-white mt-1" data-stat="total-cards">{{ $stats['total_cards'] }}</p>
                     </div>
                     <div class="bg-blue-500/20 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,7 +168,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-400 text-sm">Unique Cards</p>
-                        <p class="text-3xl font-bold text-white mt-1">{{ $stats['unique_cards'] }}</p>
+                        <p class="text-3xl font-bold text-white mt-1" data-stat="unique-cards">{{ $stats['unique_cards'] }}</p>
                     </div>
                     <div class="bg-purple-500/20 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,7 +210,7 @@
                             <!-- User has preferred currency - show converted price with original -->
                             <div x-show="currency === 'EUR'">
                                 @if($topStats['total_value_eur'] > 0)
-                                    <p class="text-3xl font-bold text-white">
+                                    <p class="text-3xl font-bold text-white" data-stat="estimated-value-eur">
                                         @php
                                             $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
                                             $formatted = number_format($displayValueEur, 2);
@@ -221,15 +221,15 @@
                                             }
                                         @endphp
                                     </p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ __('collection/index.original_price') }}: €{{ number_format($topStats['total_value_eur'], 2) }}</p>
-                                    <p class="text-xs text-gray-500">{{ $topStats['cards_with_prices_eur'] }} cards priced</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ __('collection/index.original_price') }}: €<span data-stat="original-price-eur">{{ number_format($topStats['total_value_eur'], 2) }}</span></p>
+                                    <p class="text-xs text-gray-500"><span data-stat="cards-priced-eur">{{ $topStats['cards_with_prices_eur'] }}</span> cards priced</p>
                                 @else
                                     <p class="text-xl text-gray-500">No EUR prices</p>
                                 @endif
                             </div>
                             <div x-show="currency === 'USD'">
                                 @if($topStats['total_value_usd'] > 0)
-                                    <p class="text-3xl font-bold text-white">
+                                    <p class="text-3xl font-bold text-white" data-stat="estimated-value-usd">
                                         @php
                                             $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
                                             $formatted = number_format($displayValueUsd, 2);
@@ -240,8 +240,8 @@
                                             }
                                         @endphp
                                     </p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ __('collection/index.original_price') }}: ${{ number_format($topStats['total_value_usd'], 2) }}</p>
-                                    <p class="text-xs text-gray-500">{{ $topStats['cards_with_prices_usd'] }} cards priced</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ __('collection/index.original_price') }}: $<span data-stat="original-price-usd">{{ number_format($topStats['total_value_usd'], 2) }}</span></p>
+                                    <p class="text-xs text-gray-500"><span data-stat="cards-priced-usd">{{ $topStats['cards_with_prices_usd'] }}</span> cards priced</p>
                                 @else
                                     <p class="text-xl text-gray-500">No USD prices</p>
                                 @endif
@@ -250,16 +250,16 @@
                             <!-- No preferred currency - show default EUR/USD -->
                             <div x-show="currency === 'EUR'">
                                 @if($topStats['total_value_eur'] > 0)
-                                    <p class="text-3xl font-bold text-white">€{{ number_format($topStats['total_value_eur'], 2) }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ $topStats['cards_with_prices_eur'] }} cards priced</p>
+                                    <p class="text-3xl font-bold text-white" data-stat="estimated-value-eur-simple">€{{ number_format($topStats['total_value_eur'], 2) }}</p>
+                                    <p class="text-xs text-gray-500 mt-1"><span data-stat="cards-priced-eur-simple">{{ $topStats['cards_with_prices_eur'] }}</span> cards priced</p>
                                 @else
                                     <p class="text-xl text-gray-500">No EUR prices</p>
                                 @endif
                             </div>
                             <div x-show="currency === 'USD'">
                                 @if($topStats['total_value_usd'] > 0)
-                                    <p class="text-3xl font-bold text-white">${{ number_format($topStats['total_value_usd'], 2) }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ $topStats['cards_with_prices_usd'] }} cards priced</p>
+                                    <p class="text-3xl font-bold text-white" data-stat="estimated-value-usd-simple">${{ number_format($topStats['total_value_usd'], 2) }}</p>
+                                    <p class="text-xs text-gray-500 mt-1"><span data-stat="cards-priced-usd-simple">{{ $topStats['cards_with_prices_usd'] }}</span> cards priced</p>
                                 @else
                                     <p class="text-xl text-gray-500">No USD prices</p>
                                 @endif
@@ -320,11 +320,20 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Rarity Distribution -->
             <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
-                <h3 class="text-lg font-semibold text-white mb-4">Rarity Distribution</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-white">Rarity Distribution</h3>
+                    <button id="clear-rarity-filter" class="hidden px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm rounded transition">
+                        Clear Filter
+                    </button>
+                </div>
                 <div class="space-y-3">
                     @foreach($topStats['rarity_distribution'] as $rarity => $data)
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-300">{{ $rarity }}</span>
+                        <div class="rarity-filter-item flex items-center justify-between p-2 -mx-2 rounded hover:bg-white/5 cursor-pointer transition group" 
+                             data-rarity="{{ $rarity }}"
+                             data-total="{{ $data['total_quantity'] }}"
+                             data-unique="{{ $data['count'] }}"
+                             onclick="filterByRarity('{{ $rarity }}', {{ $data['total_quantity'] }}, {{ $data['count'] }})">
+                            <span class="text-gray-300 group-hover:text-white transition">{{ $rarity }}</span>
                             <div class="flex items-center gap-2">
                                 <span class="text-white font-semibold">{{ $data['total_quantity'] }}</span>
                                 <span class="text-gray-500 text-sm">({{ $data['count'] }} unique)</span>
@@ -436,7 +445,11 @@
                     $displayImage = $card->hd_image_url ?? $card->image_url;
                 @endphp
                 @if($card)
-                <div class="bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition overflow-hidden group relative">
+                <div class="deck-card-item bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition overflow-hidden group relative" 
+                     data-rarity="{{ $card->rarity }}"
+                     data-card-price="{{ $card->prices->first()->market_price ?? 0 }}"
+                     data-quantity="{{ $deckCard->quantity }}"
+                     data-product-id="{{ $card->product_id }}">
                     <!-- Quantity Badge -->
                     <div class="absolute top-2 left-2 z-10 bg-blue-600/90 text-white px-2 py-1 rounded text-sm font-semibold">
                         x{{ $deckCard->quantity }}
@@ -851,5 +864,137 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// Rarity Filtering
+let activeRarityFilter = null;
+
+function filterByRarity(rarity, totalCards, uniqueCards) {
+    const allCards = document.querySelectorAll('.deck-card-item');
+    const clearButton = document.getElementById('clear-rarity-filter');
+    const rarityItems = document.querySelectorAll('.rarity-filter-item');
+    
+    // If clicking the same rarity, clear filter
+    if (activeRarityFilter === rarity) {
+        clearRarityFilter();
+        return;
+    }
+    
+    activeRarityFilter = rarity;
+    clearButton.classList.remove('hidden');
+    
+    // Update active state on rarity items
+    rarityItems.forEach(item => {
+        if (item.dataset.rarity === rarity) {
+            item.classList.add('bg-blue-600/20', 'border', 'border-blue-500/50');
+        } else {
+            item.classList.remove('bg-blue-600/20', 'border', 'border-blue-500/50');
+            item.classList.add('opacity-50');
+        }
+    });
+    
+    // Filter cards and calculate stats
+    let visibleCount = 0;
+    let visibleUniqueCount = 0;
+    let visibleTotalValue = 0;
+    const seenCards = new Set();
+    
+    allCards.forEach(card => {
+        if (card.dataset.rarity === rarity) {
+            card.classList.remove('hidden');
+            
+            const quantity = parseInt(card.dataset.quantity) || 1;
+            const price = parseFloat(card.dataset.cardPrice) || 0;
+            const productId = card.dataset.productId;
+            
+            visibleCount += quantity;
+            
+            // Count unique cards
+            if (productId && !seenCards.has(productId)) {
+                visibleUniqueCount++;
+                seenCards.add(productId);
+            }
+            
+            visibleTotalValue += price * quantity;
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+    
+    // Update top stats
+    updateStatsDisplay(totalCards, uniqueCards, visibleTotalValue);
+}
+
+function clearRarityFilter() {
+    activeRarityFilter = null;
+    const allCards = document.querySelectorAll('.deck-card-item');
+    const clearButton = document.getElementById('clear-rarity-filter');
+    const rarityItems = document.querySelectorAll('.rarity-filter-item');
+    
+    clearButton.classList.add('hidden');
+    
+    // Remove active state from rarity items
+    rarityItems.forEach(item => {
+        item.classList.remove('bg-blue-600/20', 'border', 'border-blue-500/50', 'opacity-50');
+    });
+    
+    // Show all cards
+    allCards.forEach(card => card.classList.remove('hidden'));
+    
+    // Restore original stats
+    const totalCards = {{ $deck->totalCards() }};
+    const uniqueCards = {{ $deck->deckCards->count() }};
+    const totalValue = {{ $topStats['total_value_eur'] ?? 0 }};
+    
+    updateStatsDisplay(totalCards, uniqueCards, totalValue);
+}
+
+function updateStatsDisplay(totalCards, uniqueCards, estimatedValue) {
+    // Update Total Cards
+    const totalCardsElement = document.querySelector('[data-stat="total-cards"]');
+    if (totalCardsElement) {
+        totalCardsElement.textContent = totalCards;
+    }
+    
+    // Update Unique Cards
+    const uniqueCardsElement = document.querySelector('[data-stat="unique-cards"]');
+    if (uniqueCardsElement) {
+        uniqueCardsElement.textContent = uniqueCards;
+    }
+    
+    // Update Estimated Value (EUR - both simple and with preferred currency)
+    const valueElementEurSimple = document.querySelector('[data-stat="estimated-value-eur-simple"]');
+    if (valueElementEurSimple) {
+        valueElementEurSimple.textContent = '€' + estimatedValue.toFixed(2);
+    }
+    
+    const valueElementEur = document.querySelector('[data-stat="estimated-value-eur"]');
+    if (valueElementEur) {
+        // Keep the same format (symbol + number or number + symbol)
+        const currentText = valueElementEur.textContent;
+        const hasSymbolFirst = /^[^\d]/.test(currentText);
+        const symbol = currentText.match(/[^\d.,\s]+/)?.[0] || '€';
+        
+        if (hasSymbolFirst) {
+            valueElementEur.textContent = symbol + estimatedValue.toFixed(2);
+        } else {
+            valueElementEur.textContent = estimatedValue.toFixed(2) + ' ' + symbol;
+        }
+    }
+    
+    // Update original price EUR
+    const originalPriceEur = document.querySelector('[data-stat="original-price-eur"]');
+    if (originalPriceEur) {
+        originalPriceEur.textContent = estimatedValue.toFixed(2);
+    }
+    
+    // Note: We're only tracking EUR prices from cards, so we update EUR values
+    // USD would need separate tracking if needed
+}
+
+// Add clear filter button listener
+document.getElementById('clear-rarity-filter')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    clearRarityFilter();
+});
 </script>
 @endsection

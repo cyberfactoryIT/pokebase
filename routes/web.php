@@ -182,6 +182,13 @@ Route::prefix('superadmin')->middleware(['auth'])->group(function () {
     // Import Dashboard
     Route::get('/imports', [\App\Http\Controllers\Admin\ImportDashboardController::class, 'index'])->name('admin.imports.dashboard');
     
+    // ETL Pipeline Console
+    Route::get('/etl-console', [\App\Http\Controllers\Superadmin\EtlConsoleController::class, 'index'])->name('superadmin.etl-console.index');
+    Route::post('/etl-console/run-task', [\App\Http\Controllers\Superadmin\EtlConsoleController::class, 'runTask'])->name('superadmin.etl-console.run-task');
+    Route::post('/etl-console/run-all', [\App\Http\Controllers\Superadmin\EtlConsoleController::class, 'runAll'])->name('superadmin.etl-console.run-all');
+    Route::get('/etl-console/status', [\App\Http\Controllers\Superadmin\EtlConsoleController::class, 'getStatus'])->name('superadmin.etl-console.status');
+    Route::get('/etl-console/logs', [\App\Http\Controllers\Superadmin\EtlConsoleController::class, 'getLogs'])->name('superadmin.etl-console.logs');
+    
     // Articles management (SuperAdmin only)
     Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)->names([
         'index' => 'admin.articles.index',
@@ -204,7 +211,7 @@ Route::delete('/faq/{faq}', [\App\Http\Controllers\FaqController::class, 'destro
 require __DIR__.'/auth.php';
 
 // TCG Browsing Routes (game-agnostic)
-Route::prefix('tcg')->group(function () {
+Route::prefix('tcg')->middleware('auth')->group(function () {
     // Expansions (TCGCSV)
     Route::get('/expansions', [\App\Http\Controllers\TcgExpansionController::class, 'index'])->name('tcg.expansions.index');
     Route::get('/expansions/search', [\App\Http\Controllers\TcgExpansionController::class, 'search'])->name('tcg.expansions.search');

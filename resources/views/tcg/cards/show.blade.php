@@ -24,12 +24,21 @@
 
         <!-- Back Button -->
         <div class="mb-4">
-            <a href="{{ route('tcg.expansions.show', $card->group_id) }}" class="inline-flex items-center text-blue-400 hover:text-blue-300">
+            @if($card->group)
+            <a href="{{ route('tcg.expansions.show', $card->group->group_id) }}" class="inline-flex items-center text-blue-400 hover:text-blue-300">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                {{ __('tcg/cards/show.back_to') }} {{ $card->group->name ?? __('tcg/cards/show.expansion') }}
+                {{ __('tcg/cards/show.back_to') }} {{ $card->group->name }}
             </a>
+            @else
+            <a href="{{ route('tcg.expansions.index') }}" class="inline-flex items-center text-blue-400 hover:text-blue-300">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                {{ __('tcg/cards/show.back_to') }} {{ __('tcg/cards/show.expansions') }}
+            </a>
+            @endif
         </div>
 
         <!-- Card Detail Layout (Scrydex-like) -->
@@ -290,12 +299,12 @@
                                     </div>
 
                                     @php
-                                        $userDecks = Auth::user()->decks ?? collect();
+                                        $userDecks = Auth::check() ? Auth::user()->decks : collect();
                                     @endphp
 
                                     @if($userDecks->isEmpty())
                                         <p class="text-gray-400 mb-4">{{ __('tcg/cards/show.no_decks_yet') }}</p>
-                                        @if(Auth::user()->canCreateAnotherDeck())
+                                        @if(Auth::check() && Auth::user()->canCreateAnotherDeck())
                                             <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
                                                 {{ __('tcg/cards/show.create_first_deck') }}
                                             </a>
@@ -461,12 +470,8 @@
                         $trendHolo = $latestQuote?->trend_holo ?? null;
                     @endphp
                     
-                    @can('seePrices')
-                        @include('tcg.cards.partials.prices-eu')
-                        @include('tcg.cards.partials.prices-us')
-                    @else
-                        @include('tcg.cards.partials.prices-upgrade')
-                    @endcan
+                    @include('tcg.cards.partials.prices-eu')
+                    @include('tcg.cards.partials.prices-us')
                 </div>
             </div>
         </div>

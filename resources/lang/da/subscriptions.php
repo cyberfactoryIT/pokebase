@@ -1,6 +1,16 @@
 <?php
 
 return [
+    // Billing Page
+    'billing_title' => 'Fakturering og Abonnement',
+    'billing_subtitle' => 'Administrer dit abonnement, se fakturaer og købshistorik',
+    
+    // Invoices Section
+    'invoices' => [
+        'title' => 'Fakturaer',
+        'no_invoices' => 'Ingen fakturaer endnu',
+    ],
+    
     // Membership Section
     'membership' => [
         'title' => 'Medlemskab (Gentagen)',

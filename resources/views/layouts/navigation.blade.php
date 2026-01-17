@@ -279,6 +279,31 @@
     @endauth
 </nav>
 
+@guest
+<!-- Navigation for guest users -->
+<nav class="bg-[#161615] border-b border-white/15 shadow-xl">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center gap-6">
+                <a href="/" class="flex items-center gap-2">
+                    <img src="/images/logo_basecard.svg" alt="Logo" class="h-8 w-auto">
+                    <span class="font-bold text-lg text-white">Basecard</span>
+                </a>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <a href="{{ route('login') }}" class="px-4 py-2 text-gray-300 hover:text-white transition">
+                    {{ __('messages.login') }}
+                </a>
+                <a href="{{ route('register') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                    {{ __('messages.register') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+@endguest
+
 @auth
 <script>
     // Theme switcher for desktop

@@ -1,6 +1,16 @@
 <?php
 
 return [
+    // Billing Page
+    'billing_title' => 'Billing & Subscription',
+    'billing_subtitle' => 'Manage your subscription, view invoices, and purchase history',
+    
+    // Invoices Section
+    'invoices' => [
+        'title' => 'Invoices',
+        'no_invoices' => 'No invoices yet',
+    ],
+    
     // Membership Section
     'membership' => [
         'title' => 'Membership (Recurring)',

@@ -13,23 +13,27 @@ use Illuminate\Support\Facades\Redirect;
 
 class BillingController extends Controller
 {
-    use EnforcesAdmin;
-
     public function __construct()
     {
-        $this->enforceAdmin();
+        // Require authentication for all billing routes
+        $this->middleware('auth');
     }
 
     public function reactivateSubscription(Request $request)
     {
-        if (!config('organizations.enabled')) {
-            abort(404);
-        }
-
-        $org = Auth::user()->organization;
-
-        if (!$org) {
-            abort(403);
+        $user = Auth::user();
+        
+        // Get or create organization
+        if (!$user->organization) {
+            $org = \App\Models\Organization::create([
+                'name' => $user->name . "'s Organization",
+                'code' => 'ORG-' . strtoupper(\Illuminate\Support\Str::random(6)),
+                'slug' => \Illuminate\Support\Str::slug($user->name) . '-' . time(),
+            ]);
+            $user->organization_id = $org->id;
+            $user->save();
+        } else {
+            $org = $user->organization;
         }
 
         $org->subscription_cancelled = 0;
@@ -48,19 +52,24 @@ class BillingController extends Controller
         );
 
         return Redirect::route('billing.index')
-            ->with('status', __('messages.subscription_reactivated'));
+            ->with('success', __('messages.subscription_reactivated', [], 'Subscription reactivated successfully'));
     }
 
     public function cancelSubscription(Request $request)
     {
-        if (!config('organizations.enabled')) {
-            abort(404);
-        }
-
-        $org = Auth::user()->organization;
-
-        if (!$org) {
-            abort(403);
+        $user = Auth::user();
+        
+        // Get or create organization
+        if (!$user->organization) {
+            $org = \App\Models\Organization::create([
+                'name' => $user->name . "'s Organization",
+                'code' => 'ORG-' . strtoupper(\Illuminate\Support\Str::random(6)),
+                'slug' => \Illuminate\Support\Str::slug($user->name) . '-' . time(),
+            ]);
+            $user->organization_id = $org->id;
+            $user->save();
+        } else {
+            $org = $user->organization;
         }
 
         $org->subscription_cancelled = 1;
@@ -78,25 +87,15 @@ class BillingController extends Controller
         );
 
         return Redirect::route('billing.index')
-            ->with('status', __('messages.subscription_cancelled'));
+            ->with('success', __('messages.subscription_cancelled', [], 'Subscription cancelled successfully'));
     }
 
     public function index()
     {
-        if (!config('organizations.enabled')) {
-            abort(404);
-        }
-
-        $org = Auth::user()->organization;
-
-        if (!$org) {
-            abort(403);
-        }
-
-        $plans    = PricingPlan::with('features')->get();
-        $invoices = $org->invoices()->latest()->paginate(15);
-
-        return view('billing.index', compact('org', 'plans', 'invoices'));
+        // Allow access even without organization
+        // Users can view their subscription status and upgrade options
+        
+        return view('billing.index');
     }
 
     public function changePlan(Request $request)

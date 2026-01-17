@@ -1,6 +1,16 @@
 <?php
 
 return [
+    // Billing Page
+    'billing_title' => 'Fatturazione e Abbonamento',
+    'billing_subtitle' => 'Gestisci il tuo abbonamento, visualizza le fatture e lo storico degli acquisti',
+    
+    // Invoices Section
+    'invoices' => [
+        'title' => 'Fatture',
+        'no_invoices' => 'Nessuna fattura ancora',
+    ],
+    
     // Membership Section
     'membership' => [
         'title' => 'Abbonamento (Ricorrente)',

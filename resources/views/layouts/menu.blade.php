@@ -35,6 +35,10 @@
             <i class="fas fa-file-invoice text-indigo-400"></i>
             <span>{{ __('messages.nav.all_invoices') }}</span>
         </a>
+        <a href="{{ route('superadmin.etl-console.index') }}" class="flex items-center gap-3 px-3 py-2 text-gray-300 rounded-lg hover:bg-white/10 transition {{ request()->routeIs('superadmin.etl-console.*') ? 'bg-white/20 font-bold text-white' : '' }}">
+            <i class="fas fa-sync-alt text-cyan-400"></i>
+            <span>ETL Pipeline</span>
+        </a>
         <a href="{{ route('faq.index') }}" class="flex items-center gap-3 px-3 py-2 text-gray-300 rounded-lg hover:bg-white/10 mt-4">
             <i class="fa fa-question-circle text-gray-400"></i>
             <span>{{ __('messages.nav.support_management') }}</span>
