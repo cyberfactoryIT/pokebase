@@ -2,8 +2,8 @@
 
 return [
     'hidden' => [
-        'title' => 'Priser Skjult',
-        'body' => 'Prisoplysninger er tilgængelige for Advanced og Premium medlemmer, eller med et aktivt Dækvurderingskøb.',
+        'title' => 'Vurderinger Skjult',
+        'body' => 'Oplysninger om samlet vurdering er tilgængelige for Advanced og Premium medlemmer, eller med et aktivt Dækvurderingskøb. Individuelle kortpriser er altid synlige.',
         'cta_upgrade' => 'Opgrader til Advanced eller Premium',
         'cta_deck_evaluation' => 'Køb Dækvurderingspakke',
         'or' => 'eller',

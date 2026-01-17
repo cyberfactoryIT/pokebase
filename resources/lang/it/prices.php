@@ -2,8 +2,8 @@
 
 return [
     'hidden' => [
-        'title' => 'Prezzi Nascosti',
-        'body' => 'Le informazioni sui prezzi sono disponibili per i membri Advanced e Premium, oppure con un acquisto Valutazione Mazzo attivo.',
+        'title' => 'Valutazioni Nascoste',
+        'body' => 'Le informazioni sulle valutazioni totali sono disponibili per i membri Advanced e Premium, oppure con un acquisto Valutazione Mazzo attivo. I prezzi delle singole carte sono sempre visibili.',
         'cta_upgrade' => 'Passa ad Advanced o Premium',
         'cta_deck_evaluation' => 'Acquista Pacchetto Valutazione Mazzo',
         'or' => 'oppure',

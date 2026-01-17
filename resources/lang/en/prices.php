@@ -2,8 +2,8 @@
 
 return [
     'hidden' => [
-        'title' => 'Prices Hidden',
-        'body' => 'Price information is available for Advanced and Premium members, or with an active Deck Evaluation purchase.',
+        'title' => 'Valuations Hidden',
+        'body' => 'Total valuation information is available for Advanced and Premium members, or with an active Deck Evaluation purchase. Individual card prices are always visible.',
         'cta_upgrade' => 'Upgrade to Advanced or Premium',
         'cta_deck_evaluation' => 'Buy Deck Evaluation Package',
         'or' => 'or',
