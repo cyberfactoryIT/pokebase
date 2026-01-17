@@ -66,4 +66,27 @@ return [
         'advanced' => 'Avanceret',
         'premium' => 'Premium',
     ],
+
+    // Sektion Tilgængelige Planer
+    'available_plans' => 'Tilgængelige Planer',
+    'available_plans_subtitle' => 'Vælg den plan, der passer til dine behov',
+
+    // Faktureringsinformation
+    'billing_info' => [
+        'title' => 'Faktureringsinformation',
+        'subtitle' => 'Administrer dine faktureringsoplysninger og firmaoplysninger',
+        'edit' => 'Rediger',
+        'company' => 'Firma',
+        'billing_email' => 'Fakturerings E-mail',
+        'vat' => 'Momsnummer',
+        'country' => 'Land',
+        'select_country' => 'Vælg et land',
+        'address' => 'Adresse',
+        'city' => 'By',
+        'postcode' => 'Postnummer',
+        'save' => 'Gem Ændringer',
+        'cancel' => 'Annuller',
+        'no_org' => 'Ingen Organisation',
+        'no_org_desc' => 'Ingen organisation tilknyttet din konto',
+    ],
 ];

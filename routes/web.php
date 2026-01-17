@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/billing/change-plan', [\App\Http\Controllers\BillingController::class,'changePlan'])->name('billing.changePlan');
     Route::post('/billing/cancel-subscription', [\App\Http\Controllers\BillingController::class,'cancelSubscription'])->name('billing.cancelSubscription');
     Route::post('/billing/reactivate-subscription', [\App\Http\Controllers\BillingController::class,'reactivateSubscription'])->name('billing.reactivateSubscription');
+    Route::post('/billing/update-billing-info', [\App\Http\Controllers\BillingController::class,'updateBillingInfo'])->name('billing.updateBillingInfo');
     Route::get('/billing/invoices/{invoice}', [\App\Http\Controllers\BillingController::class,'showInvoice'])->name('billing.invoice.show');
     Route::get('/billing/invoices/{invoice}/receipt', [\App\Http\Controllers\BillingController::class,'downloadReceipt'])->name('billing.invoice.receipt');
     Route::post('/billing/confirm-change-plan', [\App\Http\Controllers\BillingController::class,'showChangePlanConfirmation'])->name('billing.confirmChangePlan');

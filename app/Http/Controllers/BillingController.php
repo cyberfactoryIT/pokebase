@@ -371,4 +371,62 @@ class BillingController extends Controller
             'end'            => $end,
         ));
     }
+
+    public function updateBillingInfo(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Check if user is admin
+        if (!$user->hasRole('admin')) {
+            return Redirect::back()->with('error', 'Unauthorized');
+        }
+
+        // Get or create organization
+        if (!$user->organization) {
+            $org = \App\Models\Organization::create([
+                'name' => $user->name . "'s Organization",
+                'code' => 'ORG-' . strtoupper(\Illuminate\Support\Str::random(6)),
+                'slug' => \Illuminate\Support\Str::slug($user->name) . '-' . time(),
+            ]);
+            $user->organization_id = $org->id;
+            $user->save();
+        } else {
+            $org = $user->organization;
+        }
+
+        // Validate
+        $request->validate([
+            'company' => ['nullable', 'string', 'max:255'],
+            'billing_email' => ['nullable', 'email', 'max:255'],
+            'vat_number' => ['nullable', 'string', 'max:255'],
+            'address_line1' => ['nullable', 'string', 'max:255'],
+            'address_line2' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'postcode' => ['nullable', 'string', 'max:255'],
+            'country' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        // Update
+        $org->update($request->only([
+            'company',
+            'billing_email',
+            'vat_number',
+            'address_line1',
+            'address_line2',
+            'city',
+            'postcode',
+            'country'
+        ]));
+
+        \App\Models\ActivityLog::logActivity(
+            'organization',
+            'update_billing_info',
+            ['organization' => $org->name],
+            $org->id,
+            Auth::id()
+        );
+
+        return Redirect::route('billing.index')
+            ->with('success', __('messages.billing_info_updated', [], 'Billing information updated successfully'));
+    }
 }

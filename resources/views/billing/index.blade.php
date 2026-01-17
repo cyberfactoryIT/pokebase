@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
+
 <div class="bg-black min-h-screen py-8">
     <div class="max-w-6xl mx-auto px-6">
         <!-- Header -->
@@ -48,7 +54,7 @@
                             </div>
                             <h3 class="text-lg font-semibold text-white mb-2">{{ __('subscriptions.membership.no_active_membership') }}</h3>
                             <p class="text-gray-400 text-sm mb-4">Upgrade to unlock premium features</p>
-                            <a href="{{ route('pricing') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">
+                            <a href="#available-plans" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">
                                 <i class="fas fa-crown"></i>
                                 <span>View Plans</span>
                             </a>
@@ -126,98 +132,417 @@
                 @endif
             </div>
 
-            <!-- Deck Evaluation Card -->
-            <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
+            <!-- Billing Information Card -->
+            <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6" x-data="{ editBilling: false }">
                 <div class="flex items-start justify-between mb-6">
                     <div>
                         <h2 class="text-xl font-bold text-white mb-1">
-                            <i class="fas fa-layer-group text-purple-400 mr-2"></i>
-                            {{ __('subscriptions.deck_evaluation.title') }}
+                            <i class="fas fa-file-invoice text-purple-400 mr-2"></i>
+                            {{ __('subscriptions.billing_info.title', [], 'Billing Information') }}
                         </h2>
-                        <p class="text-sm text-gray-400">{{ __('subscriptions.deck_evaluation.explanation') }}</p>
+                        <p class="text-sm text-gray-400">{{ __('subscriptions.billing_info.subtitle', [], 'Manage your billing details and company information') }}</p>
                     </div>
+                    @if(Auth::user()->hasRole('admin'))
+                    <button @click="editBilling = true" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm font-medium">
+                        <i class="fas fa-edit mr-2"></i>
+                        {{ __('subscriptions.billing_info.edit', [], 'Edit') }}
+                    </button>
+                    @endif
                 </div>
 
                 @php
-                    $activeDeckPurchase = Auth::user()->activeDeckEvaluationPurchase()->first();
-                    $recentPurchases = Auth::user()->deckEvaluationPurchases()
-                        ->orderBy('purchased_at', 'desc')
-                        ->limit(5)
-                        ->get();
+                    $org = Auth::user()->organization;
                 @endphp
 
-                @if($activeDeckPurchase)
-                    <!-- Active Package -->
-                    <div class="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-500/30 rounded-lg p-4 mb-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-gray-400 text-sm">Active Package</span>
-                            <span class="px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-full text-green-300 font-semibold text-sm">
-                                Active
-                            </span>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-3 mb-3">
-                            <div>
-                                <div class="text-gray-400 text-xs mb-1">Cards Used</div>
-                                <div class="text-white font-bold text-lg">{{ $activeDeckPurchase->cards_used }} / {{ $activeDeckPurchase->cards_limit }}</div>
-                            </div>
-                            <div>
-                                <div class="text-gray-400 text-xs mb-1">Expires</div>
-                                <div class="text-white font-medium text-sm">{{ $activeDeckPurchase->expires_at->format('M d, Y') }}</div>
-                            </div>
-                        </div>
-
-                        <!-- Progress Bar -->
-                        @php
-                            $percentage = ($activeDeckPurchase->cards_used / $activeDeckPurchase->cards_limit) * 100;
-                        @endphp
-                        <div class="w-full bg-white/10 rounded-full h-2">
-                            <div class="bg-purple-500 h-2 rounded-full transition-all" style="width: {{ $percentage }}%"></div>
-                        </div>
-                    </div>
-                @else
-                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 mb-4 text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-500/20 rounded-full mb-4">
-                            <i class="fas fa-layer-group text-purple-400 text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-white mb-2">No Active Package</h3>
-                        <p class="text-gray-400 text-sm mb-4">Purchase a deck evaluation package to analyze your collection</p>
-                        <a href="{{ route('deck-evaluation.packages.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-semibold">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>View Packages</span>
-                        </a>
-                    </div>
-                @endif
-
-                <!-- Recent Purchases -->
-                @if($recentPurchases->count() > 0)
-                <div class="pt-4 border-t border-white/10">
-                    <h3 class="text-sm font-semibold text-gray-400 mb-3">Recent Purchases</h3>
-                    <div class="space-y-2">
-                        @foreach($recentPurchases as $purchase)
-                        <div class="bg-white/5 border border-white/10 rounded-lg p-3">
-                            <div class="flex items-center justify-between">
-                                <div class="flex-1">
-                                    <div class="text-white text-sm font-medium mb-1">{{ $purchase->cards_limit }} Cards Package</div>
-                                    <div class="text-gray-400 text-xs">{{ $purchase->purchased_at->format('M d, Y') }}</div>
+                @if($org)
+                    <!-- Display Mode -->
+                    <div x-show="!editBilling">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <!-- Company Name -->
+                            <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-building text-blue-400"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-gray-400 text-xs mb-1">{{ __('subscriptions.billing_info.company', [], 'Company') }}</div>
+                                        <div class="text-white font-medium truncate">{{ $org->company ?: '-' }}</div>
+                                    </div>
                                 </div>
-                                <div class="text-right">
-                                    <div class="text-sm">
-                                        @if($purchase->status === 'active')
-                                            <span class="px-2 py-1 bg-green-600/20 text-green-300 rounded text-xs">Active</span>
-                                        @elseif($purchase->status === 'expired')
-                                            <span class="px-2 py-1 bg-gray-600/20 text-gray-400 rounded text-xs">Expired</span>
-                                        @else
-                                            <span class="px-2 py-1 bg-yellow-600/20 text-yellow-300 rounded text-xs">{{ ucfirst($purchase->status) }}</span>
+                            </div>
+
+                            <!-- Billing Email -->
+                            <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-envelope text-green-400"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-gray-400 text-xs mb-1">{{ __('subscriptions.billing_info.billing_email', [], 'Billing Email') }}</div>
+                                        <div class="text-white font-medium truncate">{{ $org->billing_email ?: '-' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- VAT Number -->
+                            <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-hashtag text-purple-400"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-gray-400 text-xs mb-1">{{ __('subscriptions.billing_info.vat', [], 'VAT Number') }}</div>
+                                        <div class="text-white font-medium truncate">{{ $org->vat_number ?: '-' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Country -->
+                            <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-orange-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-globe text-orange-400"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-gray-400 text-xs mb-1">{{ __('subscriptions.billing_info.country', [], 'Country') }}</div>
+                                        <div class="text-white font-medium truncate">{{ $org->country ?: '-' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Section -->
+                        <div class="mt-4 bg-white/5 border border-white/10 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-red-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-map-marker-alt text-red-400"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-gray-400 text-xs mb-2">{{ __('subscriptions.billing_info.address', [], 'Address') }}</div>
+                                    <div class="text-white space-y-1">
+                                        @if($org->address_line1)
+                                            <div>{{ $org->address_line1 }}</div>
+                                        @endif
+                                        @if($org->address_line2)
+                                            <div>{{ $org->address_line2 }}</div>
+                                        @endif
+                                        @if($org->city || $org->postcode)
+                                            <div>{{ $org->postcode }} {{ $org->city }}</div>
+                                        @endif
+                                        @if(!$org->address_line1 && !$org->address_line2 && !$org->city)
+                                            <div class="text-gray-500">-</div>
                                         @endif
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endforeach
+                    </div>
+
+                    <!-- Edit Mode -->
+                    <form x-show="editBilling" x-cloak method="POST" action="{{ route('billing.updateBillingInfo') }}" class="space-y-4">
+                        @csrf
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <!-- Company -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    <i class="fas fa-building text-blue-400 mr-1"></i>
+                                    {{ __('subscriptions.billing_info.company', [], 'Company') }}
+                                </label>
+                                <input type="text" name="company" value="{{ old('company', $org->company) }}" 
+                                    class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            </div>
+
+                            <!-- Billing Email -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    <i class="fas fa-envelope text-green-400 mr-1"></i>
+                                    {{ __('subscriptions.billing_info.billing_email', [], 'Billing Email') }}
+                                </label>
+                                <input type="email" name="billing_email" value="{{ old('billing_email', $org->billing_email) }}" 
+                                    class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            </div>
+
+                            <!-- VAT Number -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    <i class="fas fa-hashtag text-purple-400 mr-1"></i>
+                                    {{ __('subscriptions.billing_info.vat', [], 'VAT Number') }}
+                                </label>
+                                <input type="text" name="vat_number" value="{{ old('vat_number', $org->vat_number) }}" 
+                                    class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            </div>
+
+                            <!-- Country -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    <i class="fas fa-globe text-orange-400 mr-1"></i>
+                                    {{ __('subscriptions.billing_info.country', [], 'Country') }}
+                                </label>
+                                <select name="country" class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                    <option value="">{{ __('subscriptions.billing_info.select_country', [], 'Select a country') }}</option>
+                                    @php
+                                        $countries = __('countries');
+                                        $denmarkKey = 'Denmark';
+                                        $denmark = [$denmarkKey => $countries[$denmarkKey]];
+                                        unset($countries[$denmarkKey]);
+                                        
+                                        // Sort remaining countries by translated name
+                                        uasort($countries, function($a, $b) {
+                                            return strcasecmp($a, $b);
+                                        });
+                                        
+                                        // Merge Denmark first, then alphabetically sorted countries
+                                        $sortedCountries = $denmark + $countries;
+                                    @endphp
+                                    
+                                    @foreach($sortedCountries as $key => $name)
+                                        <option value="{{ $key }}" {{ old('country', $org->country) == $key ? 'selected' : '' }}>
+                                            {{ $name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Address Fields -->
+                        <div class="space-y-4 pt-4 border-t border-white/10">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    <i class="fas fa-map-marker-alt text-red-400 mr-1"></i>
+                                    {{ __('subscriptions.billing_info.address', [], 'Address') }} 1
+                                </label>
+                                <input type="text" name="address_line1" value="{{ old('address_line1', $org->address_line1) }}" 
+                                    class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    {{ __('subscriptions.billing_info.address', [], 'Address') }} 2
+                                </label>
+                                <input type="text" name="address_line2" value="{{ old('address_line2', $org->address_line2) }}" 
+                                    class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <!-- Postcode -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                                        {{ __('subscriptions.billing_info.postcode', [], 'Postcode') }}
+                                    </label>
+                                    <input type="text" name="postcode" value="{{ old('postcode', $org->postcode) }}" 
+                                        class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                </div>
+
+                                <!-- City -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                                        {{ __('subscriptions.billing_info.city', [], 'City') }}
+                                    </label>
+                                    <input type="text" name="city" value="{{ old('city', $org->city) }}" 
+                                        class="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-3 pt-4 border-t border-white/10">
+                            <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold">
+                                <i class="fas fa-save mr-2"></i>
+                                {{ __('subscriptions.billing_info.save', [], 'Save Changes') }}
+                            </button>
+                            <button type="button" @click="editBilling = false" class="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-gray-300 rounded-lg transition font-semibold">
+                                <i class="fas fa-times mr-2"></i>
+                                {{ __('subscriptions.billing_info.cancel', [], 'Cancel') }}
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-500/20 rounded-full mb-4">
+                            <i class="fas fa-building text-gray-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">{{ __('subscriptions.billing_info.no_org', [], 'No Organization') }}</h3>
+                        <p class="text-gray-400 text-sm">{{ __('subscriptions.billing_info.no_org_desc', [], 'No organization associated with your account') }}</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Available Plans Section -->
+        <div id="available-plans" class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2">
+                        <i class="fas fa-layer-group text-blue-400 mr-2"></i>
+                        {{ __('subscriptions.available_plans', [], 'Available Plans') }}
+                    </h2>
+                    <p class="text-gray-400">{{ __('subscriptions.available_plans_subtitle', [], 'Choose the plan that fits your needs') }}</p>
+                </div>
+                
+                <!-- Billing Period Toggle -->
+                <div class="flex items-center gap-3 bg-[#161615] border border-white/15 rounded-xl p-2">
+                    <button onclick="switchBillingPeriod('monthly')" id="btn-monthly" class="px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-600 text-white">
+                        {{ __('subscriptions.membership.monthly') }}
+                    </button>
+                    <button onclick="switchBillingPeriod('yearly')" id="btn-yearly" class="px-4 py-2 rounded-lg text-sm font-medium transition text-gray-400 hover:text-white">
+                        {{ __('subscriptions.membership.yearly') }}
+                        <span class="ml-1 px-2 py-0.5 bg-green-600/20 text-green-400 text-xs rounded-full">-17%</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pricing Cards Grid -->
+            <div class="grid md:grid-cols-3 gap-6">
+                @php
+                    $pricingPlans = \App\Models\PricingPlan::orderBy('monthly_price_cents')->get();
+                    $currentTier = $membershipStatus['tier'];
+                @endphp
+
+                @foreach($pricingPlans as $plan)
+                @php
+                    $isCurrentPlan = strtolower($plan->name) === $currentTier;
+                    $monthlyPrice = $plan->monthly_price_cents / 100;
+                    $yearlyPrice = $plan->yearly_price_cents / 100;
+                    $currency = '€';
+                    $savings = $yearlyPrice > 0 ? round((1 - ($yearlyPrice / 12) / $monthlyPrice) * 100) : 0;
+                    
+                    // Determine if this is an upgrade or downgrade
+                    $tierOrder = ['free' => 0, 'advanced' => 1, 'premium' => 2];
+                    $currentOrder = $tierOrder[$currentTier] ?? 0;
+                    $planOrder = $tierOrder[strtolower($plan->code)] ?? 0;
+                    $isUpgrade = $planOrder > $currentOrder;
+                    $isDowngrade = $planOrder < $currentOrder;
+                    
+                    // Color scheme per plan
+                    $colors = [
+                        'free' => ['accent' => 'gray', 'border' => 'border-gray-500/30', 'bg' => 'from-gray-900/30 to-gray-800/20'],
+                        'advanced' => ['accent' => 'blue', 'border' => 'border-blue-500/30', 'bg' => 'from-blue-900/30 to-blue-800/20'],
+                        'premium' => ['accent' => 'purple', 'border' => 'border-purple-500/30', 'bg' => 'from-purple-900/30 to-purple-800/20'],
+                    ];
+                    $color = $colors[$plan->code] ?? $colors['advanced'];
+                @endphp
+
+                <div class="bg-[#161615] border {{ $isCurrentPlan ? 'border-2 ' . $color['border'] . ' ring-2 ring-' . $color['accent'] . '-500/20' : 'border-white/15' }} rounded-2xl shadow-xl overflow-hidden {{ $isCurrentPlan ? 'relative' : '' }}">
+                    
+                    <!-- Current Plan Badge -->
+                    @if($isCurrentPlan)
+                    <div class="absolute top-4 right-4 px-3 py-1 bg-{{ $color['accent'] }}-600/20 border border-{{ $color['accent'] }}-500/30 text-{{ $color['accent'] }}-300 rounded-full text-xs font-semibold">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Current Plan
+                    </div>
+                    @endif
+
+                    <div class="p-6">
+                        <!-- Plan Header -->
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-white mb-2">{{ $plan->name }}</h3>
+                            
+                            <!-- Monthly Price -->
+                            <div class="price-monthly">
+                                <div class="flex items-baseline gap-2 mb-1">
+                                    <span class="text-4xl font-bold text-{{ $color['accent'] }}-400">
+                                        {{ $monthlyPrice == 0 ? '0' : number_format($monthlyPrice, 2) }}
+                                    </span>
+                                    <span class="text-xl text-gray-400">{{ $currency }}</span>
+                                    <span class="text-sm text-gray-500">/month</span>
+                                </div>
+                            </div>
+
+                            <!-- Yearly Price (Hidden by default) -->
+                            @if($yearlyPrice > 0)
+                            <div class="price-yearly hidden">
+                                <div class="flex items-baseline gap-2 mb-1">
+                                    <span class="text-4xl font-bold text-{{ $color['accent'] }}-400">{{ number_format($yearlyPrice, 0) }}</span>
+                                    <span class="text-xl text-gray-400">{{ $currency }}</span>
+                                    <span class="text-sm text-gray-500">/year</span>
+                                </div>
+                                <div class="text-sm text-green-400">Save {{ $savings }}%</div>
+                            </div>
+                            @endif
+                        </div>
+
+                        <!-- Features -->
+                        <ul class="space-y-3 mb-6 min-h-[200px]">
+                            @php
+                                $fallbackFeatures = [
+                                    'free' => [
+                                        'Basic card browsing',
+                                        'Create up to 3 decks',
+                                        'Basic collection tracking',
+                                        'Community features',
+                                    ],
+                                    'advanced' => [
+                                        'Unlimited deck creation',
+                                        'Advanced price tracking',
+                                        'Deck valuation included',
+                                        'Priority support',
+                                        'Export to CSV',
+                                    ],
+                                    'premium' => [
+                                        'Everything in Advanced',
+                                        'Unlimited collections',
+                                        'Advanced analytics',
+                                        'API access',
+                                        'White-label options',
+                                    ],
+                                ];
+                                $features = $plan->features->count() > 0 
+                                    ? $plan->features 
+                                    : collect($fallbackFeatures[$plan->code] ?? []);
+                            @endphp
+                            
+                            @if($plan->features->count() > 0)
+                                @foreach($plan->features as $feature)
+                                <li class="flex items-start text-sm">
+                                    <svg class="w-5 h-5 text-{{ $color['accent'] }}-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="text-gray-300">{{ $feature->name }}</span>
+                                </li>
+                                @endforeach
+                            @else
+                                @foreach($fallbackFeatures[$plan->code] ?? [] as $feat)
+                                <li class="flex items-start text-sm">
+                                    <svg class="w-5 h-5 text-{{ $color['accent'] }}-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="text-gray-300">{{ $feat }}</span>
+                                </li>
+                                @endforeach
+                            @endif
+                        </ul>
+
+                        <!-- Action Button -->
+                        @if($isCurrentPlan)
+                            <button disabled class="w-full px-6 py-3 bg-{{ $color['accent'] }}-600/20 border border-{{ $color['accent'] }}-500/30 text-{{ $color['accent'] }}-300 rounded-lg font-semibold cursor-not-allowed">
+                                <i class="fas fa-check mr-2"></i>
+                                Current Plan
+                            </button>
+                        @elseif($isUpgrade)
+                            <form method="POST" action="{{ route('billing.confirmChangePlan') }}">
+                                @csrf
+                                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                                <input type="hidden" name="billing_period" class="billing-period-input" value="monthly">
+                                <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-{{ $color['accent'] }}-600 to-{{ $color['accent'] }}-700 hover:from-{{ $color['accent'] }}-700 hover:to-{{ $color['accent'] }}-800 text-white rounded-lg font-semibold transition shadow-lg">
+                                    <i class="fas fa-arrow-up mr-2"></i>
+                                    Upgrade to {{ $plan->name }}
+                                </button>
+                            </form>
+                        @elseif($isDowngrade)
+                            <form method="POST" action="{{ route('billing.confirmChangePlan') }}" onsubmit="return confirm('Are you sure you want to downgrade to {{ $plan->name }}? You will lose access to premium features.')">
+                                @csrf
+                                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                                <input type="hidden" name="billing_period" class="billing-period-input" value="monthly">
+                                <button type="submit" class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-gray-300 hover:text-white rounded-lg font-semibold transition">
+                                    <i class="fas fa-arrow-down mr-2"></i>
+                                    Downgrade to {{ $plan->name }}
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
-                @endif
+                @endforeach
             </div>
         </div>
 
@@ -392,5 +717,42 @@ document.addEventListener('DOMContentLoaded', function() {
     
     periodSelect.addEventListener('change', updatePlanLabels);
 });
+
+// Switch billing period (monthly/yearly) in pricing cards
+function switchBillingPeriod(period) {
+    const btnMonthly = document.getElementById('btn-monthly');
+    const btnYearly = document.getElementById('btn-yearly');
+    const monthlyPrices = document.querySelectorAll('.price-monthly');
+    const yearlyPrices = document.querySelectorAll('.price-yearly');
+    const billingInputs = document.querySelectorAll('.billing-period-input');
+    
+    if (period === 'monthly') {
+        // Update button styles
+        btnMonthly.classList.add('bg-blue-600', 'text-white');
+        btnMonthly.classList.remove('text-gray-400', 'hover:text-white');
+        btnYearly.classList.remove('bg-blue-600', 'text-white');
+        btnYearly.classList.add('text-gray-400', 'hover:text-white');
+        
+        // Show monthly, hide yearly
+        monthlyPrices.forEach(el => el.classList.remove('hidden'));
+        yearlyPrices.forEach(el => el.classList.add('hidden'));
+        
+        // Update hidden inputs
+        billingInputs.forEach(input => input.value = 'monthly');
+    } else {
+        // Update button styles
+        btnYearly.classList.add('bg-blue-600', 'text-white');
+        btnYearly.classList.remove('text-gray-400', 'hover:text-white');
+        btnMonthly.classList.remove('bg-blue-600', 'text-white');
+        btnMonthly.classList.add('text-gray-400', 'hover:text-white');
+        
+        // Show yearly, hide monthly
+        monthlyPrices.forEach(el => el.classList.add('hidden'));
+        yearlyPrices.forEach(el => el.classList.remove('hidden'));
+        
+        // Update hidden inputs
+        billingInputs.forEach(input => input.value = 'yearly');
+    }
+}
 </script>
 @endsection

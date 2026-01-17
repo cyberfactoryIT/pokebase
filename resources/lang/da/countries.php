@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'Denmark' => 'Danmark',
+    'Australia' => 'Australien',
+    'Austria' => 'Østrig',
+    'Belgium' => 'Belgien',
+    'Canada' => 'Canada',
+    'Czech Republic' => 'Tjekkiet',
+    'Finland' => 'Finland',
+    'France' => 'Frankrig',
+    'Germany' => 'Tyskland',
+    'Greece' => 'Grækenland',
+    'Ireland' => 'Irland',
+    'Italy' => 'Italien',
+    'Netherlands' => 'Nederlandene',
+    'Norway' => 'Norge',
+    'Poland' => 'Polen',
+    'Portugal' => 'Portugal',
+    'Spain' => 'Spanien',
+    'Sweden' => 'Sverige',
+    'Switzerland' => 'Schweiz',
+    'United Kingdom' => 'Storbritannien',
+    'United States' => 'USA',
+    'Other' => 'Andet',
+];

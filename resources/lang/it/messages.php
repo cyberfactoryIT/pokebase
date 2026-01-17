@@ -350,6 +350,7 @@ return [
 'plan_changed' => 'Piano cambiato con successo.',
 'subscription_canceled' => 'Abbonamento annullato con successo.',
 'subscription_reactivated' => 'Abbonamento riattivato con successo.',
+'billing_info_updated' => 'Dati di fatturazione aggiornati con successo.',
 'invoice_viewed' => 'Fattura visualizzata.',
 'invoice_not_found' => 'Fattura non trovata.',
 'invoice_access_denied' => 'Non hai permesso di visualizzare questa fattura.',

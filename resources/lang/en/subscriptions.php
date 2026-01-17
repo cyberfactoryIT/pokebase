@@ -68,4 +68,27 @@ return [
         'advanced' => 'Advanced',
         'premium' => 'Premium',
     ],
+
+    // Available Plans Section
+    'available_plans' => 'Available Plans',
+    'available_plans_subtitle' => 'Choose the plan that fits your needs',
+
+    // Billing Information
+    'billing_info' => [
+        'title' => 'Billing Information',
+        'subtitle' => 'Manage your billing details and company information',
+        'edit' => 'Edit',
+        'company' => 'Company',
+        'billing_email' => 'Billing Email',
+        'vat' => 'VAT Number',
+        'country' => 'Country',
+        'select_country' => 'Select a country',
+        'address' => 'Address',
+        'city' => 'City',
+        'postcode' => 'Postcode',
+        'save' => 'Save Changes',
+        'cancel' => 'Cancel',
+        'no_org' => 'No Organization',
+        'no_org_desc' => 'No organization associated with your account',
+    ],
 ];

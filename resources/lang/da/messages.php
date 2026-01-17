@@ -347,6 +347,7 @@ return [
 'plan_changed' => 'Plan ændret.',
 'subscription_canceled' => 'Abonnement annulleret.',
 'subscription_reactivated' => 'Abonnement genaktiveret.',
+'billing_info_updated' => 'Faktureringsinformation opdateret med succes.',
 'invoice_viewed' => 'Faktura vist.',
 'invoice_not_found' => 'Faktura ikke fundet.',
 'invoice_access_denied' => 'Du har ikke tilladelse til at se denne faktura.',

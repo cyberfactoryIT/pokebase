@@ -355,6 +355,7 @@ return [
 'plan_changed' => 'Plan changed successfully.',
 'subscription_canceled' => 'Subscription canceled successfully.',
 'subscription_reactivated' => 'Subscription reactivated successfully.',
+'billing_info_updated' => 'Billing information updated successfully.',
 'invoice_viewed' => 'Invoice viewed.',
 'invoice_not_found' => 'Invoice not found.',
 'invoice_access_denied' => 'You do not have permission to view this invoice.',

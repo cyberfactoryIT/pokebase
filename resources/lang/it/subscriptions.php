@@ -68,4 +68,27 @@ return [
         'advanced' => 'Avanzato',
         'premium' => 'Premium',
     ],
+
+    // Sezione Piani Disponibili
+    'available_plans' => 'Piani Disponibili',
+    'available_plans_subtitle' => 'Scegli il piano che fa per te',
+
+    // Dati di Fatturazione
+    'billing_info' => [
+        'title' => 'Dati di Fatturazione',
+        'subtitle' => 'Gestisci i tuoi dati di fatturazione e informazioni aziendali',
+        'edit' => 'Modifica',
+        'company' => 'Azienda',
+        'billing_email' => 'Email di Fatturazione',
+        'vat' => 'Partita IVA',
+        'country' => 'Paese',
+        'select_country' => 'Seleziona un paese',
+        'address' => 'Indirizzo',
+        'city' => 'Città',
+        'postcode' => 'CAP',
+        'save' => 'Salva Modifiche',
+        'cancel' => 'Annulla',
+        'no_org' => 'Nessuna Organizzazione',
+        'no_org_desc' => 'Nessuna organizzazione associata al tuo account',
+    ],
 ];
