@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Redirect;
 class BillingController extends Controller
 {
     // No constructor needed - auth middleware is defined in routes/web.php
-}
 
     public function reactivateSubscription(Request $request)
     {
