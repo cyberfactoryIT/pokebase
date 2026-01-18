@@ -32,14 +32,6 @@
                class="px-6 py-4 text-white transition border-b-2 border-blue-500">
                 <i class="fa fa-user mr-2"></i>{{ __('profile/edit.tab_profile') }}
             </a>
-            <a href="{{ route('profile.subscription') }}" 
-               class="px-6 py-4 text-gray-400 hover:text-white transition border-b-2 border-transparent">
-                <i class="fa fa-credit-card mr-2"></i>{{ __('profile/edit.tab_subscription') }}
-            </a>
-            <a href="{{ route('profile.transactions') }}" 
-               class="px-6 py-4 text-gray-400 hover:text-white transition border-b-2 border-transparent">
-                <i class="fa fa-receipt mr-2"></i>{{ __('profile/edit.tab_transactions') }}
-            </a>
         </div>
     </div>
 
