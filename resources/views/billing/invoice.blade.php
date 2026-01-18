@@ -56,7 +56,7 @@
                         <div class="text-sm text-gray-700 mt-1">{{ config('invoice.biller_address') }}</div>
                         <div class="text-sm text-gray-700">{{ config('invoice.biller_email') }}</div>
                         <div class="text-sm text-gray-700">{{ config('invoice.biller_phone') }}</div>
-                        <div class="text-sm text-gray-700 font-medium">P.IVA: {{ config('invoice.biller_vat') }}</div>
+                        <div class="text-sm text-gray-700 font-medium">{{ __('billing.invoice.vat') }}: {{ config('invoice.biller_vat') }}</div>
                     </div>
                 </div>
                 <div class="text-right">
