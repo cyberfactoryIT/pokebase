@@ -129,6 +129,9 @@ Route::middleware('auth')->group(function () {
     
     // Checkout
     Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class,'show'])->name('checkout.show');
+    Route::get('/checkout/create-payment-intent', function() {
+        return redirect()->route('checkout.show')->with('error', 'Invalid request method');
+    });
     Route::post('/checkout/create-payment-intent', [\App\Http\Controllers\CheckoutController::class,'createPaymentIntent'])->name('checkout.createPaymentIntent');
     Route::post('/checkout/process', [\App\Http\Controllers\CheckoutController::class,'processPayment'])->name('checkout.process');
     Route::get('/checkout/success', [\App\Http\Controllers\CheckoutController::class,'success'])->name('checkout.success');
