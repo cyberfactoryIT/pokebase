@@ -68,6 +68,30 @@ class BillingController extends Controller
             $org = $user->organization;
         }
 
+        // If this is a Stripe subscription, cancel it via API
+        if ($org->payment_type === 'subscription' && $org->stripe_subscription_id) {
+            try {
+                $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+                
+                // Cancel at period end (not immediately)
+                $stripe->subscriptions->update($org->stripe_subscription_id, [
+                    'cancel_at_period_end' => true,
+                ]);
+
+                \Log::info('Stripe subscription cancelled at period end', [
+                    'organization_id' => $org->id,
+                    'subscription_id' => $org->stripe_subscription_id
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to cancel Stripe subscription', [
+                    'organization_id' => $org->id,
+                    'subscription_id' => $org->stripe_subscription_id,
+                    'error' => $e->getMessage()
+                ]);
+                // Continue with local cancellation even if Stripe API fails
+            }
+        }
+
         $org->subscription_cancelled = 1;
         $org->cancellation_subscription_date = now();
         $org->save();
@@ -77,6 +101,7 @@ class BillingController extends Controller
             'cancel_subscription',
             array(
                 'date' => now()->toDateTimeString(),
+                'payment_type' => $org->payment_type,
             ),
             $org->id,
             Auth::id()
@@ -248,10 +273,6 @@ class BillingController extends Controller
 
     public function showInvoice(Invoice $invoice)
     {
-        if (!config('organizations.enabled')) {
-            abort(404);
-        }
-
         $user         = Auth::user();
         $org          = $user->organization;
         $isSuperadmin = $user->hasRole('superadmin');
@@ -274,10 +295,6 @@ class BillingController extends Controller
 
     public function downloadReceipt(Invoice $invoice)
     {
-        if (!config('organizations.enabled')) {
-            abort(404);
-        }
-
         $user         = Auth::user();
         $org          = $user->organization;
         $isSuperadmin = $user->hasRole('superadmin');

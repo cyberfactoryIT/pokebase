@@ -38,6 +38,10 @@ class Organization extends Model
     'subscription_cancelled',
     'cancellation_subscription_date',
     'reactivate_subscription_date',
+    // Payment type fields
+    'payment_type',
+    'stripe_customer_id',
+    'stripe_subscription_id',
     // Billing fields
     'company',
     'billing_email',
@@ -52,6 +56,11 @@ class Organization extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'subscription_date' => 'datetime',
+        'renew_date' => 'datetime',
+        'end_promotion_date' => 'datetime',
+        'cancellation_subscription_date' => 'datetime',
+        'reactivate_subscription_date' => 'datetime',
     ];
 
     /**

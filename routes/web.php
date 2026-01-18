@@ -126,6 +126,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/billing/invoices/{invoice}', [\App\Http\Controllers\BillingController::class,'showInvoice'])->name('billing.invoice.show');
     Route::get('/billing/invoices/{invoice}/receipt', [\App\Http\Controllers\BillingController::class,'downloadReceipt'])->name('billing.invoice.receipt');
     Route::post('/billing/confirm-change-plan', [\App\Http\Controllers\BillingController::class,'showChangePlanConfirmation'])->name('billing.confirmChangePlan');
+    
+    // Checkout
+    Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class,'show'])->name('checkout.show');
+    Route::post('/checkout/create-payment-intent', [\App\Http\Controllers\CheckoutController::class,'createPaymentIntent'])->name('checkout.createPaymentIntent');
+    Route::post('/checkout/process', [\App\Http\Controllers\CheckoutController::class,'processPayment'])->name('checkout.process');
+    Route::get('/checkout/success', [\App\Http\Controllers\CheckoutController::class,'success'])->name('checkout.success');
+    Route::get('/checkout/cancel', [\App\Http\Controllers\CheckoutController::class,'cancel'])->name('checkout.cancel');
 });
 
 Route::middleware(['web', 'auth'])->prefix('admin')->group(function () {

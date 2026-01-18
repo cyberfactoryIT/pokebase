@@ -28,4 +28,25 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceItem::class);
     }
+
+    /**
+     * Generate next progressive invoice number with W prefix (e.g., W000001, W000002)
+     */
+    public static function generateInvoiceNumber(): string
+    {
+        // Get the last invoice number
+        $lastInvoice = self::orderBy('id', 'desc')->first();
+        
+        if (!$lastInvoice || !preg_match('/^W(\d+)$/', $lastInvoice->number, $matches)) {
+            // Start from W000001 if no invoice exists or format doesn't match
+            return 'W000001';
+        }
+        
+        // Increment the number
+        $lastNumber = intval($matches[1]);
+        $nextNumber = $lastNumber + 1;
+        
+        // Format with leading zeros (6 digits)
+        return 'W' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+    }
 }

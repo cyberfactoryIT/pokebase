@@ -18,6 +18,9 @@ return [
         'status' => 'Stato',
         'billing_period' => 'Periodo di Fatturazione',
         'next_renewal' => 'Prossimo Rinnovo',
+        'renews_today' => 'Si rinnova oggi',
+        'renews_tomorrow' => 'Si rinnova domani',
+        'renews_in_days' => 'Si rinnova tra :days giorni',
         'no_active_membership' => 'Nessun abbonamento attivo',
         'explanation' => 'Il tuo abbonamento fornisce accesso a funzionalità premium con fatturazione ricorrente.',
         

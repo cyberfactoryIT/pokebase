@@ -2,6 +2,75 @@
 
 This document lists common mistakes that should be avoided when working on this Laravel project.
 
+## 🚫 AJAX/JSON vs Redirect Response Mismatch
+
+### ❌ Returning redirect when frontend expects JSON
+```php
+// Controller
+public function processPayment(Request $request)
+{
+    // ... process payment ...
+    
+    // ❌ WRONG: Frontend is using fetch() expecting JSON response
+    return Redirect::route('success')->with('message', 'Done!');
+}
+```
+
+```javascript
+// Frontend
+fetch('/process-payment', {
+    method: 'POST',
+    body: JSON.stringify(data)
+})
+.then(response => response.json()) // ❌ Expects JSON but gets redirect HTML
+.then(data => {
+    window.location.href = '/success?id=' + data.invoice_id; // ❌ data.invoice_id is undefined
+});
+```
+
+### ✅ CORRECT: Match response type to request type
+```php
+// Controller - Return JSON for AJAX requests
+public function processPayment(Request $request)
+{
+    // ... process payment ...
+    
+    // ✅ Return JSON with data for frontend redirect
+    return response()->json([
+        'success' => true,
+        'invoice_id' => $invoice->id,
+        'message' => 'Payment processed successfully!'
+    ]);
+}
+```
+
+```javascript
+// Frontend - Handle JSON response and redirect client-side
+fetch('/process-payment', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken
+    },
+    body: JSON.stringify(data)
+})
+.then(response => response.json()) // ✅ Receives JSON
+.then(data => {
+    if (data.success) {
+        window.location.href = '/success?invoice_id=' + data.invoice_id; // ✅ Works!
+    } else {
+        showError(data.error);
+    }
+});
+```
+
+### 🎯 Quick Decision Rule:
+- **Form submit** (traditional) → Use `return Redirect::route()`
+- **fetch()/AJAX** (JavaScript) → Use `return response()->json()`
+- **Check request type**: `$request->expectsJson()` or `$request->wantsJson()`
+
+---
+
 ## 🚫 Controller Middleware Errors
 
 ### ❌ NEVER DO THIS:
@@ -115,6 +184,33 @@ if (!$user->organization) {
 
 ## 🚫 Route Definition Errors
 
+### ❌ Using route() helper without verifying route exists
+```blade
+<a href="{{ route('invoice.download', $id) }}">Download</a>
+{{-- ❌ RouteNotFoundException if route doesn't exist --}}
+```
+
+### ✅ CORRECT: Check routes file first
+```bash
+# Verify route exists before using it
+php artisan route:list | grep invoice
+```
+
+```blade
+{{-- Option 1: Verify route exists in routes/web.php FIRST --}}
+<a href="{{ route('invoice.download', $id) }}">Download</a>
+
+{{-- Option 2: Use url() with fallback check --}}
+@if(Route::has('invoice.download'))
+<a href="{{ route('invoice.download', $id) }}">Download</a>
+@endif
+
+{{-- Option 3: Comment out until implemented --}}
+{{-- TODO: Implement download route
+<a href="{{ route('invoice.download', $id) }}">Download</a>
+--}}
+```
+
 ### ❌ Using closures for complex logic
 ```php
 Route::get('/complex', function() {
@@ -169,6 +265,70 @@ $user->update($request->only(['name', 'email']));
 // OR validate first
 $validated = $request->validate([...]);
 $user->update($validated);
+```
+
+---
+
+## 🚫 Model Field and Relationship Name Errors
+
+### ❌ Assuming field/relationship names without checking the model
+```php
+// In Controller
+$invoice = Invoice::find($id);
+
+// In View
+{{ $invoice->lineItems->first()->description }} // ❌ Assumes 'lineItems' exists
+{{ $invoice->total_amount }} // ❌ Assumes 'total_amount' field exists
+```
+
+### ✅ CORRECT: Always check the model first
+```php
+// 1. Check the Model FIRST
+class Invoice extends Model
+{
+    protected $fillable = ['total_cents', 'subtotal_cents', ...]; // ✅ Field is 'total_cents'
+    
+    public function items() { // ✅ Relationship is 'items'
+        return $this->hasMany(InvoiceItem::class);
+    }
+}
+
+// 2. Use eager loading in Controller
+$invoice = Invoice::with('items')->find($id); // ✅ Load relationship
+
+// 3. Use correct names in View
+{{ $invoice->items->first()->description }} // ✅ Correct relationship name
+{{ $invoice->total_cents }} // ✅ Correct field name
+```
+
+### 🔍 Pre-Implementation Checklist:
+**Before writing controller/view code:**
+
+1. ✅ **Open the Model file** - Check exact field names in `$fillable` or migration
+2. ✅ **Check relationship method names** - Don't assume `lineItems`, check if it's `items`
+3. ✅ **Use eager loading** - Always load relationships with `::with()` before using them
+4. ✅ **Check field suffixes** - Laravel convention: `_cents` for money, `_at` for timestamps
+5. ✅ **Test with actual data** - Don't assume structure matches your mental model
+
+### 💡 Quick Model Inspection Commands:
+```bash
+# View model structure
+php artisan tinker
+>>> \App\Models\Invoice::first()->toArray() # See actual field names
+>>> (new \App\Models\Invoice)->items() # Check relationship exists
+```
+
+### 🎯 Real Example from Checkout:
+```php
+// ❌ WRONG (Assumptions)
+$invoice = Invoice::find($id);
+$invoice->lineItems->first() // RelationNotFoundException
+$invoice->total_amount // Undefined property
+
+// ✅ CORRECT (Verified)
+$invoice = Invoice::with('items')->find($id); // Checked Model first
+$invoice->items->first() // ✅ Relationship name verified
+$invoice->total_cents // ✅ Field name verified from $fillable
 ```
 
 ---
@@ -231,6 +391,11 @@ if (!config('organizations.enabled')) {
 
 ## 📝 Quick Checklist Before Committing
 
+- [ ] **Matched response type to request** - Return JSON for AJAX/fetch, Redirect for form submits
+- [ ] **Verified model field names** - Checked `$fillable` or migration for exact field names
+- [ ] **Verified relationship names** - Opened model file to confirm relationship method names
+- [ ] **Added eager loading** - Used `::with('relation')` when accessing relationships
+- [ ] **Verified route names exist** - Checked routes file or ran `php artisan route:list` before using `route()` helper
 - [ ] No `$this->middleware()` in controller constructors
 - [ ] All Auth::user() calls are null-safe
 - [ ] All relationship accesses use null-safe operator or checks
@@ -239,6 +404,53 @@ if (!config('organizations.enabled')) {
 - [ ] No N+1 queries in loops
 - [ ] Mass assignment uses `only()` or `validated()`
 - [ ] Complex operations use DB transactions
+
+---
+
+## � Translation/Cache Issues
+
+### ❌ Translation keys not working after adding new translations
+```php
+// Created new translation file: resources/lang/da/billing.php
+return [
+    'title' => 'Fakturering',
+];
+```
+
+```blade
+{{-- View shows English fallback instead of Danish --}}
+{{ __('billing.title') }} {{-- Shows "Billing" instead of "Fakturering" --}}
+```
+
+### ✅ SOLUTION: Always clear Laravel caches after translation changes
+```bash
+# Run these THREE commands together after adding/modifying translations:
+php artisan config:clear    # Clear config cache
+php artisan cache:clear     # Clear application cache
+php artisan view:clear      # Clear compiled views
+
+# Or use shortcut:
+php artisan optimize:clear  # Clears ALL caches at once
+```
+
+### 🎯 When to clear cache:
+- ✅ After adding new translation files
+- ✅ After modifying existing translation files
+- ✅ After changing .env variables
+- ✅ After updating config files
+- ✅ When translations show fallback text unexpectedly
+- ✅ After pulling changes from git that include translation updates
+
+### 💡 Pro Tip: Add to your workflow
+```bash
+# Always run after translations work:
+php artisan optimize:clear && echo "✅ Caches cleared!"
+
+# Or create git hook to auto-clear cache after pull:
+# .git/hooks/post-merge
+#!/bin/bash
+php artisan optimize:clear
+```
 
 ---
 
@@ -251,4 +463,4 @@ if (!config('organizations.enabled')) {
 
 ---
 
-*Last updated: January 17, 2026*
+*Last updated: January 18, 2026*

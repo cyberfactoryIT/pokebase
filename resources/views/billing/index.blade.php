@@ -101,6 +101,20 @@
                         <div class="bg-white/5 border border-white/10 rounded-lg p-3">
                             <div class="text-gray-400 text-xs mb-1">{{ __('subscriptions.membership.next_renewal') }}</div>
                             <div class="text-white font-medium">{{ $membershipStatus['next_renewal']->format('M d, Y') }}</div>
+                            @php
+                                $daysUntilRenewal = now()->diffInDays($membershipStatus['next_renewal'], false);
+                            @endphp
+                            @if($daysUntilRenewal >= 0)
+                            <div class="text-gray-400 text-xs mt-1">
+                                @if($daysUntilRenewal == 0)
+                                    {{ __('subscriptions.membership.renews_today') }}
+                                @elseif($daysUntilRenewal == 1)
+                                    {{ __('subscriptions.membership.renews_tomorrow') }}
+                                @else
+                                    {{ __('subscriptions.membership.renews_in_days', ['days' => $daysUntilRenewal]) }}
+                                @endif
+                            </div>
+                            @endif
                         </div>
                         @endif
 
@@ -283,7 +297,7 @@
                                     <option value="">{{ __('subscriptions.billing_info.select_country', [], 'Select a country') }}</option>
                                     @php
                                         $countries = __('countries');
-                                        $denmarkKey = 'Denmark';
+                                        $denmarkKey = 'DK';
                                         $denmark = [$denmarkKey => $countries[$denmarkKey]];
                                         unset($countries[$denmarkKey]);
                                         
@@ -520,15 +534,12 @@
                                 Current Plan
                             </button>
                         @elseif($isUpgrade)
-                            <form method="POST" action="{{ route('billing.confirmChangePlan') }}">
-                                @csrf
-                                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                                <input type="hidden" name="billing_period" class="billing-period-input" value="monthly">
-                                <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-{{ $color['accent'] }}-600 to-{{ $color['accent'] }}-700 hover:from-{{ $color['accent'] }}-700 hover:to-{{ $color['accent'] }}-800 text-white rounded-lg font-semibold transition shadow-lg">
-                                    <i class="fas fa-arrow-up mr-2"></i>
-                                    Upgrade to {{ $plan->name }}
-                                </button>
-                            </form>
+                            <a href="{{ route('checkout.show', ['plan_id' => $plan->id, 'billing_period' => 'monthly']) }}" 
+                               class="upgrade-button w-full px-6 py-3 bg-gradient-to-r from-{{ $color['accent'] }}-600 to-{{ $color['accent'] }}-700 hover:from-{{ $color['accent'] }}-700 hover:to-{{ $color['accent'] }}-800 text-white rounded-lg font-semibold transition shadow-lg inline-block text-center"
+                               data-plan-id="{{ $plan->id }}">
+                                <i class="fas fa-arrow-up mr-2"></i>
+                                Upgrade to {{ $plan->name }}
+                            </a>
                         @elseif($isDowngrade)
                             <form method="POST" action="{{ route('billing.confirmChangePlan') }}" onsubmit="return confirm('Are you sure you want to downgrade to {{ $plan->name }}? You will lose access to premium features.')">
                                 @csrf
@@ -552,7 +563,7 @@
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-bold text-white">
                     <i class="fas fa-file-invoice text-green-400 mr-2"></i>
-                    {{ __('subscriptions.invoices.title', [], 'Invoices') }}
+                    {{ __('billing.invoices.title') }}
                 </h2>
             </div>
 
@@ -565,11 +576,11 @@
                 <table class="w-full">
                     <thead class="border-b border-white/10">
                         <tr>
-                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">Invoice #</th>
-                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">Date</th>
-                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">Amount</th>
-                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">Status</th>
-                            <th class="text-right text-gray-400 text-sm font-medium py-3 px-4">Actions</th>
+                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">{{ __('billing.invoices.invoice_number') }}</th>
+                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">{{ __('billing.invoices.date') }}</th>
+                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">{{ __('billing.invoices.amount') }}</th>
+                            <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">{{ __('billing.invoices.status') }}</th>
+                            <th class="text-right text-gray-400 text-sm font-medium py-3 px-4">{{ __('billing.invoices.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
@@ -582,28 +593,22 @@
                                 <span class="text-gray-300">{{ $invoice->issued_at->format('M d, Y') }}</span>
                             </td>
                             <td class="py-3 px-4">
-                                <span class="text-white font-semibold">€{{ number_format($invoice->total_cents / 100, 2) }}</span>
+                                <span class="text-white font-semibold">{{ number_format($invoice->total_cents / 100, 2) }} {{ strtoupper($invoice->currency) }}</span>
                             </td>
                             <td class="py-3 px-4">
                                 @if($invoice->status === 'paid')
-                                    <span class="px-2 py-1 bg-green-600/20 border border-green-500/30 text-green-300 rounded text-xs font-medium">Paid</span>
+                                    <span class="px-2 py-1 bg-green-600/20 border border-green-500/30 text-green-300 rounded text-xs font-medium">{{ __('billing.invoices.status_paid') }}</span>
                                 @elseif($invoice->status === 'open')
-                                    <span class="px-2 py-1 bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 rounded text-xs font-medium">Open</span>
+                                    <span class="px-2 py-1 bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 rounded text-xs font-medium">{{ __('billing.invoices.status_open') }}</span>
                                 @else
                                     <span class="px-2 py-1 bg-red-600/20 border border-red-500/30 text-red-300 rounded text-xs font-medium">{{ ucfirst($invoice->status) }}</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('billing.invoice.show', $invoice) }}" target="_blank" class="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 rounded-lg text-xs font-medium transition">
-                                        <i class="fas fa-eye mr-1"></i>
-                                        View
-                                    </a>
-                                    <a href="{{ route('billing.invoice.receipt', $invoice) }}" target="_blank" class="px-3 py-1.5 bg-gray-600/20 hover:bg-gray-600/30 border border-gray-500/30 text-gray-300 rounded-lg text-xs font-medium transition">
-                                        <i class="fas fa-download mr-1"></i>
-                                        Download
-                                    </a>
-                                </div>
+                                <a href="{{ route('billing.invoice.show', $invoice) }}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 rounded-lg text-xs font-medium transition">
+                                    <i class="fas fa-eye"></i>
+                                    <span>{{ __('billing.invoices.view') }}</span>
+                                </a>
                             </td>
                         </tr>
                         @endforeach
@@ -619,7 +624,7 @@
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-500/20 rounded-full mb-4">
                     <i class="fas fa-file-invoice text-gray-400 text-2xl"></i>
                 </div>
-                <p class="text-gray-400">No invoices yet</p>
+                <p class="text-gray-400">{{ __('billing.invoices.no_invoices') }}</p>
             </div>
             @endif
         </div>
@@ -725,6 +730,7 @@ function switchBillingPeriod(period) {
     const monthlyPrices = document.querySelectorAll('.price-monthly');
     const yearlyPrices = document.querySelectorAll('.price-yearly');
     const billingInputs = document.querySelectorAll('.billing-period-input');
+    const upgradeButtons = document.querySelectorAll('.upgrade-button');
     
     if (period === 'monthly') {
         // Update button styles
@@ -737,8 +743,14 @@ function switchBillingPeriod(period) {
         monthlyPrices.forEach(el => el.classList.remove('hidden'));
         yearlyPrices.forEach(el => el.classList.add('hidden'));
         
-        // Update hidden inputs
+        // Update hidden inputs (for downgrade buttons)
         billingInputs.forEach(input => input.value = 'monthly');
+        
+        // Update upgrade button links
+        upgradeButtons.forEach(btn => {
+            const planId = btn.getAttribute('data-plan-id');
+            btn.href = `{{ route('checkout.show') }}?plan_id=${planId}&billing_period=monthly`;
+        });
     } else {
         // Update button styles
         btnYearly.classList.add('bg-blue-600', 'text-white');
@@ -750,8 +762,14 @@ function switchBillingPeriod(period) {
         monthlyPrices.forEach(el => el.classList.add('hidden'));
         yearlyPrices.forEach(el => el.classList.remove('hidden'));
         
-        // Update hidden inputs
+        // Update hidden inputs (for downgrade buttons)
         billingInputs.forEach(input => input.value = 'yearly');
+        
+        // Update upgrade button links
+        upgradeButtons.forEach(btn => {
+            const planId = btn.getAttribute('data-plan-id');
+            btn.href = `{{ route('checkout.show') }}?plan_id=${planId}&billing_period=yearly`;
+        });
     }
 }
 </script>

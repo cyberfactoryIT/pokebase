@@ -9,7 +9,14 @@ class PricingPlan extends Model
     use HasFactory;
     
     protected $fillable = [
-        'name','code','monthly_price_cents','yearly_price_cents','currency','meta'
+        'name',
+        'code',
+        'monthly_price_cents',
+        'yearly_price_cents',
+        'stripe_monthly_price_id',
+        'stripe_yearly_price_id',
+        'currency',
+        'meta'
     ];
     protected $casts = [
         'meta' => 'array',
