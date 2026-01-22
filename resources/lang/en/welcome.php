@@ -36,6 +36,11 @@ return [
     'faq_trial_a' => 'Yes. All new users get 30 days of free access to all features — no payment required until the trial ends.',
 
     'who_title' => 'Who is basecard.dk for?',
+    
+    // Three Pillars Section (Main Features Overview)
+    'features_main_title' => 'One place. Three needs. Full control of your collection.',
+    'features_main_subtitle' => 'Whether you collect with your child, play competitively, or track your collection\'s value, Basecard is built for your purpose.',
+    
     'who_1_title' => 'Curious collectors',
     'who_1_desc' => 'For anyone who loves exploring their cards and discovering what they are truly worth — now and in the future.',
     'who_2_title' => 'Strategic players',

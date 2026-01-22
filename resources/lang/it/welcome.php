@@ -36,6 +36,11 @@ return [
     'faq_trial_a' => 'Sì. Tutti i nuovi utenti ottengono 30 giorni di accesso completo senza alcun pagamento richiesto fino al termine della prova.',
 
     'who_title' => 'A chi è rivolto basecard.dk?',
+    
+    // Three Pillars Section (Main Features Overview)
+    'features_main_title' => 'Un solo posto. Tre esigenze. Controllo completo della tua collezione.',
+    'features_main_subtitle' => 'Che tu colleziona con tuo figlio, giochi competitivamente o segua il valore della tua collezione, Basecard è costruito per il tuo scopo.',
+    
     'who_1_title' => 'Collezionisti curiosi',
     'who_1_desc' => 'Per chi ama esplorare la propria collezione e capire quanto valgono davvero le carte — oggi e nel futuro.',
     'who_2_title' => 'Giocatori strategici',

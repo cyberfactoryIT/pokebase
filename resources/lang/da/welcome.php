@@ -43,6 +43,11 @@ return [
 'faq_trial_a' => 'Ja. Alle nye brugere får 30 dages gratis adgang til alle funktioner. Ingen betaling kræves før prøveperioden udløber.',
 
     'who_title' => 'Hvem er basecard.dk til?',
+    
+    // Three Pillars Section (Main Features Overview)
+    'features_main_title' => 'Ét sted. Tre behov. Fuld kontrol over din samling.',
+    'features_main_subtitle' => 'Uanset om du samler med dit barn, spiller competitivt eller følger din samlings værdi, er Basecard bygget til dit formål.',
+    
     'who_1_title' => 'Nysgerrige samlere',
     'who_1_desc' => 'Til dig, der elsker at udforske dine kort og opdage, hvad de egentlig er værd — både nu og over tid.',
     'who_2_title' => 'Strategiske spillere',
