@@ -23,6 +23,7 @@ class TcgcsvGroup extends Model
         'published_on',
         'modified_on',
         'raw',
+        'show_in_carousel',
     ];
     
     protected $casts = [
@@ -32,6 +33,7 @@ class TcgcsvGroup extends Model
         'published_on' => 'datetime',
         'modified_on' => 'datetime',
         'raw' => 'array',
+        'show_in_carousel' => 'boolean',
     ];
     
     public function products(): HasMany

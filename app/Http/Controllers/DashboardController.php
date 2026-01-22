@@ -37,10 +37,14 @@ class DashboardController extends Controller
                 'userDecksCount' => 0,
                 'userCollectionCount' => 0,
                 'uniqueCardsCount' => 0,
+                'collectionValue' => 0,
                 'currentGame' => null,
                 'articles' => collect(),
                 'articleCategories' => collect(),
                 'userLocale' => app()->getLocale(),
+                'recentAdditions' => collect(),
+                'topCards' => collect(),
+                'userExpansions' => collect(),
             ]);
         }
         
@@ -89,15 +93,77 @@ class DashboardController extends Controller
             ->pluck('category')
             ->sort();
         
+        // Get recent additions (last 6 cards added to collection)
+        $recentAdditions = UserCollection::where('user_id', Auth::id())
+            ->whereHas('card', function($q) use ($currentGame) {
+                $q->where('game_id', $currentGame->id);
+            })
+            ->with(['card.group', 'card.prices'])
+            ->orderByDesc('created_at')
+            ->limit(6)
+            ->get();
+        
+        // Get top 5 most valuable cards in collection
+        $topCards = UserCollection::where('user_id', Auth::id())
+            ->whereHas('card', function($q) use ($currentGame) {
+                $q->where('game_id', $currentGame->id);
+            })
+            ->with(['card.group', 'card.prices'])
+            ->get()
+            ->sortByDesc(function($item) {
+                $latestPrice = $item->card->prices->first();
+                return $latestPrice?->market_price ?? 0;
+            })
+            ->take(5);
+        
+        // Calculate total collection value
+        $collectionValue = UserCollection::where('user_id', Auth::id())
+            ->whereHas('card', function($q) use ($currentGame) {
+                $q->where('game_id', $currentGame->id);
+            })
+            ->with('card.prices')
+            ->get()
+            ->sum(function($item) {
+                $latestPrice = $item->card->prices->first();
+                $price = $latestPrice?->market_price ?? 0;
+                return $price * $item->quantity;
+            });
+        
+        // Get expansions for missing cards dropdown
+        // Get unique group_ids from user's collection for this game
+        $userGroupIds = UserCollection::where('user_id', Auth::id())
+            ->join('tcgcsv_products', 'user_collection.product_id', '=', 'tcgcsv_products.product_id')
+            ->where('tcgcsv_products.game_id', $currentGame->id)
+            ->distinct()
+            ->pluck('tcgcsv_products.group_id');
+        
+        $userExpansions = TcgcsvGroup::where('game_id', $currentGame->id)
+            ->whereIn('group_id', $userGroupIds)
+            ->orderBy('published_on', 'desc')
+            ->limit(10)
+            ->get();
+        
+        // Featured expansions for carousel
+        $featuredExpansions = TcgcsvGroup::where('game_id', $currentGame->id)
+            ->where('show_in_carousel', true)
+            ->orderBy('published_on', 'desc')
+            ->get();
+        
         return view('dashboard', [
             'cardsCount' => $cardsCount,
             'expansionsCount' => $expansionsCount,
             'userDecksCount' => $userDecksCount,
             'userCollectionCount' => $userCollectionCount,
             'uniqueCardsCount' => $uniqueCardsCount,
+            'collectionValue' => $collectionValue,
             'articles' => $articles,
             'articleCategories' => $articleCategories,
             'userLocale' => $userLocale,
+            'recentAdditions' => $recentAdditions,
+            'topCards' => $topCards,
+            'userExpansions' => $userExpansions,
+            'featuredExpansions' => $featuredExpansions,
+            'currentGame' => $currentGame,
         ]);
     }
 }

@@ -4,89 +4,87 @@
 
 <div class="bg-black min-h-screen py-8">
     <div class="max-w-6xl mx-auto px-6">
-        <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
-            <!-- Header -->
-            <div class="mb-8">
-                <h2 class="font-semibold text-3xl text-white mb-2">
-                    {{ __('messages.Dashboard') }}
-                </h2>
-                <p class="text-gray-400">
-                    {{ __('dashboard.subtitle') }}
-                </p>
-            </div>
+        <!-- Welcome Header with License Badge and Quick Actions -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold text-xl text-white">
+                {{ __('messages.welcome').' '.Auth::user()->name }}!
+            </h2>
+            
+            <div class="flex items-center gap-3">
+                <!-- Quick Actions Icons -->
+                <a href="{{ route('collection.index') }}" class="flex items-center gap-1.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-lg px-2 py-1.5 transition group" title="{{ __('dashboard.my_collection') }}">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <span class="text-white text-xs font-medium">{{ $userCollectionCount }}</span>
+                </a>
 
-            <!-- Welcome Message -->
-            <div class="bg-green-900/30 border border-green-500/30 rounded-lg p-4 mb-8">
-                <h3 class="font-semibold text-green-300 mb-2">{{ __('messages.welcome').' '.Auth::user()->name }}!</h3>
-                <p class="text-green-200 text-sm">{{ __('messages.you_are_logged_in_correctly') }}</p>
-            </div>
+                <a href="{{ route('decks.index') }}" class="flex items-center gap-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-lg px-2 py-1.5 transition group" title="{{ __('dashboard.my_decks') }}">
+                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <span class="text-white text-xs font-medium">{{ $userDecksCount }}</span>
+                </a>
 
-            <!-- Quick Actions -->
-            <div class="mb-8">
-                <h3 class="font-semibold text-xl text-white mb-4">{{ __('dashboard.quick_actions') }}</h3>
+                @if($expansionsCount > 0)
+                <a href="{{ route('tcg.expansions.index') }}" class="flex items-center gap-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-2 py-1.5 transition group" title="{{ __('dashboard.browse_expansions') }}">
+                    <img src="/images/logos/logo_pokemon.png" alt="Pokemon" class="w-4 h-4 object-contain">
+                    <span class="text-white text-xs font-medium">{{ $expansionsCount }}</span>
+                </a>
+                @endif
+
+                <!-- Divider -->
+                <div class="w-px h-6 bg-white/10"></div>
+
+                <!-- License Badge -->
+                @php
+                    $user = Auth::user();
+                    $isPremium = $user->organization && $user->organization->pricingPlan && $user->organization->pricingPlan->slug === 'premium';
+                    $planName = $isPremium ? 'Premium' : ($user->organization && $user->organization->pricingPlan ? $user->organization->pricingPlan->name : 'Free');
+                @endphp
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- My Collection -->
-                    <a href="{{ route('collection.index') }}" class="block bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg p-6 transition group">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-purple-500/20 p-3 rounded-lg group-hover:bg-purple-500/30 transition">
-                                <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.my_collection') }}</h4>
-                                <p class="text-gray-400 text-sm">{{ trans_choice('dashboard.my_collection_count', $userCollectionCount, ['count' => $userCollectionCount]) }} ({{ trans_choice('dashboard.unique_count', $uniqueCardsCount, ['count' => $uniqueCardsCount]) }})</p>
-                            </div>
-                        </div>
+                <div class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5">
+                    <svg class="w-4 h-4 {{ $isPremium ? 'text-yellow-400' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    <span class="text-white text-sm font-medium">{{ $planName }}</span>
+                </div>
+                
+                @if(!$isPremium)
+                    <a href="{{ route('pricing') }}" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white text-sm font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        Upgrade
                     </a>
+                @endif
+            </div>
+        </div>
 
-                    <!-- My Decks -->
-                    <a href="{{ route('decks.index') }}" class="block bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg p-6 transition group">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-green-500/20 p-3 rounded-lg group-hover:bg-green-500/30 transition">
-                                <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.my_decks') }}</h4>
-                                <p class="text-gray-400 text-sm">{{ trans_choice('dashboard.my_decks_count', $userDecksCount, ['count' => $userDecksCount]) }}</p>
-                            </div>
-                        </div>
-                    </a>
+        <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
 
-                    @if($expansionsCount > 0)
-                    <a href="{{ route('tcg.expansions.index') }}" class="block bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg p-6 transition group">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-yellow-500/20 p-3 rounded-lg group-hover:bg-yellow-500/30 transition">
-                                <img src="/images/logos/logo_pokemon.png" alt="Pokemon" class="w-8 h-8 object-contain">
-                            </div>
-                            <div>
-                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.browse_expansions') }}</h4>
-                                <p class="text-gray-400 text-sm">{{ __('dashboard.browse_expansions_subtitle') }}</p>
-                            </div>
-                        </div>
-                    </a>
-                    @endif
+            <!-- 2 Column Layout: Left (66%) stacked Quick Add + Recent, Right (33%) Top Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Left Column: Quick Add + Recent Additions stacked (2/3 width) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Quick Add Card Form -->
+                    @include('dashboard.quick-add')
 
-                    @if($cardsCount > 0)
-                    <div class="block bg-white/5 border border-white/10 rounded-lg p-6">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-blue-500/20 p-3 rounded-lg">
-                                <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="text-white font-semibold mb-1">{{ __('dashboard.search_cards') }}</h4>
-                                <p class="text-gray-400 text-sm">{{ __('dashboard.search_cards_subtitle') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
+                    <!-- Recent Additions -->
+                    @include('dashboard.recent-additions')
+                </div>
+
+                <!-- Right Column: Top Valuable Cards (1/3 width) -->
+                <div class="lg:col-span-1">
+                    @include('dashboard.top-cards')
                 </div>
             </div>
+
+            <!-- Featured Expansions Carousel -->
+            @include('dashboard.featured-expansions')
+
+            <!-- Missing Cards (Full Width) -->
+            @include('dashboard.missing-cards')
         
 
             <!-- Quick Stats -->

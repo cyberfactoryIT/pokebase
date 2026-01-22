@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CardSearchController;
+use App\Http\Controllers\Api\ExpansionController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -15,6 +16,22 @@ use Illuminate\Support\Facades\Route;
  * Uses web middleware to support session-based authentication for collection filtering
  */
 Route::middleware(['web'])->get('/search/cards', [CardSearchController::class, 'index'])->name('api.search.cards');
+
+/**
+ * Get missing cards for expansion (requires authentication)
+ * GET /api/expansions/{id}/missing-cards
+ * Returns cards not in user's collection for a specific expansion
+ */
+Route::middleware(['web', 'auth'])->get('/expansions/{id}/missing-cards', [ExpansionController::class, 'getMissingCards'])
+    ->name('api.expansions.missing-cards');
+
+/**
+ * Get user's popular sets (most complete sets)
+ * GET /api/user/popular-sets
+ * Returns user's sets ordered by completion percentage
+ */
+Route::middleware(['web', 'auth'])->get('/user/popular-sets', [ExpansionController::class, 'getPopularSets'])
+    ->name('api.user.popular-sets');
 
 /**
  * Stripe Webhook endpoint

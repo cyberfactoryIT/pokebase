@@ -13,6 +13,8 @@ return [
     'modal_deck_title' => 'Aggiungi al Mazzo',
     'no_decks_yet' => 'Non hai ancora mazzi.',
     'create_first_deck' => 'Crea il Tuo Primo Mazzo',
+    'hd_image' => 'Immagine HD',
+    'view_hd_image' => 'Vedi Immagine HD',
     'pricing' => 'Prezzi',
     'market_price' => 'Prezzo di Mercato',
     'low_price' => 'Prezzo Basso',

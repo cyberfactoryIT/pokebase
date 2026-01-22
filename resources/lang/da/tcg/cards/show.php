@@ -13,6 +13,8 @@ return [
     'modal_deck_title' => 'Tilføj til Deck',
     'no_decks_yet' => 'Du har ingen decks endnu.',
     'create_first_deck' => 'Opret Dit Første Deck',
+    'hd_image' => 'HD Billede',
+    'view_hd_image' => 'Se HD Billede',
     'pricing' => 'Priser',
     'market_price' => 'Markedspris',
     'low_price' => 'Lav Pris',

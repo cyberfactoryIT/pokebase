@@ -9,6 +9,7 @@ use App\Services\CollectionInsightsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -446,5 +447,64 @@ class CollectionController extends Controller
         $photo->delete(); // Will also delete file via model event
 
         return back()->with('success', __('photos.delete.success'));
+    }
+
+    /**
+     * Quick add card to collection (AJAX endpoint)
+     */
+    public function quickAdd(Request $request)
+    {
+        $validated = $request->validate([
+            'card_id' => 'required|integer|exists:tcgcsv_products,product_id',
+            'quantity' => 'required|integer|min:1|max:100',
+            'condition' => 'required|string|in:M,NM,LP,MP,HP,D',
+        ]);
+
+        try {
+            // Check if user already has this card
+            $existingCard = UserCollection::where('user_id', Auth::id())
+                ->where('product_id', $validated['card_id'])
+                ->where('condition', $validated['condition'])
+                ->first();
+
+            if ($existingCard) {
+                // Update quantity if card already exists
+                $existingCard->quantity += $validated['quantity'];
+                $existingCard->save();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => __('dashboard.card_added_successfully'),
+                    'action' => 'updated',
+                    'new_quantity' => $existingCard->quantity,
+                ]);
+            } else {
+                // Create new collection entry
+                UserCollection::create([
+                    'user_id' => Auth::id(),
+                    'product_id' => $validated['card_id'],
+                    'quantity' => $validated['quantity'],
+                    'condition' => $validated['condition'],
+                    'is_foil' => false, // Default to non-foil for quick add
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => __('dashboard.card_added_successfully'),
+                    'action' => 'created',
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Quick add card error', [
+                'user_id' => Auth::id(),
+                'card_id' => $validated['card_id'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('dashboard.error_adding_card'),
+            ], 500);
+        }
     }
 }

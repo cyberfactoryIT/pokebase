@@ -108,6 +108,7 @@ Route::middleware('auth')->group(function () {
     // User Collection
     Route::get('collection', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collection.index');
     Route::post('collection/add', [\App\Http\Controllers\CollectionController::class, 'add'])->name('collection.add');
+    Route::post('collection/quick-add', [\App\Http\Controllers\CollectionController::class, 'quickAdd'])->name('collection.quick-add');
     Route::delete('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'remove'])->name('collection.remove');
     Route::patch('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'update'])->name('collection.update');
     Route::get('collection/check/{productId}', [\App\Http\Controllers\CollectionController::class, 'checkCard'])->name('collection.check');

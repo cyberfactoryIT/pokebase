@@ -13,6 +13,8 @@ return [
     'modal_deck_title' => 'Add to Deck',
     'no_decks_yet' => 'You don\'t have any decks yet.',
     'create_first_deck' => 'Create Your First Deck',
+    'hd_image' => 'HD Image',
+    'view_hd_image' => 'View HD Image',
     'pricing' => 'Pricing',
     'market_price' => 'Market Price',
     'low_price' => 'Low Price',
