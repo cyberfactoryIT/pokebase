@@ -96,24 +96,36 @@ return [
     'launched' => 'we are live!',
     'waitlist_placeholder' => 'your@email.com',
     
-    // New welcome page
+    // Navigation
     'nav_about' => 'About',
     'nav_features' => 'Features',
     'nav_pricing' => 'Pricing',
     'nav_contact' => 'Contact',
     'nav_dashboard' => 'Dashboard',
-    'subtitle_short' => 'Your collection deserves a better home',
-    'hero_title' => 'Your collection deserves a better home.',
-    'hero_subtitle' => 'Scandinavia\'s finest tool for Pokémon, Magic and One Piece. Get complete overview of value, missing cards and decks made easy.',
-    'cta_create_profile' => 'Create free profile – in 30 seconds',
+    'subtitle_short' => 'Know your card portfolio value',
+    
+    // Hero Section - Updated Copy
+    'hero_title' => 'Know your card portfolio value – without guessing.',
+    'hero_subtitle' => 'Track market value of Pokémon, Magic and One Piece based on European Cardmarket prices.',
+    'cta_create_profile' => 'Create free profile – see your value',
     'cta_start_free' => 'Start free',
     'cta_learn_more' => 'Learn more',
+    
+    // Stats
+    'stat_games' => '3 games',
+    'stat_games_label' => 'Data, not hype',
+    'stat_cardmarket' => 'Cardmarket',
+    'stat_cardmarket_label' => 'Cardmarket-based',
     'stat_users' => '5,000+',
     'stat_users_label' => 'collectors in the Nordics',
     'stat_cards' => '30k+',
     'stat_cards_label' => 'cards in database',
+    
+    // Mockup
     'mockup_value' => '€20,000',
     'mockup_label' => 'Collection value',
+    
+    // Pillars
     'pillars_title' => 'The Three Pillars',
     'pillar1_title' => 'Nordic Focus',
     'pillar1_description' => 'Prices in DKK/SEK/NOK. Buy locally.',
@@ -122,8 +134,4 @@ return [
     'pillar3_title' => 'Real-time Value',
     'pillar3_description' => 'Track your collection\'s evolution.',
     'social_proof' => 'Used by 5,000+ collectors in the Nordics',
-    'stat_games' => '3 games',
-    'stat_games_label' => 'live, more coming',
-    'stat_cardmarket' => 'Cardmarket',
-    'stat_cardmarket_label' => 'European pricing',
 ];

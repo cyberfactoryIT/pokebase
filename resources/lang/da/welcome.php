@@ -1,5 +1,16 @@
     <?php
 return [
+    // Hero Section - New Copy
+    'hero_title' => 'Kend værdien af din kortportefølje – uden gæt.',
+    'hero_subtitle' => 'Følg markedsværdi på Pokémon, Magic og One Piece baseret på europæiske Cardmarket-priser.',
+    'cta_create_profile' => 'Opret gratis profil – se din værdi',
+    'cta_learn_more' => 'Lær mere',
+    'stat_games' => '3 spil',
+    'stat_games_label' => 'Data, ikke hype',
+    'stat_cardmarket' => 'Cardmarket',
+    'stat_cardmarket_label' => 'Cardmarket-baseret',
+    
+    // Legacy (keep for compatibility)
     'title' => 'Udforsk din samling. <br/>Forstå dens værdi.',
     'subtitle' => 'basecard.dk giver dig et klart og levende overblik over dine kort — følg værdiudviklingen, opdag tendenser og se, hvad der gør hvert kort unikt.',
     'get_started' => 'Start her',
@@ -84,34 +95,42 @@ return [
     'waitlist_placeholder' => 'din@email.dk',
     'welcome_message_30_days' => '30 dages gratis prøveperiode · intet kort kræves',
     
-    // New welcome page
+    // Navigation
     'nav_about' => 'Om os',
     'nav_features' => 'Funktioner',
     'nav_pricing' => 'Priser',
     'nav_contact' => 'Kontakt',
     'nav_dashboard' => 'Dashboard',
-    'subtitle_short' => 'Din samling fortjener et bedre hjem',
-    'hero_title' => 'Din samling fortjener et bedre hjem.',
-    'hero_subtitle' => 'Skandinaviens flotteste værktøj til Pokémon, Magic og One Piece. Få fuldt overblik over værdi, manglere and decks så let sled.',
-    'cta_create_profile' => 'Opret gratis profil – på 30 sekunder',
+    'subtitle_short' => 'Kend værdien af din kortportefølje',
+    
+    // Hero Section - Updated Copy
+    'hero_title' => 'Kend værdien af din kortportefølje – uden gæt.',
+    'hero_subtitle' => 'Følg markedsværdi på Pokémon, Magic og One Piece baseret på europæiske Cardmarket-priser.',
+    'cta_create_profile' => 'Opret gratis profil – se din værdi',
     'cta_start_free' => 'Start gratis',
     'cta_learn_more' => 'Lær mere',
+    
+    // Stats
+    'stat_games' => '3 spil',
+    'stat_games_label' => 'Data, ikke hype',
+    'stat_cardmarket' => 'Cardmarket',
+    'stat_cardmarket_label' => 'Cardmarket-baseret',
     'stat_users' => '5,000+',
     'stat_users_label' => 'samlere i Norden',
     'stat_cards' => '30k+',
     'stat_cards_label' => 'kort i databasen',
+    
+    // Mockup
     'mockup_value' => '158,000 kr',
     'mockup_label' => 'Samlingsværdi',
+    
+    // Pillars
     'pillars_title' => 'The Three Pillars',
     'pillar1_title' => 'Nordisk Fokus',
-    'pillar1_description' => 'Priser i DKK/SEK/NOK. Kæb lokalt.',
+    'pillar1_description' => 'Priser i DKK/SEK/NOK. Køb lokalt.',
     'pillar2_title' => 'Lynhurtig Søgning',
     'pillar2_description' => 'Find ethvert kort på sekunder.',
-    'pillar3_title' => 'Værvi i Realtid',
-    'pillar3_description' => 'Følg din samlings ovelding.',
+    'pillar3_title' => 'Værdi i Realtid',
+    'pillar3_description' => 'Følg din samlings udvikling.',
     'social_proof' => 'Brugt af 5,000+ samlere i Norden',
-    'stat_games' => '3 spil',
-    'stat_games_label' => 'åbne, flere på vej',
-    'stat_cardmarket' => 'Cardmarket',
-    'stat_cardmarket_label' => 'europæiske priser',
 ];

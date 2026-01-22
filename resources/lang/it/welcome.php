@@ -96,24 +96,36 @@ return [
     'launched' => 'siamo online!',
     'waitlist_placeholder' => 'tua@email.it',
     
-    // New welcome page
+    // Navigation
     'nav_about' => 'Chi siamo',
     'nav_features' => 'Funzionalità',
     'nav_pricing' => 'Prezzi',
     'nav_contact' => 'Contatti',
     'nav_dashboard' => 'Dashboard',
-    'subtitle_short' => 'La tua collezione merita una casa migliore',
-    'hero_title' => 'La tua collezione merita una casa migliore.',
-    'hero_subtitle' => 'Lo strumento più bello della Scandinavia per Pokémon, Magic e One Piece. Ottieni una panoramica completa su valore, carte mancanti e deck in modo semplice.',
-    'cta_create_profile' => 'Crea profilo gratuito – in 30 secondi',
+    'subtitle_short' => 'Conosci il valore del tuo portafoglio di carte',
+    
+    // Hero Section - Updated Copy
+    'hero_title' => 'Conosci il valore del tuo portafoglio di carte – senza indovinare.',
+    'hero_subtitle' => 'Segui il valore di mercato di Pokémon, Magic e One Piece basato sui prezzi europei di Cardmarket.',
+    'cta_create_profile' => 'Crea profilo gratis – scopri il tuo valore',
     'cta_start_free' => 'Inizia gratis',
     'cta_learn_more' => 'Scopri di più',
+    
+    // Stats
+    'stat_games' => '3 giochi',
+    'stat_games_label' => 'Dati, non hype',
+    'stat_cardmarket' => 'Cardmarket',
+    'stat_cardmarket_label' => 'Basato su Cardmarket',
     'stat_users' => '5.000+',
     'stat_users_label' => 'collezionisti nel Nord Europa',
     'stat_cards' => '30k+',
     'stat_cards_label' => 'carte nel database',
+    
+    // Mockup
     'mockup_value' => '€20.000',
     'mockup_label' => 'Valore collezione',
+    
+    // Pillars
     'pillars_title' => 'I Tre Pilastri',
     'pillar1_title' => 'Focus Nordico',
     'pillar1_description' => 'Prezzi in DKK/SEK/NOK. Acquista localmente.',
@@ -122,8 +134,4 @@ return [
     'pillar3_title' => 'Valore in Tempo Reale',
     'pillar3_description' => 'Segui l\'evoluzione della tua collezione.',
     'social_proof' => 'Usato da oltre 5.000 collezionisti nel Nord Europa',
-    'stat_games' => '3 giochi',
-    'stat_games_label' => 'aperti, molti in arrivo',
-    'stat_cardmarket' => 'Cardmarket',
-    'stat_cardmarket_label' => 'prezzi europei',
 ];
