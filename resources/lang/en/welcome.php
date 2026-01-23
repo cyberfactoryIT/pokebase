@@ -91,6 +91,25 @@ return [
     'available' => 'Available!',
     'best_value' => 'Best value',
 
+    // How It Works / Getting Started Section
+    'how_it_works_title' => 'How to get started',
+    'how_it_works_subtitle' => 'From registration to professional collection management in minutes.',
+    
+    'how_step_1_title' => 'Create an account',
+    'how_step_1_desc' => 'Create a free account – no credit card and no commitment.',
+    
+    'how_step_2_title' => 'Add your cards',
+    'how_step_2_desc' => 'Add your cards the way that suits you – scan, import, or add manually.',
+    
+    'how_step_3_title' => 'Track value',
+    'how_step_3_desc' => 'See the total value of your collection – based on updated market prices.',
+    
+    'how_step_4_title' => 'Build decks with overview',
+    'how_step_4_desc' => 'Plan and maintain decks with full overview of cards, formats, and missing cards.',
+    
+    'how_cta_button' => 'Get started free',
+    'how_cta_footer' => 'No credit card • Free plan • Stop anytime',
+
     'getting_started' => 'How basecard.dk works',
     'getting_started_detail' => 'In just minutes, you get a full overview of your collection’s value — without spreadsheets or manual work.',
 

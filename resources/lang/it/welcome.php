@@ -91,6 +91,25 @@ return [
     'available' => 'Disponibile!',
     'best_value' => 'Miglior rapporto qualità/prezzo',
 
+    // How It Works / Getting Started Section
+    'how_it_works_title' => 'Come iniziare',
+    'how_it_works_subtitle' => 'Dalla registrazione alla gestione professionale della collezione in pochi minuti.',
+    
+    'how_step_1_title' => 'Crea un account',
+    'how_step_1_desc' => 'Crea un account gratuito – senza carta di credito e senza vincoli.',
+    
+    'how_step_2_title' => 'Aggiungi le tue carte',
+    'how_step_2_desc' => 'Aggiungi le tue carte nel modo che preferisci – scansiona, importa o aggiungi manualmente.',
+    
+    'how_step_3_title' => 'Traccia il valore',
+    'how_step_3_desc' => 'Vedi il valore totale della tua collezione – basato sui prezzi di mercato aggiornati.',
+    
+    'how_step_4_title' => 'Costruisci mazzi con panoramica',
+    'how_step_4_desc' => 'Pianifica e gestisci mazzi con panoramica completa di carte, formati e carte mancanti.',
+    
+    'how_cta_button' => 'Inizia gratis',
+    'how_cta_footer' => 'Nessuna carta di credito • Piano gratuito • Interrompi quando vuoi',
+
     'getting_started' => 'Come funziona basecard.dk',
     'getting_started_detail' => 'In pochi minuti ottieni una visione completa del valore della tua collezione — senza fogli Excel né lavoro manuale.',
 

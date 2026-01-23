@@ -100,6 +100,25 @@ return [
     'available' => 'Tilgængelig!',
     'best_value' => 'Bedst værdi',
 
+    // How It Works / Getting Started Section
+    'how_it_works_title' => 'Sådan kommer du i gang',
+    'how_it_works_subtitle' => 'Fra registrering til professionel samlingshåndtering på få minutter.',
+    
+    'how_step_1_title' => 'Opret en konto',
+    'how_step_1_desc' => 'Opret en gratis konto – uden kreditkort og uden binding.',
+    
+    'how_step_2_title' => 'Tilføj dine kort',
+    'how_step_2_desc' => 'Tilføj dine kort på den måde, der passer dig – scan, importer eller tilføj manuelt.',
+    
+    'how_step_3_title' => 'Spor værdien',
+    'how_step_3_desc' => 'Se den samlede værdi af din samling – baseret på opdaterede markedspriser.',
+    
+    'how_step_4_title' => 'Byg decks med overblik',
+    'how_step_4_desc' => 'Planlæg og vedligehold decks med fuldt overblik over kort, formater og mangler.',
+    
+    'how_cta_button' => 'Kom i gang gratis',
+    'how_cta_footer' => 'Ingen kreditkort • Gratis plan • Stop når som helst',
+
     'getting_started' => 'Sådan fungerer basecard.dk',
     'getting_started_detail' => 'På få minutter får du overblik over værdien af din samling – uden regneark og manuelt arbejde.',
     'step_1_title' => 'Tilføj dine kort',
