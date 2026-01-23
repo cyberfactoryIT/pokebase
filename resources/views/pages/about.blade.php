@@ -3,7 +3,7 @@
 @section('title', __('pages.about_title') . ' - ' . config('app.name'))
 
 @section('content')
-<div class="bg-black min-h-screen py-16">
+<div class="min-h-screen py-16">
     <div class="max-w-4xl mx-auto px-6 lg:px-8">
         <!-- Header -->
         <div class="text-center mb-16">
@@ -69,8 +69,11 @@
         <!-- CTA -->
         <div class="text-center mt-16">
             <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl text-lg font-semibold transition shadow-lg">
-                {{ __('welcome.cta_start_free') }}
+                {{ __('pages.about_cta') }}
             </a>
+            <p class="text-gray-400 text-sm mt-4">
+                {{ __('pages.about_cta_footer') }}
+            </p>
         </div>
     </div>
 </div>

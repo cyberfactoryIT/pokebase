@@ -1,41 +1,37 @@
-<nav class="fixed top-0 w-full z-50 bg-black/95 backdrop-blur-sm border-b border-white/10">
-    <div class="container mx-auto px-6 py-4">
-        <div class="flex items-center justify-between">
+<nav class="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a]/95 backdrop-blur-sm border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
             <!-- Logo -->
-            <a href="/" class="flex items-center space-x-2">
-                <img src="{{ asset('images/logo_basecard.svg') }}" alt="Basecard" class="h-8">
+            <a href="/" class="flex items-center gap-3">
+                <img src="{{ asset('images/logo_basecard.svg') }}" alt="{{ config('app.name') }}" class="h-8 w-auto">
+                <span class="text-xl font-bold text-white">{{ config('app.name') }}</span>
             </a>
 
             <!-- Desktop Menu -->
-            <div class="hidden md:flex items-center space-x-8">
+            <div class="hidden md:flex items-center gap-8">
                 <a href="{{ route('about') }}" class="text-gray-300 hover:text-white transition {{ request()->routeIs('about') ? 'text-white font-semibold' : '' }}">{{ __('welcome.nav_about') }}</a>
                 <a href="{{ route('features') }}" class="text-gray-300 hover:text-white transition {{ request()->routeIs('features') ? 'text-white font-semibold' : '' }}">{{ __('welcome.nav_features') }}</a>
                 <a href="{{ route('pricing') }}" class="text-gray-300 hover:text-white transition {{ request()->routeIs('pricing') ? 'text-white font-semibold' : '' }}">{{ __('welcome.nav_pricing') }}</a>
                 <a href="{{ route('contact') }}" class="text-gray-300 hover:text-white transition {{ request()->routeIs('contact') ? 'text-white font-semibold' : '' }}">{{ __('welcome.nav_contact') }}</a>
                 
                 <!-- Language Selector -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="flex items-center space-x-1 text-gray-300 hover:text-white transition">
-                        <span class="uppercase">{{ app()->getLocale() }}</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-24 bg-[#161615] border border-white/15 rounded-lg shadow-xl py-2">
-                        <a href="?lang=da" class="block px-4 py-2 text-sm hover:bg-white/5">Dansk</a>
-                        <a href="?lang=en" class="block px-4 py-2 text-sm hover:bg-white/5">English</a>
-                        <a href="?lang=it" class="block px-4 py-2 text-sm hover:bg-white/5">Italiano</a>
-                    </div>
-                </div>
+                <form method="POST" action="{{ route('language.change') }}" class="ml-4">
+                    @csrf
+                    <select name="locale" onchange="this.form.submit()" class="bg-transparent border border-white/20 text-white rounded px-3 py-1.5 text-sm focus:outline-none focus:border-white/40 cursor-pointer">
+                        <option value="en" @if(app()->getLocale() == 'en') selected @endif>EN</option>
+                        <option value="it" @if(app()->getLocale() == 'it') selected @endif>IT</option>
+                        <option value="da" @if(app()->getLocale() == 'da') selected @endif>DA</option>
+                    </select>
+                </form>
 
                 @auth
-                    <a href="{{ route('dashboard') }}" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition">
+                    <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition font-medium">
                         {{ __('welcome.nav_dashboard') }}
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="text-gray-300 hover:text-white transition">{{ __('auth.login') }}</a>
-                    <a href="{{ route('register') }}" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition">
-                        {{ __('auth.register') }}
+                    <a href="{{ route('register') }}" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg transition font-medium">
+                        {{ __('welcome.cta_start_free') }}
                     </a>
                 @endauth
             </div>
@@ -47,21 +43,23 @@
                 </svg>
             </button>
         </div>
+    </div>
 
-        <!-- Mobile Menu -->
-        <div x-show="mobileMenuOpen" class="md:hidden mt-4 pb-4 space-y-4">
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenuOpen" class="md:hidden bg-[#1a1a1a] border-t border-white/10">
+        <div class="px-6 py-4 space-y-3">
             <a href="{{ route('about') }}" class="block text-gray-300 hover:text-white transition">{{ __('welcome.nav_about') }}</a>
             <a href="{{ route('features') }}" class="block text-gray-300 hover:text-white transition">{{ __('welcome.nav_features') }}</a>
             <a href="{{ route('pricing') }}" class="block text-gray-300 hover:text-white transition">{{ __('welcome.nav_pricing') }}</a>
             <a href="{{ route('contact') }}" class="block text-gray-300 hover:text-white transition">{{ __('welcome.nav_contact') }}</a>
             @auth
-                <a href="{{ route('dashboard') }}" class="block px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold text-center">
+                <a href="{{ route('dashboard') }}" class="block px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-medium text-center">
                     {{ __('welcome.nav_dashboard') }}
                 </a>
             @else
                 <a href="{{ route('login') }}" class="block text-gray-300 hover:text-white transition">{{ __('auth.login') }}</a>
-                <a href="{{ route('register') }}" class="block px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold text-center">
-                    {{ __('auth.register') }}
+                <a href="{{ route('register') }}" class="block px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium text-center">
+                    {{ __('welcome.cta_start_free') }}
                 </a>
             @endauth
         </div>
