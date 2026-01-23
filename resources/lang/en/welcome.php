@@ -67,6 +67,19 @@ return [
     'feature_play_benefit_4' => 'Share decks with community',
     'feature_play_benefit_5' => 'Companion-ready',
     
+    // Use Case Profiles Section
+    'usecase_collector_title' => 'Overview that creates peace of mind',
+    'usecase_collector_subtitle' => 'Parents use Basecard to keep track of their child\'s cards – what\'s valuable, what\'s missing, and what needs care.',
+    'usecase_collector_outcome' => 'Less mess. Fewer conflicts. More control.',
+    
+    'usecase_player_title' => 'Clarity before play',
+    'usecase_player_subtitle' => 'Players use Basecard to collect cards, build decks, and ensure everything is legal – before showing up to tournaments.',
+    'usecase_player_outcome' => 'Less preparation time. Fewer mistakes.',
+    
+    'usecase_investor_title' => 'Value without guessing',
+    'usecase_investor_subtitle' => 'Investors use Basecard to track their collection\'s value over time based on market prices – all in one place.',
+    'usecase_investor_outcome' => 'Better decisions. Documentation.',
+    
     'who_1_title' => 'Curious collectors',
     'who_1_desc' => 'For anyone who loves exploring their cards and discovering what they are truly worth — now and in the future.',
     'who_2_title' => 'Strategic players',

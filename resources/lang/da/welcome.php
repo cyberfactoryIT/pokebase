@@ -77,6 +77,19 @@ return [
     'feature_play_benefit_5' => 'Companion-ready',
     'feature_play_cta' => 'Læs mere',
     
+    // Use Case Profiles Section
+    'usecase_collector_title' => 'Overblik, der skaber ro',
+    'usecase_collector_subtitle' => 'Forældre bruger Basecard til at få styr på deres barns kort – hvad der er værdifuldt, hvad der mangler, og hvad der skal passes på.',
+    'usecase_collector_outcome' => 'Mindre rod. Færre konflikter. Mere overblik.',
+    
+    'usecase_player_title' => 'Klarhed før spil',
+    'usecase_player_subtitle' => 'Spillere bruger Basecard til at samle kort, bygge decks og sikre, at alt er lovligt – før de møder op til turnering.',
+    'usecase_player_outcome' => 'Mindre forberedelsestid. Færre fejl.',
+    
+    'usecase_investor_title' => 'Værdi uden gæt',
+    'usecase_investor_subtitle' => 'Investorer bruger Basecard til at følge deres samlings værdi over tid baseret på markedspriser – samlet ét sted.',
+    'usecase_investor_outcome' => 'Bedre beslutninger. Dokumentation.',
+    
     'who_1_title' => 'Nysgerrige samlere',
     'who_1_desc' => 'Til dig, der elsker at udforske dine kort og opdage, hvad de egentlig er værd — både nu og over tid.',
     'who_2_title' => 'Strategiske spillere',

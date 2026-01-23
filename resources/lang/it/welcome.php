@@ -67,6 +67,19 @@ return [
     'feature_play_benefit_4' => 'Condividi mazzi con la community',
     'feature_play_benefit_5' => 'Companion-ready',
     
+    // Use Case Profiles Section
+    'usecase_collector_title' => 'Panoramica che crea serenità',
+    'usecase_collector_subtitle' => 'I genitori usano Basecard per tenere sotto controllo le carte dei figli – cosa è prezioso, cosa manca e cosa va custodito.',
+    'usecase_collector_outcome' => 'Meno disordine. Meno conflitti. Più controllo.',
+    
+    'usecase_player_title' => 'Chiarezza prima di giocare',
+    'usecase_player_subtitle' => 'I giocatori usano Basecard per raccogliere carte, costruire mazzi e assicurarsi che tutto sia legale – prima di presentarsi al torneo.',
+    'usecase_player_outcome' => 'Meno tempo di preparazione. Meno errori.',
+    
+    'usecase_investor_title' => 'Valore senza indovinare',
+    'usecase_investor_subtitle' => 'Gli investitori usano Basecard per seguire il valore della collezione nel tempo basandosi sui prezzi di mercato – tutto in un posto.',
+    'usecase_investor_outcome' => 'Decisioni migliori. Documentazione.',
+    
     'who_1_title' => 'Collezionisti curiosi',
     'who_1_desc' => 'Per chi ama esplorare la propria collezione e capire quanto valgono davvero le carte — oggi e nel futuro.',
     'who_2_title' => 'Giocatori strategici',
