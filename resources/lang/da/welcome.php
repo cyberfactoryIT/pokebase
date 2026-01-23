@@ -30,6 +30,29 @@ return [
 
 'faqs_general' => 'Ofte stillede spørgsmål',
 
+// Help Center FAQs
+'faq_what_is_q' => 'Hvad er Basecard?',
+'faq_what_is_a' => 'Basecard er et digitalt værktøj, der hjælper dig med at holde styr på dine kortsamlinger ét sted. Du kan få overblik over dine kort, følge samlingens værdi og organisere decks på en enkel og overskuelig måde.',
+
+'faq_free_q' => 'Er Basecard gratis at bruge?',
+'faq_free_a' => 'Ja. Basecard kan bruges gratis uden tidsbegrænsning. Du kan altid opgradere til en betalt plan, hvis du får brug for flere funktioner – men det er helt frivilligt.',
+
+'faq_create_account_q' => 'Hvordan opretter jeg en konto?',
+'faq_create_account_a' => 'Du opretter en konto ved at klikke på "Opret konto" og følge trinnene. Det tager kun få minutter, og der kræves ikke kreditkort for at komme i gang.',
+
+'faq_cancel_q' => 'Kan jeg opsige mit abonnement når som helst?',
+'faq_cancel_a' => 'Ja. Du kan opsige dit abonnement når som helst direkte fra din konto. Opsigelsen træder i kraft ved udgangen af den aktuelle betalingsperiode.',
+
+'faq_payment_q' => 'Hvilke betalingsmetoder understøttes?',
+'faq_payment_a' => 'Vi understøtter de mest almindelige betalingsmetoder, herunder betalingskort. Tilgængelige betalingsmetoder vises altid tydeligt i forbindelse med opgradering.',
+
+'faq_gdpr_q' => 'Er Basecard GDPR-kompatibel?',
+'faq_gdpr_a' => 'Ja. Basecard er en dansk virksomhed og overholder gældende GDPR-regler. Vi behandler kun de oplysninger, der er nødvendige for at levere vores tjeneste, og deler dem ikke med tredjepart uden grundlag.',
+
+'faq_data_security_q' => 'Hvordan beskytter Basecard mine data?',
+'faq_data_security_a' => 'Vi anvender tekniske og organisatoriske sikkerhedsforanstaltninger for at beskytte dine data. Adgangen til data er begrænset, og vi arbejder løbende på at opretholde et højt sikkerhedsniveau.',
+
+// Legacy FAQs (keep for backwards compatibility)
 'faq_Basecard_q' => 'Hvad er basecard.dk?',
 'faq_Basecard_a' => 'basecard.dk er et værktøj til samlere, der giver dig et klart overblik over dine kort og deres værdi over tid. Du kan oprette decks, følge prisudviklingen og se den samlede værdi af din samling.',
 
@@ -119,6 +142,12 @@ return [
     'how_cta_button' => 'Kom i gang gratis',
     'how_cta_footer' => 'Ingen kreditkort • Gratis plan • Stop når som helst',
 
+    // Pricing Section
+    'pricing_title' => 'Vælg den rigtige plan for dig',
+    'pricing_subtitle' => 'Start gratis og opgradér, når du er klar. Ingen skjulte gebyrer.',
+    'pricing_approach_1' => 'Start gratis – opgradér først, når det giver mening',
+    'pricing_approach_2' => 'Brug Basecard gratis så længe du vil. Opgradér kun, hvis du har brug for mere.',
+
     'getting_started' => 'Sådan fungerer basecard.dk',
     'getting_started_detail' => 'På få minutter får du overblik over værdien af din samling – uden regneark og manuelt arbejde.',
     'step_1_title' => 'Tilføj dine kort',
@@ -177,10 +206,10 @@ return [
     'cta_learn_more' => 'Lær mere',
     
     // Stats
-    'stat_games' => '3 spil',
-    'stat_games_label' => 'Data, ikke hype',
-    'stat_cardmarket' => 'Cardmarket',
-    'stat_cardmarket_label' => 'Cardmarket-baseret',
+    'stat_games' => 'Data, ikke hype',
+
+    'stat_cardmarket' => 'Cardmarket-baseret',
+    
     'stat_users' => '5,000+',
     'stat_users_label' => 'samlere i Norden',
     'stat_cards' => '30k+',
