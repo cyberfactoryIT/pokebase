@@ -41,6 +41,32 @@ return [
     'features_main_title' => 'One place. Three needs. Full control of your collection.',
     'features_main_subtitle' => 'Whether you collect with your child, play competitively, or track your collection\'s value, Basecard is built for your purpose.',
     
+    // Feature 1: Track Collection (Green Card)
+    'feature_track_title' => 'Full control of your collection',
+    'feature_track_subtitle' => 'Keep track of all your cards in one place – quickly find what you have, what\'s missing and what to follow.',
+    'feature_track_benefit_1' => 'Organize your collection intelligently',
+    'feature_track_benefit_2' => 'Search instantly across all sets',
+    'feature_track_benefit_3' => 'Identify missing cards',
+    'feature_track_benefit_4' => 'Save favorites and wishlist',
+    'feature_track_benefit_5' => 'Track every change',
+
+    // Feature 2: Value Tracking (Blue Card)
+    'feature_value_title' => 'What is your collection worth?',
+    'feature_value_subtitle' => 'See total value based on updated market prices – without guessing and manual calculations.',
+    'feature_value_benefit_1' => 'Real-time prices from Cardmarket',
+    'feature_value_benefit_2' => 'Historical price evolution',
+    'feature_value_benefit_3' => 'Automatic price calculation',
+    'feature_value_benefit_4' => 'Export value reports',
+
+    // Feature 3: Deck Building (Pink Card)
+    'feature_play_title' => 'Build decks with overview',
+    'feature_play_subtitle' => 'Plan, adjust and share decks with full overview of cards, formats and missing cards.',
+    'feature_play_benefit_1' => 'Intelligent deck builder',
+    'feature_play_benefit_2' => 'Validate against format rules',
+    'feature_play_benefit_3' => 'Missing cards overview',
+    'feature_play_benefit_4' => 'Share decks with community',
+    'feature_play_benefit_5' => 'Companion-ready',
+    
     'who_1_title' => 'Curious collectors',
     'who_1_desc' => 'For anyone who loves exploring their cards and discovering what they are truly worth — now and in the future.',
     'who_2_title' => 'Strategic players',

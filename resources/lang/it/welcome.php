@@ -41,6 +41,32 @@ return [
     'features_main_title' => 'Un solo posto. Tre esigenze. Controllo completo della tua collezione.',
     'features_main_subtitle' => 'Che tu colleziona con tuo figlio, giochi competitivamente o segua il valore della tua collezione, Basecard è costruito per il tuo scopo.',
     
+    // Feature 1: Track Collection (Green Card)
+    'feature_track_title' => 'Controllo completo della tua collezione',
+    'feature_track_subtitle' => 'Tieni traccia di tutte le tue carte in un posto – trova rapidamente ciò che hai, ti manca e vuoi seguire.',
+    'feature_track_benefit_1' => 'Organizza la tua collezione in modo intelligente',
+    'feature_track_benefit_2' => 'Cerca istantaneamente in tutti i set',
+    'feature_track_benefit_3' => 'Identifica le carte mancanti',
+    'feature_track_benefit_4' => 'Salva preferiti e wishlist',
+    'feature_track_benefit_5' => 'Traccia ogni modifica',
+
+    // Feature 2: Value Tracking (Blue Card)
+    'feature_value_title' => 'Quanto vale la tua collezione?',
+    'feature_value_subtitle' => 'Vedi il valore totale basato sui prezzi di mercato aggiornati – senza indovinare e calcoli manuali.',
+    'feature_value_benefit_1' => 'Prezzi in tempo reale da Cardmarket',
+    'feature_value_benefit_2' => 'Storico dell\'evoluzione dei prezzi',
+    'feature_value_benefit_3' => 'Calcolo automatico del prezzo',
+    'feature_value_benefit_4' => 'Esporta report di valore',
+
+    // Feature 3: Deck Building (Pink Card)
+    'feature_play_title' => 'Costruisci mazzi con panoramica completa',
+    'feature_play_subtitle' => 'Pianifica, modifica e condividi mazzi con panoramica completa di carte, formati e carte mancanti.',
+    'feature_play_benefit_1' => 'Deck builder intelligente',
+    'feature_play_benefit_2' => 'Valida contro regole formato',
+    'feature_play_benefit_3' => 'Panoramica carte mancanti',
+    'feature_play_benefit_4' => 'Condividi mazzi con la community',
+    'feature_play_benefit_5' => 'Companion-ready',
+    
     'who_1_title' => 'Collezionisti curiosi',
     'who_1_desc' => 'Per chi ama esplorare la propria collezione e capire quanto valgono davvero le carte — oggi e nel futuro.',
     'who_2_title' => 'Giocatori strategici',

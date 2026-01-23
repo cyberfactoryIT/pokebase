@@ -48,6 +48,35 @@ return [
     'features_main_title' => 'Ét sted. Tre behov. Fuld kontrol over din samling.',
     'features_main_subtitle' => 'Uanset om du samler med dit barn, spiller competitivt eller følger din samlings værdi, er Basecard bygget til dit formål.',
     
+    // Feature 1: Track/Spor (Green)
+    'feature_track_title' => 'Fuld kontrol over din samling',
+    'feature_track_subtitle' => 'Hold styr på alle dine kort ét sted – find hurtigt det, du har, mangler og vil følge.',
+    'feature_track_benefit_1' => 'Organisér din samling intelligent',
+    'feature_track_benefit_2' => 'Søg øjeblikkeligt i alle sæt',
+    'feature_track_benefit_3' => 'Identificér manglende kort',
+    'feature_track_benefit_4' => 'Gem favoritter og ønskeliste',
+    'feature_track_benefit_5' => 'Spor/følg hver bog sidstegang',
+    'feature_track_cta' => 'Læs mere',
+    
+    // Feature 2: Value/Værdier (Blue)
+    'feature_value_title' => 'Hvad er din samling værd?',
+    'feature_value_subtitle' => 'Se den samlede værdi baseret på opdaterede markedspriser – uden gæt og manuelle beregninger.',
+    'feature_value_benefit_1' => 'Priser i realtid fra Cardmarket',
+    'feature_value_benefit_2' => 'Historisk prisudvikling',
+    'feature_value_benefit_3' => 'Automatisk prisberegning',
+    'feature_value_benefit_4' => 'Eksporter værdirapporter',
+    'feature_value_cta' => 'Læs mere',
+    
+    // Feature 3: Play/Spil (Pink)
+    'feature_play_title' => 'Byg decks med overblik',
+    'feature_play_subtitle' => 'Planlæg, justér og del decks med fuldt overblik over kort, formater og mangler.',
+    'feature_play_benefit_1' => 'Intelligent deck builder',
+    'feature_play_benefit_2' => 'Validér mod formatregler',
+    'feature_play_benefit_3' => 'Manglende kort overview',
+    'feature_play_benefit_4' => 'Del decks med community',
+    'feature_play_benefit_5' => 'Companion-ready',
+    'feature_play_cta' => 'Læs mere',
+    
     'who_1_title' => 'Nysgerrige samlere',
     'who_1_desc' => 'Til dig, der elsker at udforske dine kort og opdage, hvad de egentlig er værd — både nu og over tid.',
     'who_2_title' => 'Strategiske spillere',
