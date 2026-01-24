@@ -24,7 +24,7 @@ class CollectionController extends Controller
         $currentGame = $request->attributes->get('currentGame');
         
         $query = UserCollection::where('user_id', $userId)
-            ->with('card.group', 'card.rapidapiCard', 'card.prices', 'photos');
+            ->with('card.group', 'card.rapidapiCard', 'card.prices', 'card.cardmarketProduct.latestPriceQuote', 'photos');
             
         // Filter by current game
         if ($currentGame) {
@@ -354,7 +354,8 @@ class CollectionController extends Controller
                 'card.prices' => function($q) {
                     $q->latest('snapshot_at')->limit(1);
                 },
-                'card.rapidapiCard'
+                'card.rapidapiCard',
+                'card.cardmarketProduct.latestPriceQuote'
             ]);
             
         if ($currentGame) {
@@ -378,14 +379,36 @@ class CollectionController extends Controller
                 $totalValueUsd += $marketPriceUsd * $item->quantity;
             }
             
-            // EUR price from RapidAPI Cardmarket data
-            $rapidapiCard = $item->card->rapidapiCard;
-            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
-                if ($marketPriceEur > 0) {
-                    $cardsWithPricesEur++;
-                    $totalValueEur += $marketPriceEur * $item->quantity;
+            // EUR price - Priority system
+            $marketPriceEur = 0;
+            
+            // Priority 1: Cardmarket price quotes (latest trend)
+            $cardmarketProduct = $item->card->cardmarketProduct;
+            if ($cardmarketProduct) {
+                $latestQuote = $cardmarketProduct->latestPriceQuote;
+                if ($latestQuote && $latestQuote->trend > 0) {
+                    $marketPriceEur = $latestQuote->trend;
+                } elseif ($latestQuote && $latestQuote->avg > 0) {
+                    $marketPriceEur = $latestQuote->avg;
                 }
+            }
+            
+            // Priority 2: Cardmarket EUR from tcgcsv_products
+            if ($marketPriceEur === 0 && $item->card->cardmarket_price_eur && $item->card->cardmarket_price_eur > 0) {
+                $marketPriceEur = $item->card->cardmarket_price_eur;
+            }
+            
+            // Priority 3: RapidAPI Cardmarket data
+            if ($marketPriceEur === 0) {
+                $rapidapiCard = $item->card->rapidapiCard;
+                if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                    $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                }
+            }
+            
+            if ($marketPriceEur > 0) {
+                $cardsWithPricesEur++;
+                $totalValueEur += $marketPriceEur * $item->quantity;
             }
         }
         

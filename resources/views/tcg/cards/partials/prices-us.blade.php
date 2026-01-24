@@ -1,9 +1,38 @@
 <!-- US PRICES Section -->
+@php
+    $user = auth()->user();
+    $preferredCurrency = $user?->preferred_currency ?? 'EUR';
+    $needsConversion = $preferredCurrency && $preferredCurrency !== 'USD';
+    $currencySymbol = $needsConversion ? \App\Services\CurrencyService::getSymbol($preferredCurrency) : '$';
+    
+    // Helper function to format USD price with conversion
+    $formatUsdPrice = function($usdAmount) use ($needsConversion, $preferredCurrency, $currencySymbol) {
+        if (!$usdAmount) return null;
+        
+        if ($needsConversion) {
+            $converted = \App\Services\CurrencyService::convert($usdAmount, 'USD', $preferredCurrency);
+            return [
+                'display' => number_format($converted, 2),
+                'original' => number_format($usdAmount, 2),
+                'symbol' => $currencySymbol
+            ];
+        }
+        
+        return [
+            'display' => number_format($usdAmount, 2),
+            'original' => null,
+            'symbol' => '$'
+        ];
+    };
+@endphp
 <div class="mb-8">
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-white flex items-center gap-2">
             <span>🇺🇸</span>
             <span>US PRICES</span>
+            @if($needsConversion)
+            <span class="text-xs text-gray-400 font-normal">({{ $currencySymbol }} {{ $preferredCurrency }})</span>
+            @endif
         </h3>
         <a href="https://www.tcgplayer.com/" target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
             <span>TCGPLAYER</span>
@@ -34,21 +63,33 @@
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.market_price') }}</td>
                     <td class="py-3 px-4 text-right">
                         @if($latestPrice && $latestPrice->market_price)
-                        <span class="text-lg font-bold text-white">${{ number_format($latestPrice->market_price, 2) }}</span>
+                        @php $price = $formatUsdPrice($latestPrice->market_price); @endphp
+                        <span class="text-lg font-bold text-white">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                         @else
                         <span class="text-gray-600">-</span>
                         @endif
                     </td>
                     <td class="py-3 px-4 text-right">
                         @if($tcgPlayerMarketRapid)
-                        <span class="text-lg font-bold text-white">${{ number_format($tcgPlayerMarketRapid, 2) }}</span>
+                        @php $price = $formatUsdPrice($tcgPlayerMarketRapid); @endphp
+                        <span class="text-lg font-bold text-white">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                         @else
                         <span class="text-gray-600">-</span>
                         @endif
                     </td>
                     <td class="py-3 px-4 text-right">
                         @if($holofoil && isset($holofoil['marketPrice']))
-                        <span class="text-lg font-bold text-white">${{ number_format($holofoil['marketPrice'], 2) }}</span>
+                        @php $price = $formatUsdPrice($holofoil['marketPrice']); @endphp
+                        <span class="text-lg font-bold text-white">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                         <span class="text-xs text-purple-400 block">Holo</span>
                         @else
                         <span class="text-gray-600">-</span>
@@ -61,7 +102,11 @@
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.low_price') }}</td>
                     <td class="py-3 px-4 text-right">
                         @if($latestPrice && $latestPrice->low_price)
-                        <span class="text-base font-semibold text-gray-200">${{ number_format($latestPrice->low_price, 2) }}</span>
+                        @php $price = $formatUsdPrice($latestPrice->low_price); @endphp
+                        <span class="text-base font-semibold text-gray-200">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                         @else
                         <span class="text-gray-600">-</span>
                         @endif
@@ -71,7 +116,11 @@
                     </td>
                     <td class="py-3 px-4 text-right">
                         @if($holofoil && isset($holofoil['lowPrice']))
-                        <span class="text-base font-semibold text-gray-200">${{ number_format($holofoil['lowPrice'], 2) }}</span>
+                        @php $price = $formatUsdPrice($holofoil['lowPrice']); @endphp
+                        <span class="text-base font-semibold text-gray-200">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                         <span class="text-xs text-purple-400 block">Holo</span>
                         @else
                         <span class="text-gray-600">-</span>
@@ -84,14 +133,22 @@
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.mid_price') }}</td>
                     <td class="py-3 px-4 text-right">
                         @if($latestPrice && $latestPrice->mid_price)
-                        <span class="text-base font-semibold text-gray-200">${{ number_format($latestPrice->mid_price, 2) }}</span>
+                        @php $price = $formatUsdPrice($latestPrice->mid_price); @endphp
+                        <span class="text-base font-semibold text-gray-200">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                         @else
                         <span class="text-gray-600">-</span>
                         @endif
                     </td>
                     <td class="py-3 px-4 text-right">
                         @if($tcgPlayerMidRapid)
-                        <span class="text-base font-semibold text-gray-200">${{ number_format($tcgPlayerMidRapid, 2) }}</span>
+                        @php $price = $formatUsdPrice($tcgPlayerMidRapid); @endphp
+                        <span class="text-base font-semibold text-gray-200">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                         @else
                         <span class="text-gray-600">-</span>
                         @endif
@@ -106,7 +163,11 @@
                 <tr class="hover:bg-white/5">
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.high_price') }}</td>
                     <td class="py-3 px-4 text-right">
-                        <span class="text-base font-semibold text-gray-200">${{ number_format($latestPrice->high_price, 2) }}</span>
+                        @php $price = $formatUsdPrice($latestPrice->high_price); @endphp
+                        <span class="text-base font-semibold text-gray-200">{{ $price['symbol'] }}{{ $price['display'] }}</span>
+                        @if($price['original'])
+                        <span class="block text-xs text-gray-400">(${{ $price['original'] }})</span>
+                        @endif
                     </td>
                     <td class="py-3 px-4 text-right">
                         <span class="text-gray-600">-</span>

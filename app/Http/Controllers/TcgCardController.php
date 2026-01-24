@@ -19,7 +19,7 @@ class TcgCardController extends Controller
                     // Get latest price snapshot
                     $query->latest('snapshot_at')->limit(1);
                 },
-                'cardmarketProduct',
+                'cardmarketProduct.latestPriceQuote',
                 'rapidapiCard',
                 'tcgdxCard'
             ])

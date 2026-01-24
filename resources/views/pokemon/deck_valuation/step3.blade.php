@@ -175,14 +175,34 @@
                     </div>
                     <div class="text-right">
                         @php
-                            $tcgPrice = $item->tcgcsvProduct->prices()->first();
+                            $tcgPrice = $item->tcgcsvProduct->prices->first();
                             $marketPriceUsd = $tcgPrice?->market_price ?? 0;
                             
-                            // EUR price from RapidAPI Cardmarket data
+                            // EUR price - Priority system (same as Collection, Deck, and Service)
                             $marketPriceEur = 0;
-                            $rapidapiCard = $item->tcgcsvProduct->rapidapiCard;
-                            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                            
+                            // Priority 1: Cardmarket price quotes (latest trend)
+                            $cardmarketProduct = $item->tcgcsvProduct->cardmarketProduct;
+                            if ($cardmarketProduct) {
+                                $latestQuote = $cardmarketProduct->latestPriceQuote;
+                                if ($latestQuote && $latestQuote->trend > 0) {
+                                    $marketPriceEur = $latestQuote->trend;
+                                } elseif ($latestQuote && $latestQuote->avg > 0) {
+                                    $marketPriceEur = $latestQuote->avg;
+                                }
+                            }
+                            
+                            // Priority 2: Cardmarket EUR from tcgcsv_products
+                            if ($marketPriceEur === 0 && $item->tcgcsvProduct->cardmarket_price_eur && $item->tcgcsvProduct->cardmarket_price_eur > 0) {
+                                $marketPriceEur = $item->tcgcsvProduct->cardmarket_price_eur;
+                            }
+                            
+                            // Priority 3: RapidAPI Cardmarket data
+                            if ($marketPriceEur === 0) {
+                                $rapidapiCard = $item->tcgcsvProduct->rapidapiCard;
+                                if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                                    $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                                }
                             }
                             
                             // Convert to preferred currency if set

@@ -108,25 +108,86 @@ class DashboardController extends Controller
             ->whereHas('card', function($q) use ($currentGame) {
                 $q->where('game_id', $currentGame->id);
             })
-            ->with(['card.group', 'card.prices'])
+            ->with(['card.group', 'card.prices', 'card.rapidapiCard', 'card.cardmarketProduct.latestPriceQuote'])
             ->get()
             ->sortByDesc(function($item) {
+                // Use EUR price (most reliable for European market)
+                // Priority 1: Cardmarket price quotes (latest trend)
+                $cardmarketProduct = $item->card->cardmarketProduct;
+                if ($cardmarketProduct) {
+                    $latestQuote = $cardmarketProduct->latestPriceQuote;
+                    if ($latestQuote && $latestQuote->trend > 0) {
+                        return $latestQuote->trend;
+                    }
+                    if ($latestQuote && $latestQuote->avg > 0) {
+                        return $latestQuote->avg;
+                    }
+                }
+                
+                // Priority 2: Cardmarket EUR from tcgcsv_products
+                if ($item->card->cardmarket_price_eur && $item->card->cardmarket_price_eur > 0) {
+                    return $item->card->cardmarket_price_eur;
+                }
+                
+                // Priority 3: RapidAPI Cardmarket data
+                $rapidapiCard = $item->card->rapidapiCard;
+                if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                    $eurPrice = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                    if ($eurPrice > 0) return $eurPrice;
+                }
+                
+                // Priority 4: Convert USD to EUR as fallback
                 $latestPrice = $item->card->prices->first();
-                return $latestPrice?->market_price ?? 0;
+                if ($latestPrice?->market_price) {
+                    return convertUsdToEur($latestPrice->market_price);
+                }
+                return 0;
             })
             ->take(5);
         
-        // Calculate total collection value
+        // Calculate total collection value (in EUR base)
         $collectionValue = UserCollection::where('user_id', Auth::id())
             ->whereHas('card', function($q) use ($currentGame) {
                 $q->where('game_id', $currentGame->id);
             })
-            ->with('card.prices')
+            ->with(['card.prices', 'card.rapidapiCard', 'card.cardmarketProduct.latestPriceQuote'])
             ->get()
             ->sum(function($item) {
-                $latestPrice = $item->card->prices->first();
-                $price = $latestPrice?->market_price ?? 0;
-                return $price * $item->quantity;
+                $priceEur = 0;
+                
+                // Priority 1: Cardmarket price quotes (latest trend)
+                $cardmarketProduct = $item->card->cardmarketProduct;
+                if ($cardmarketProduct) {
+                    $latestQuote = $cardmarketProduct->latestPriceQuote;
+                    if ($latestQuote && $latestQuote->trend > 0) {
+                        $priceEur = $latestQuote->trend;
+                    } elseif ($latestQuote && $latestQuote->avg > 0) {
+                        $priceEur = $latestQuote->avg;
+                    }
+                }
+                
+                // Priority 2: Cardmarket EUR from tcgcsv_products
+                if ($priceEur === 0 && $item->card->cardmarket_price_eur && $item->card->cardmarket_price_eur > 0) {
+                    $priceEur = $item->card->cardmarket_price_eur;
+                }
+                
+                // Priority 3: RapidAPI Cardmarket data
+                if ($priceEur === 0) {
+                    $rapidapiCard = $item->card->rapidapiCard;
+                    if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                        $priceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                    }
+                }
+                
+                // Priority 3: Convert USD to EUR as fallback
+                if ($priceEur === 0) {
+                    $latestPrice = $item->card->prices->first();
+                    if ($latestPrice?->market_price) {
+                        $priceEur = convertUsdToEur($latestPrice->market_price);
+                    }
+                }
+                
+                return $priceEur * $item->quantity;
             });
         
         // Get expansions for missing cards dropdown

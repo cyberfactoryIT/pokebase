@@ -85,7 +85,8 @@ class DeckController extends Controller
             'deckCards.card.prices' => function($query) {
                 $query->latest('snapshot_at')->limit(1);
             },
-            'deckCards.card.rapidapiCard'
+            'deckCards.card.rapidapiCard',
+            'deckCards.card.cardmarketProduct.latestPriceQuote'
         ]);
 
         // Calculate deck statistics
@@ -342,7 +343,7 @@ class DeckController extends Controller
             ->sortByDesc('count')
             ->take(5);
 
-        // 3. Card values (USD from TCGPlayer, EUR from Cardmarket/RapidAPI)
+        // 3. Card values (USD from TCGPlayer, EUR from Cardmarket priority system)
         $totalValueUsd = 0;
         $totalValueEur = 0;
         $cardsWithPricesUsd = 0;
@@ -356,14 +357,36 @@ class DeckController extends Controller
                 $cardsWithPricesUsd++;
             }
             
-            // EUR price from RapidAPI Cardmarket data
-            $rapidapiCard = $deckCard->card->rapidapiCard;
-            if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
-                if ($marketPriceEur > 0) {
-                    $totalValueEur += $marketPriceEur * $deckCard->quantity;
-                    $cardsWithPricesEur++;
+            // EUR price - Priority system (same as Collection)
+            $marketPriceEur = 0;
+            
+            // Priority 1: Cardmarket price quotes (latest trend)
+            $cardmarketProduct = $deckCard->card->cardmarketProduct;
+            if ($cardmarketProduct) {
+                $latestQuote = $cardmarketProduct->latestPriceQuote;
+                if ($latestQuote && $latestQuote->trend > 0) {
+                    $marketPriceEur = $latestQuote->trend;
+                } elseif ($latestQuote && $latestQuote->avg > 0) {
+                    $marketPriceEur = $latestQuote->avg;
                 }
+            }
+            
+            // Priority 2: Cardmarket EUR from tcgcsv_products
+            if ($marketPriceEur === 0 && $deckCard->card->cardmarket_price_eur && $deckCard->card->cardmarket_price_eur > 0) {
+                $marketPriceEur = $deckCard->card->cardmarket_price_eur;
+            }
+            
+            // Priority 3: RapidAPI Cardmarket data
+            if ($marketPriceEur === 0) {
+                $rapidapiCard = $deckCard->card->rapidapiCard;
+                if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                    $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                }
+            }
+            
+            if ($marketPriceEur > 0) {
+                $totalValueEur += $marketPriceEur * $deckCard->quantity;
+                $cardsWithPricesEur++;
             }
         }
 
