@@ -450,7 +450,24 @@
                     <div class="p-6">
                         <!-- Plan Header -->
                         <div class="mb-6">
-                            <h3 class="text-2xl font-bold text-white mb-2">{{ $plan->name }}</h3>
+                            <h3 class="text-2xl font-bold text-white mb-1">
+                                @if($plan->code === 'free')
+                                    {{ __('home/pricing.free_title') }}
+                                @elseif($plan->code === 'advanced')
+                                    {{ __('home/pricing.pro_title') }}
+                                @else
+                                    {{ __('home/pricing.enterprise_title') }}
+                                @endif
+                            </h3>
+                            <p class="text-sm text-gray-400 mb-3">
+                                @if($plan->code === 'free')
+                                    {{ __('home/pricing.free_tagline') }}
+                                @elseif($plan->code === 'advanced')
+                                    {{ __('home/pricing.pro_tagline') }}
+                                @else
+                                    {{ __('home/pricing.enterprise_tagline') }}
+                                @endif
+                            </p>
                             
                             <!-- Monthly Price -->
                             <div class="price-monthly">
@@ -479,52 +496,30 @@
                         <!-- Features -->
                         <ul class="space-y-3 mb-6 min-h-[200px]">
                             @php
-                                $fallbackFeatures = [
-                                    'free' => [
-                                        'Basic card browsing',
-                                        'Create up to 3 decks',
-                                        'Basic collection tracking',
-                                        'Community features',
-                                    ],
-                                    'advanced' => [
-                                        'Unlimited deck creation',
-                                        'Advanced price tracking',
-                                        'Deck valuation included',
-                                        'Priority support',
-                                        'Export to CSV',
-                                    ],
-                                    'premium' => [
-                                        'Everything in Advanced',
-                                        'Unlimited collections',
-                                        'Advanced analytics',
-                                        'API access',
-                                        'White-label options',
-                                    ],
-                                ];
-                                $features = $plan->features->count() > 0 
-                                    ? $plan->features 
-                                    : collect($fallbackFeatures[$plan->code] ?? []);
+                                // Determine number of features per plan
+                                $featureCount = match($plan->code) {
+                                    'free' => 4,
+                                    'advanced' => 5,
+                                    'premium' => 7,
+                                    default => 4
+                                };
+                                
+                                $featurePrefix = match($plan->code) {
+                                    'free' => 'free_',
+                                    'advanced' => 'pro_',
+                                    'premium' => 'enterprise_',
+                                    default => 'free_'
+                                };
                             @endphp
                             
-                            @if($plan->features->count() > 0)
-                                @foreach($plan->features as $feature)
-                                <li class="flex items-start text-sm">
-                                    <svg class="w-5 h-5 text-{{ $color['accent'] }}-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                    <span class="text-gray-300">{{ $feature->name }}</span>
-                                </li>
-                                @endforeach
-                            @else
-                                @foreach($fallbackFeatures[$plan->code] ?? [] as $feat)
-                                <li class="flex items-start text-sm">
-                                    <svg class="w-5 h-5 text-{{ $color['accent'] }}-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                    <span class="text-gray-300">{{ $feat }}</span>
-                                </li>
-                                @endforeach
-                            @endif
+                            @for($i = 1; $i <= $featureCount; $i++)
+                            <li class="flex items-start text-sm">
+                                <svg class="w-5 h-5 text-{{ $color['accent'] }}-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-gray-300">{{ __('home/pricing.' . $featurePrefix . 'feat' . $i) }}</span>
+                            </li>
+                            @endfor
                         </ul>
 
                         <!-- Action Button -->

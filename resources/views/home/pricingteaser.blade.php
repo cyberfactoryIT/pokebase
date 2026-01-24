@@ -26,15 +26,16 @@
             @if($freePlan)
             <!-- Free Plan -->
             <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition">
-                <div class="text-center mb-6">
-                    <h3 class="text-2xl font-bold mb-2">{{ __('home/pricing.free_title') }}</h3>
+                <div class="text-center mb-6 min-h-[160px]">
+                    <h3 class="text-2xl font-bold mb-1">{{ __('home/pricing.free_title') }}</h3>
+                    <p class="text-sm text-gray-400 mb-3">{{ __('home/pricing.free_tagline') }}</p>
                     <div class="text-4xl font-bold mb-1">
                         <span class="text-green-400">{{ __('home/pricing.free_price') }}</span>
                     </div>
                     <div class="text-gray-400 text-sm">{{ __('home/pricing.free_period') }}</div>
                 </div>
                 
-                <ul class="space-y-3 mb-8">
+                <ul class="space-y-3 mb-8 min-h-[140px]">
                     @foreach(['feat1', 'feat2', 'feat3', 'feat4'] as $feat)
                     <li class="flex items-start text-sm">
                         <svg class="w-5 h-5 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,8 +60,9 @@
                     {{ __('home/pricing.pro_badge') }}
                 </div>
                 
-                <div class="text-center mb-6 mt-2">
-                    <h3 class="text-2xl font-bold mb-2">{{ __('home/pricing.pro_title') }}</h3>
+                <div class="text-center mb-6 mt-2 min-h-[160px]">
+                    <h3 class="text-2xl font-bold mb-1">{{ __('home/pricing.pro_title') }}</h3>
+                    <p class="text-sm text-gray-300 mb-3">{{ __('home/pricing.pro_tagline') }}</p>
                     <div class="text-4xl font-bold mb-1">
                         @php
                             $monthlyPrice = $advancedPlan->monthly_price_cents / 100;
@@ -86,7 +88,7 @@
                     @endif
                 </div>
                 
-                <ul class="space-y-3 mb-8">
+                <ul class="space-y-3 mb-8 min-h-[140px]">
                     @foreach(['feat1', 'feat2', 'feat3', 'feat4', 'feat5'] as $feat)
                     <li class="flex items-start text-sm">
                         <svg class="w-5 h-5 text-blue-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,8 +108,9 @@
             @if($premiumPlan)
             <!-- Enterprise/Premium -->
             <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 hover:border-white/20 transition">
-                <div class="text-center mb-6">
-                    <h3 class="text-2xl font-bold mb-2">{{ __('home/pricing.enterprise_title') }}</h3>
+                <div class="text-center mb-6 min-h-[160px]">
+                    <h3 class="text-2xl font-bold mb-1">{{ __('home/pricing.enterprise_title') }}</h3>
+                    <p class="text-sm text-gray-400 mb-3">{{ __('home/pricing.enterprise_tagline') }}</p>
                     <div class="text-4xl font-bold mb-1">
                         @php
                             $monthlyPrice = $premiumPlan->monthly_price_cents / 100;
@@ -131,8 +134,8 @@
                     @endif
                 </div>
                 
-                <ul class="space-y-3 mb-8">
-                    @foreach(['feat1', 'feat2', 'feat3', 'feat4'] as $feat)
+                <ul class="space-y-3 mb-8 min-h-[140px]">
+                    @foreach(['feat1', 'feat2', 'feat3', 'feat4', 'feat5', 'feat6', 'feat7'] as $feat)
                     <li class="flex items-start text-sm">
                         <svg class="w-5 h-5 text-purple-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -142,7 +145,7 @@
                     @endforeach
                 </ul>
                 
-                <a href="{{ route('contact') }}" class="block w-full text-center px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg transition font-semibold">
+                <a href="{{ route('register') }}" class="block w-full text-center px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg transition font-semibold">
                     {{ __('home/pricing.enterprise_cta') }}
                 </a>
             </div>
