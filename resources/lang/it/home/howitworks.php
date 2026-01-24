@@ -3,20 +3,20 @@
 return [
     'badge' => 'Semplice & Veloce',
     'title' => 'Come iniziare',
-    'subtitle' => 'Dalla registrazione alla gestione professionale della collezione in pochi minuti.',
+    'subtitle' => 'Inizia in pochi minuti. Crea un account, aggiungi le tue carte – e ottieni una panoramica immediata.',
     
-    'step1_title' => 'Crea il tuo account',
-    'step1_description' => 'Registrati gratuitamente in pochi secondi. Nessuna carta di credito richiesta.',
+    'step1_title' => 'Crea un account',
+    'step1_description' => 'Crea un account gratuito – senza carta di credito e senza vincoli.',
     
     'step2_title' => 'Aggiungi le tue carte',
-    'step2_description' => 'Scansiona QR code, importa da CSV o aggiungi manualmente. È veloce e facile.',
+    'step2_description' => 'Aggiungi le tue carte nel modo che preferisci – scansiona, importa o aggiungi manualmente.',
     
-    'step3_title' => 'Traccia il valore',
-    'step3_description' => 'Vedi il valore della tua collezione aggiornarsi automaticamente con prezzi di mercato in tempo reale.',
+    'step3_title' => 'Monitora il valore',
+    'step3_description' => 'Visualizza il valore totale della tua collezione – basato su prezzi di mercato aggiornati.',
     
-    'step4_title' => 'Costruisci mazzi & gioca',
-    'step4_description' => 'Usa il nostro deck builder assistito da AI per creare strategie vincenti.',
+    'step4_title' => 'Costruisci deck con panoramica',
+    'step4_description' => 'Pianifica e mantieni deck con panoramica completa su carte, formati e pezzi mancanti.',
     
-    'cta' => 'Inizia gratis',
-    'cta_subtitle' => 'Nessuna carta di credito richiesta • Piano gratuito disponibile',
+    'cta' => 'Inizia gratuitamente',
+    'cta_subtitle' => 'Nessuna carta di credito • Piano gratuito • Annulla quando vuoi',
 ];

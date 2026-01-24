@@ -2,34 +2,34 @@
 
 return [
     // Stats
-    'stat1_number' => '50K+',
-    'stat1_label' => 'Aktive brugere',
+    'stat1_number' => 'Early Access',
+    'stat1_label' => 'Kom med fra start',
     
-    'stat2_number' => '2.5M+',
-    'stat2_label' => 'Kort sporet',
+    'stat2_number' => '550K+',
+    'stat2_label' => 'Kort i katalog',
     
-    'stat3_number' => '€127M+',
-    'stat3_label' => 'Samling værdi',
+    'stat3_number' => '5+ spil',
+    'stat3_label' => 'TCG understøttet',
     
-    'stat4_number' => '4.8/5',
-    'stat4_label' => 'Gennemsnitlig vurdering',
+    'stat4_number' => 'Dagligt',
+    'stat4_label' => 'Pris opdateringer',
     
     // Testimonials
     'testimonials_title' => 'Hvad vores brugere siger',
     'testimonials_subtitle' => 'Tilslut dig tusindvis af tilfredse samlere',
     
-    'test1_quote' => 'Endelig en platform der forstår samlere. QR-scanneren sparer mig timer hver uge!',
-    'test1_initials' => 'ML',
-    'test1_name' => 'Marco Larsen',
-    'test1_role' => 'Pokémon samler siden 1999',
+    'test1_quote' => 'Vi byggede Basecard fordi vi selv savnede et moderne værktøj til vores egne samlinger. Nu vil vi dele det med hele Danmark.',
+    'test1_initials' => 'BM',
+    'test1_name' => 'Barbara M.',
+    'test1_role' => 'Medstifter & CEO',
     
-    'test2_quote' => 'Prisadvarsler har hjulpet mig med at købe og sælge på det perfekte tidspunkt. Min portefølje er vokset 35% på 6 måneder.',
-    'test2_initials' => 'SN',
-    'test2_name' => 'Sofia Nielsen',
-    'test2_role' => 'Professionel trader',
+    'test2_quote' => 'Som den første beta tester har jeg fulgt Basecard fra dag ét. Det er fantastisk at se produktet vokse og blive bedre hver uge.',
+    'test2_initials' => 'A',
+    'test2_name' => 'Alexander',
+    'test2_role' => 'Første beta tester',
     
-    'test3_quote' => 'Deck builderen er genial! AI forslagene har hjulpet mig med at vinde mine første turneringer.',
-    'test3_initials' => 'AH',
-    'test3_name' => 'Anders Hansen',
-    'test3_role' => 'Kompetitiv spiller',
+    'test3_quote' => 'Vores mission er klar: skab det bedste værktøj til kortsamlere i Skandinavien. Vi lytter til brugerne og bygger funktioner de virkelig har brug for.',
+    'test3_initials' => 'SBP',
+    'test3_name' => 'Simon BP',
+    'test3_role' => 'Medstifter & CTO',
 ];
