@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html lang="da">
-<head>
-    <meta charset="utf-8">
-    <title>Handelsbetingelser – {{ config('app.name') }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@extends('layouts.public')
 
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @endif
-</head>
-<body class="bg-black text-white min-h-screen flex flex-col items-center p-6 lg:p-10">
-    <main class="w-full max-w-3xl bg-[#161615] border border-white/10 rounded-3xl p-6 md:p-10 shadow-xl">
+@section('title', __('meta.handelsbetingelser_title'))
+@section('description', __('meta.handelsbetingelser_description'))
+
+@section('content')
+    <main class="w-full max-w-3xl mx-auto bg-[#161615] border border-white/10 rounded-3xl p-6 md:p-10 shadow-xl my-10">
         <h1 class="text-3xl md:text-4xl font-bold mb-8">
             Handelsbetingelser for basecard.dk
         </h1>
@@ -100,5 +94,4 @@
             </a>
         </div>
     </main>
-</body>
-</html>
+@endsection

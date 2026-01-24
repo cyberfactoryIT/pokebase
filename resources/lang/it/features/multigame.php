@@ -13,9 +13,9 @@ return [
     'magic_feat2' => 'Integrazione con MTGO e Arena',
     'magic_feat3' => 'Tracking Reserved List',
     
-    'onepiece_feat1' => 'Aggiornato agli ultimi set',
-    'onepiece_feat2' => 'Tracking prezzi giapponesi e inglesi',
-    'onepiece_feat3' => 'Deck builder specifici per OP TCG',
+    'yugioh_feat1' => 'Aggiornato agli ultimi set',
+    'yugioh_feat2' => 'Duel Monsters, Rush Duel e Speed Duel',
+    'yugioh_feat3' => 'Costruttori mazzi per tutti i formati',
     
     'coming_label' => 'Prossimamente:',
     'coming_more' => 'e altri...',

@@ -3,7 +3,30 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ config('app.name') }} - {{ __('welcome.subtitle_short') }}</title>
+        <title>{{ __('meta.home_title') }}</title>
+        
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="{{ __('meta.home_description') }}">
+        <meta name="keywords" content="samlekort, pokemon kort, trading cards, kortsamling, deck builder, kort værdi">
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:title" content="{{ __('meta.home_title') }}">
+        <meta property="og:description" content="{{ __('meta.home_description') }}">
+        <meta property="og:site_name" content="{{ __('meta.og_site_name') }}">
+        <meta property="og:locale" content="{{ __('meta.og_locale') }}">
+        <meta property="og:image" content="{{ asset('images/og-default.jpg') }}">
+        
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ url()->current() }}">
+        <meta name="twitter:title" content="{{ __('meta.home_title') }}">
+        <meta name="twitter:description" content="{{ __('meta.home_description') }}">
+        <meta name="twitter:image" content="{{ asset('images/og-default.jpg') }}">
+        
+        <!-- Canonical URL -->
+        <link rel="canonical" href="{{ url('/') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

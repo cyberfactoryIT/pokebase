@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'Pricing - ' . config('app.name'))
+@section('title', __('meta.pricing_title'))
+@section('description', __('meta.pricing_description'))
 
 @section('content')
 <div class="min-h-screen bg-[#1a1a1a] text-white py-20">

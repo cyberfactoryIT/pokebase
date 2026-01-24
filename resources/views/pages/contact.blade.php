@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
-@section('title', __('pages.contact_title') . ' - ' . config('app.name'))
+@section('title', __('meta.contact_title'))
+@section('description', __('meta.contact_description'))
 
 @section('content')
 @php
