@@ -34,102 +34,70 @@
     </div>
 
     <!-- FAQ Categories Section -->
-    <div class="container mx-auto px-6 py-16">
+    <div class="container mx-auto px-6 py-16" x-data="{ selectedFaq: null }">
         <h2 class="text-3xl font-bold text-center mb-12">{{ __('pages.contact_categories_title') }}</h2>
         
+        @if(isset($faqs) && $faqs->isNotEmpty())
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            @php
-                // Initialize faqsByCategory if not set
-                $faqsByCategory = $faqsByCategory ?? [
-                    'getting_started' => collect(),
-                    'account_billing' => collect(),
-                    'features_tools' => collect(),
-                ];
-                
-                $categories = [
-                    [
-                        'key' => 'getting_started',
-                        'icon' => '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
-                        'title' => __('Getting Started'),
-                        'fallback' => [
-                            __('How to create an account'),
-                            __('Setting up your first collection'),
-                            __('Import your cards'),
-                            __('Understanding pricing data')
-                        ]
-                    ],
-                    [
-                        'key' => 'account_billing',
-                        'icon' => '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>',
-                        'title' => __('Account & Billing'),
-                        'fallback' => [
-                            __('Manage your account'),
-                            __('Subscription plans'),
-                            __('Payment methods'),
-                            __('Cancel subscription')
-                        ]
-                    ],
-                    [
-                        'key' => 'features_tools',
-                        'icon' => '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>',
-                        'title' => __('Features & Tools'),
-                        'fallback' => [
-                            __('Collection management'),
-                            __('Price tracking'),
-                            __('Deck builder'),
-                            __('Export options')
-                        ]
-                    ]
-                ];
-            @endphp
-
-            @foreach($categories as $category)
+            @foreach($faqs as $category => $items)
             <div class="bg-[#161615] border border-white/15 rounded-lg p-8 hover:border-blue-500/50 transition-colors">
                 <div class="text-blue-500 mb-4">
-                    {!! $category['icon'] !!}
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                 </div>
-                <h3 class="text-xl font-bold mb-4">{{ $category['title'] }}</h3>
+                <h3 class="text-xl font-bold mb-4">{{ $category }}</h3>
                 <ul class="space-y-3">
-                    @php
-                        $hasFaqs = isset($faqsByCategory[$category['key']]) && 
-                                   (is_array($faqsByCategory[$category['key']]) ? count($faqsByCategory[$category['key']]) > 0 : $faqsByCategory[$category['key']]->isNotEmpty());
-                    @endphp
-                    @if($hasFaqs)
-                        @foreach($faqsByCategory[$category['key']] as $faq)
-                            @php
-                                $question = $faq->question[$lang] ?? reset($faq->question);
-                            @endphp
-                            <li>
-                                <a href="/faq#faq-{{ $faq->id }}" class="text-gray-400 hover:text-blue-400 transition-colors flex items-center">
-                                    <span class="mr-2">→</span>
-                                    {{ $question }}
-                                </a>
-                            </li>
-                        @endforeach
-                    @else
-                        @foreach($category['fallback'] as $item)
+                    @foreach($items->take(4) as $faq)
+                        @php
+                            $question = $faq->question[$lang] ?? reset($faq->question);
+                            $answer = $faq->answer[$lang] ?? reset($faq->answer);
+                        @endphp
                         <li>
-                            <a href="/faq" class="text-gray-400 hover:text-blue-400 transition-colors flex items-center">
-                                <span class="mr-2">→</span>
-                                {{ $item }}
-                            </a>
+                            <button 
+                                @click="selectedFaq = selectedFaq === {{ $faq->id }} ? null : {{ $faq->id }}; $nextTick(() => { if(selectedFaq === {{ $faq->id }}) { document.getElementById('faq-display').scrollIntoView({ behavior: 'smooth', block: 'center' }); } })"
+                                class="text-gray-400 hover:text-blue-400 transition-colors flex items-start text-left w-full"
+                                :class="{ 'text-blue-400': selectedFaq === {{ $faq->id }} }"
+                            >
+                                <span class="mr-2 flex-shrink-0">→</span>
+                                <span>{{ $question }}</span>
+                            </button>
+                            <template x-if="false" x-data="{ q: @js($question), a: @js($answer), id: {{ $faq->id }} }"></template>
                         </li>
-                        @endforeach
-                    @endif
+                    @endforeach
                 </ul>
             </div>
             @endforeach
         </div>
-
-        <!-- View All FAQs Button -->
-        <div class="text-center mb-16">
-            <a href="/faq" class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
-                {{ __('pages.contact_all_faqs') }}
-                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-            </a>
+        
+        <!-- FAQ Display Area -->
+        <div id="faq-display" x-show="selectedFaq !== null" x-cloak class="mb-16">
+            @foreach($faqs as $category => $items)
+                @foreach($items as $faq)
+                    @php
+                        $question = $faq->question[$lang] ?? reset($faq->question);
+                        $answer = $faq->answer[$lang] ?? reset($faq->answer);
+                    @endphp
+                    <div x-show="selectedFaq === {{ $faq->id }}" class="bg-[#161615] border border-blue-500/50 rounded-lg p-8">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-bold text-blue-400">{{ $question }}</h3>
+                            <button @click="selectedFaq = null" class="text-gray-400 hover:text-white transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="prose prose-invert max-w-none text-gray-300">
+                            {!! \Illuminate\Support\Str::of($answer)->markdown()->toHtmlString() !!}
+                        </div>
+                    </div>
+                @endforeach
+            @endforeach
         </div>
+        
+        @else
+        <p class="text-center text-gray-400 mb-16">{{ __('pages.contact_no_faqs') }}</p>
+        @endif
     </div>
 
     <!-- Contact Form Section -->

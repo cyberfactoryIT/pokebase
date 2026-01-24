@@ -41,6 +41,7 @@ return [
     'contact_subtitle' => 'Hvordan kan vi hjælpe dig i dag?',
     'contact_search_placeholder' => 'Søg efter hjælp...',
     'contact_categories_title' => 'Gennemse efter kategori',
+    'contact_no_faqs' => 'Ingen ofte stillede spørgsmål tilgængelige endnu.',
     'contact_or_contact' => 'Eller kontakt os direkte',
     'contact_email_title' => 'E-mail',
     'contact_company_title' => 'Firma',
@@ -53,6 +54,23 @@ return [
     'contact_form_message' => 'Besked',
     'contact_form_send' => 'Send besked',
     'contact_all_faqs' => 'Se alle FAQ\'er',
+    
+    // Contact FAQ categories
+    'contact_category_getting_started' => 'Kom i gang',
+    'contact_category_account_billing' => 'Konto & Fakturering',
+    'contact_category_features_tools' => 'Funktioner & Værktøjer',
+    'contact_faq_create_account' => 'Hvordan opretter jeg en konto',
+    'contact_faq_first_collection' => 'Opsæt din første samling',
+    'contact_faq_import_cards' => 'Importer dine kort',
+    'contact_faq_pricing_data' => 'Forstå prisdata',
+    'contact_faq_manage_account' => 'Administrer din konto',
+    'contact_faq_subscription_plans' => 'Abonnementsplaner',
+    'contact_faq_payment_methods' => 'Betalingsmetoder',
+    'contact_faq_cancel_subscription' => 'Annuller abonnement',
+    'contact_faq_collection_management' => 'Samlingsstyring',
+    'contact_faq_price_tracking' => 'Prissporing',
+    'contact_faq_deck_builder' => 'Deck builder',
+    'contact_faq_export_options' => 'Eksporter muligheder',
 
     // Pricing page
     'pricing_header' => 'PRISER',

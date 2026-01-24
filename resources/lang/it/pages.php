@@ -40,6 +40,7 @@ return [
     'contact_subtitle' => 'Come possiamo aiutarti oggi?',
     'contact_search_placeholder' => 'Cerca aiuto...',
     'contact_categories_title' => 'Sfoglia per categoria',
+    'contact_no_faqs' => 'Nessuna FAQ disponibile al momento.',
     'contact_or_contact' => 'Oppure contattaci direttamente',
     'contact_email_title' => 'Email',
     'contact_company_title' => 'Azienda',
@@ -52,6 +53,23 @@ return [
     'contact_form_message' => 'Messaggio',
     'contact_form_send' => 'Invia messaggio',
     'contact_all_faqs' => 'Vedi tutte le FAQ',
+    
+    // Contact FAQ categories
+    'contact_category_getting_started' => 'Per iniziare',
+    'contact_category_account_billing' => 'Account e Fatturazione',
+    'contact_category_features_tools' => 'Funzionalità e Strumenti',
+    'contact_faq_create_account' => 'Come creare un account',
+    'contact_faq_first_collection' => 'Configura la tua prima collezione',
+    'contact_faq_import_cards' => 'Importa le tue carte',
+    'contact_faq_pricing_data' => 'Capire i dati di prezzo',
+    'contact_faq_manage_account' => 'Gestisci il tuo account',
+    'contact_faq_subscription_plans' => 'Piani di abbonamento',
+    'contact_faq_payment_methods' => 'Metodi di pagamento',
+    'contact_faq_cancel_subscription' => 'Annulla abbonamento',
+    'contact_faq_collection_management' => 'Gestione collezione',
+    'contact_faq_price_tracking' => 'Tracciamento prezzi',
+    'contact_faq_deck_builder' => 'Costruttore mazzi',
+    'contact_faq_export_options' => 'Opzioni di esportazione',
 
     // Pricing page
     'pricing_header' => 'PREZZI',
