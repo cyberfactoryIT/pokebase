@@ -26,6 +26,7 @@ class TcgcsvProduct extends Model
         'modified_on',
         'extended_data',
         'raw',
+        'visible_lookup_key',
     ];
     
     protected $casts = [
@@ -301,6 +302,118 @@ class TcgcsvProduct extends Model
     {
         if (!$user) return false;
         return $this->watchedByUsers()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Refresh the visible_lookup_key for this product based on current data.
+     * 
+     * This method computes the lookup key from the product's game, set abbreviation,
+     * and card number, then updates the database if the key has changed.
+     * Will not overwrite an existing key with null if inputs are incomplete.
+     *
+     * @return void
+     */
+    public function refreshVisibleLookupKey(): void
+    {
+        // Get set code from group's abbreviation
+        $setCode = $this->group?->abbreviation;
+        
+        // Use space for empty abbreviations
+        if ($setCode === '') {
+            $setCode = ' ';
+        }
+        
+        // Use card_number as the raw number
+        $numberRaw = $this->card_number;
+        
+        // TODO: Get total cards from group or calculate
+        $totalCards = null;
+        
+        // Compute the new key
+        $newKey = \App\Support\VisibleCardKey::make(
+            $setCode,
+            $numberRaw,
+            $totalCards
+        );
+        
+        // Only update if:
+        // 1. New key is not null
+        // 2. New key is different from current key
+        if ($newKey !== null && $this->visible_lookup_key !== $newKey) {
+            $this->visible_lookup_key = $newKey;
+            $this->save();
+        }
+    }
+
+    /**
+     * Backfill visible_lookup_key for all records that have sufficient data
+     * but are missing the key.
+     *
+     * This method processes records in chunks, using transactions for safety.
+     * It only updates records where the required fields (group abbreviation and card_number)
+     * are present.
+     *
+     * @param int $chunk Number of records to process per chunk
+     * @return void
+     */
+    public static function backfillVisibleLookupKeys(int $chunk = 1000): void
+    {
+        // Query records that:
+        // 1. Have visible_lookup_key as null
+        // 2. Have card_number present
+        // 3. Have a group with abbreviation
+        self::query()
+            ->whereNull('visible_lookup_key')
+            ->whereNotNull('card_number')
+            ->whereHas('group', function ($query) {
+                $query->whereNotNull('abbreviation');
+            })
+            ->with(['group', 'game'])
+            ->chunkById($chunk, function ($products) {
+                \Illuminate\Support\Facades\DB::transaction(function () use ($products) {
+                    foreach ($products as $product) {
+                        // Get set code from group abbreviation
+                        $setCode = $product->group?->abbreviation;
+                        
+                        // Use space for empty abbreviations
+                        if ($setCode === '') {
+                            $setCode = ' ';
+                        }
+                        
+                        // Use card_number as raw number
+                        $numberRaw = $product->card_number;
+                        
+                        // Skip if missing required data (null, but empty string is ok as space)
+                        if ($setCode === null || empty($numberRaw)) {
+                            continue;
+                        }
+                        
+                        // TODO: Get total cards from group or calculate
+                        $totalCards = null;
+                        
+                        // Compute key
+                        $key = \App\Support\VisibleCardKey::make(
+                            $setCode,
+                            $numberRaw,
+                            $totalCards
+                        );
+                        
+                        // Update if key was generated
+                        if ($key !== null) {
+                            $product->visible_lookup_key = $key;
+                            $product->save();
+                        }
+                    }
+                });
+            });
+    }
+
+    /**
+     * Get the Game relationship
+     */
+    public function game(): BelongsTo
+    {
+        return $this->belongsTo(Game::class, 'game_id', 'id');
     }
 }
 
