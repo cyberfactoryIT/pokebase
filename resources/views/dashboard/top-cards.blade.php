@@ -103,11 +103,6 @@
                     <p class="text-lg font-bold text-green-400">
                         {{ $currencySymbol }} {{ number_format($displayPrice, 2) }}
                     </p>
-                    @if($item->quantity > 1)
-                    <p class="text-xs text-gray-500 mt-1">
-                        {{ __('dashboard.total') }}: <span class="text-green-400 font-semibold">{{ $currencySymbol }} {{ number_format($displayPrice * $item->quantity, 2) }}</span>
-                    </p>
-                    @endif
                 @else
                     <p class="text-sm text-gray-500">{{ __('dashboard.price_unavailable') }}</p>
                 @endif

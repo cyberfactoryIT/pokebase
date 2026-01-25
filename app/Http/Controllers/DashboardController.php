@@ -110,6 +110,13 @@ class DashboardController extends Controller
             })
             ->with(['card.group', 'card.prices', 'card.rapidapiCard', 'card.cardmarketProduct.latestPriceQuote'])
             ->get()
+            ->groupBy('product_id')
+            ->map(function($items) {
+                // Merge duplicate entries of the same card
+                $first = $items->first();
+                $first->quantity = $items->sum('quantity');
+                return $first;
+            })
             ->sortByDesc(function($item) {
                 // Use EUR price (most reliable for European market)
                 // Priority 1: Cardmarket price quotes (latest trend)
