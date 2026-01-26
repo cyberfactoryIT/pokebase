@@ -2,34 +2,34 @@
 
 return [
     // Stats
-    'stat1_number' => '50K+',
-    'stat1_label' => 'Active users',
+    'stat1_number' => 'Early Access',
+    'stat1_label' => 'Join from the start',
     
-    'stat2_number' => '2.5M+',
-    'stat2_label' => 'Cards tracked',
+    'stat2_number' => '550K+',
+    'stat2_label' => 'Cards in catalog',
     
-    'stat3_number' => '€127M+',
-    'stat3_label' => 'Collection value',
+    'stat3_number' => '5+ games',
+    'stat3_label' => 'TCG supported',
     
-    'stat4_number' => '4.8/5',
-    'stat4_label' => 'Average rating',
+    'stat4_number' => 'Daily',
+    'stat4_label' => 'Price updates',
     
     // Testimonials
     'testimonials_title' => 'What our users say',
     'testimonials_subtitle' => 'Join thousands of satisfied collectors',
     
-    'test1_quote' => 'Finally a platform that understands collectors. The QR scanner saves me hours every week!',
-    'test1_initials' => 'JS',
-    'test1_name' => 'John Smith',
-    'test1_role' => 'Pokémon collector since 1999',
+    'test1_quote' => 'We built Basecard because we needed a modern tool for our own collections. Now we want to share it with all of Scandinavia.',
+    'test1_initials' => 'BM',
+    'test1_name' => 'Barbara M.',
+    'test1_role' => 'Co-founder & CEO',
     
-    'test2_quote' => 'Price alerts helped me buy and sell at the perfect time. My portfolio grew 35% in 6 months.',
-    'test2_initials' => 'EB',
-    'test2_name' => 'Emily Brown',
-    'test2_role' => 'Professional trader',
+    'test2_quote' => 'As the first beta tester, I\'ve followed Basecard from day one. It\'s amazing to see the product grow and improve every week.',
+    'test2_initials' => 'A',
+    'test2_name' => 'Alexander',
+    'test2_role' => 'First beta tester',
     
-    'test3_quote' => 'The deck builder is genius! AI suggestions helped me win my first tournaments.',
-    'test3_initials' => 'MJ',
-    'test3_name' => 'Michael Johnson',
-    'test3_role' => 'Competitive player',
+    'test3_quote' => 'Our mission is clear: build the best tool for card collectors in Scandinavia. We listen to users and build features they truly need.',
+    'test3_initials' => 'SBP',
+    'test3_name' => 'Simon BP',
+    'test3_role' => 'Co-founder & CTO',
 ];

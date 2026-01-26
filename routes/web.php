@@ -21,6 +21,7 @@ Route::get('/contact', [\App\Http\Controllers\PublicFaqController::class, 'conta
 // Legal pages
 Route::view('/terms', 'legal.terms')->name('terms');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
+Route::view('/handelsbetingelser', 'legal.handelsbetingelser')->name('handelsbetingelser');
 
 
 // Route di test per invalidare la sessione e fare logout

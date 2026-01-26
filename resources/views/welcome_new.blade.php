@@ -3,7 +3,30 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ config('app.name') }} - {{ __('welcome.subtitle_short') }}</title>
+        <title>{{ __('meta.home_title') }}</title>
+        
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="{{ __('meta.home_description') }}">
+        <meta name="keywords" content="samlekort, pokemon kort, trading cards, kortsamling, deck builder, kort værdi">
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:title" content="{{ __('meta.home_title') }}">
+        <meta property="og:description" content="{{ __('meta.home_description') }}">
+        <meta property="og:site_name" content="{{ __('meta.og_site_name') }}">
+        <meta property="og:locale" content="{{ __('meta.og_locale') }}">
+        <meta property="og:image" content="{{ asset('images/og-default.jpg') }}">
+        
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ url()->current() }}">
+        <meta name="twitter:title" content="{{ __('meta.home_title') }}">
+        <meta name="twitter:description" content="{{ __('meta.home_description') }}">
+        <meta name="twitter:image" content="{{ asset('images/og-default.jpg') }}">
+        
+        <!-- Canonical URL -->
+        <link rel="canonical" href="{{ url('/') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -211,11 +234,25 @@
                     <div class="flex gap-8 text-sm text-gray-400">
                         <a href="{{ route('privacy') }}" class="hover:text-white transition">{{ __('footer.privacy_policy') }}</a>
                         <a href="{{ route('terms') }}" class="hover:text-white transition">{{ __('footer.terms_of_service') }}</a>
+                        <a href="{{ route('handelsbetingelser') }}" class="hover:text-white transition">Handelsbetingelser</a>
                         <a href="{{ route('contact') }}" class="hover:text-white transition">{{ __('footer.contact') }}</a>
                     </div>
                 </div>
                 
-                <div class="mt-8 text-center text-sm text-gray-500">
+                <!-- Company Info -->
+                <div class="mt-8 pt-8 border-t border-white/10 text-center text-sm text-gray-400">
+                    <span class="font-semibold">{{ config('invoice.biller_name') }}</span>
+                    <span class="mx-2">•</span>
+                    <span>{{ config('invoice.biller_address') }}</span>
+                    <span class="mx-2">•</span>
+                    <span>{{ config('invoice.biller_vat') }}</span>
+                    <span class="mx-2">•</span>
+                    <a href="mailto:{{ config('invoice.biller_email') }}" class="hover:text-white transition">{{ config('invoice.biller_email') }}</a>
+                    <span class="mx-2">•</span>
+                    <a href="tel:{{ config('invoice.biller_phone') }}" class="hover:text-white transition">{{ config('invoice.biller_phone') }}</a>
+                </div>
+
+                <div class="mt-4 text-center text-sm text-gray-500">
                     &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('footer.all_rights_reserved') }}
                 </div>
             </div>

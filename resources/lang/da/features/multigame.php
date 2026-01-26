@@ -13,9 +13,9 @@ return [
     'magic_feat2' => 'Integration med MTGO og Arena',
     'magic_feat3' => 'Reserved List tracking',
     
-    'onepiece_feat1' => 'Opdateret til de nyeste sæt',
-    'onepiece_feat2' => 'Japansk og engelsk pris tracking',
-    'onepiece_feat3' => 'Deck-byggere specifikt til OP TCG',
+    'yugioh_feat1' => 'Opdateret til de nyeste sæt',
+    'yugioh_feat2' => 'Duel Monsters, Rush Duel og Speed Duel',
+    'yugioh_feat3' => 'Deck-byggere til alle formater',
     
     'coming_label' => 'Kommer snart:',
     'coming_more' => 'og flere...',

@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
-@section('title', __('pages.features_title') . ' - ' . config('app.name'))
+@section('title', __('meta.features_title'))
+@section('description', __('meta.features_description'))
 
 @section('content')
 <div class="bg-[#1a1a1a] min-h-screen text-white">

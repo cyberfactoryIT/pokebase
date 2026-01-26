@@ -11,7 +11,7 @@
                 <p class="text-xl text-gray-400 mb-8">{{ __('features/analytics.subtitle') }}</p>
                 
                 <div class="space-y-4">
-                    @foreach(['feat1', 'feat2', 'feat3', 'feat4', 'feat5'] as $feat)
+                    @foreach(['feat1', 'feat2', 'feat3', 'feat4'] as $feat)
                     <div class="flex items-start">
                         <svg class="w-6 h-6 text-yellow-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>

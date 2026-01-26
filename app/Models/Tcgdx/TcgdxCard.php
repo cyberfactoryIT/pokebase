@@ -27,6 +27,7 @@ class TcgdxCard extends Model
         'tcgplayer_product_id',
         'cardmarket_product_id',
         'raw',
+        'visible_lookup_key',
     ];
 
     protected $casts = [
@@ -93,5 +94,104 @@ class TcgdxCard extends Model
         }
         
         return $this->name ?? 'Unknown';
+    }
+
+    /**
+     * Refresh the visible_lookup_key for this card based on current data.
+     * 
+     * This method computes the lookup key from the card's set tcgdex_id
+     * and card number, then updates the database if the key has changed.
+     * Will not overwrite an existing key with null if inputs are incomplete.
+     *
+     * @return void
+     */
+    public function refreshVisibleLookupKey(): void
+    {
+        // Get set code from set's tcgdex_id
+        $setCode = $this->set?->tcgdex_id;
+        
+        // Use space for empty set code
+        if ($setCode === '') {
+            $setCode = ' ';
+        }
+        
+        // Use number as the raw number
+        $numberRaw = $this->number;
+        
+        // Get total cards from set
+        $totalCards = $this->set?->card_count_official ?? $this->set?->card_count_total;
+        
+        // Compute the new key
+        $newKey = \App\Support\VisibleCardKey::make(
+            $setCode,
+            $numberRaw,
+            $totalCards
+        );
+        
+        // Only update if:
+        // 1. New key is not null
+        // 2. New key is different from current key
+        if ($newKey !== null && $this->visible_lookup_key !== $newKey) {
+            $this->visible_lookup_key = $newKey;
+            $this->save();
+        }
+    }
+
+    /**
+     * Backfill visible_lookup_key for all records that have sufficient data
+     * but are missing the key.
+     *
+     * This method processes records in chunks, using transactions for safety.
+     * It only updates records where the required fields (set and number) are present.
+     *
+     * @param int $chunk Number of records to process per chunk
+     * @return void
+     */
+    public static function backfillVisibleLookupKeys(int $chunk = 1000): void
+    {
+        // Query records that:
+        // 1. Have visible_lookup_key as null
+        // 2. Have number present
+        self::query()
+            ->whereNull('visible_lookup_key')
+            ->whereNotNull('number')
+            ->with('set')
+            ->chunkById($chunk, function ($cards) {
+                \Illuminate\Support\Facades\DB::transaction(function () use ($cards) {
+                    foreach ($cards as $card) {
+                        // Get set code from set's tcgdex_id
+                        $setCode = $card->set?->tcgdex_id;
+                        
+                        // Use space for empty set code
+                        if ($setCode === '') {
+                            $setCode = ' ';
+                        }
+                        
+                        // Use number as raw number
+                        $numberRaw = $card->number;
+                        
+                        // Skip if missing required data (null, but empty string is ok as space)
+                        if ($setCode === null || empty($numberRaw)) {
+                            continue;
+                        }
+                        
+                        // Get total cards from set
+                        $totalCards = $card->set?->card_count_official ?? $card->set?->card_count_total;
+                        
+                        // Compute key
+                        $key = \App\Support\VisibleCardKey::make(
+                            $setCode,
+                            $numberRaw,
+                            $totalCards
+                        );
+                        
+                        // Update if key was generated
+                        if ($key !== null) {
+                            $card->visible_lookup_key = $key;
+                            $card->save();
+                        }
+                    }
+                });
+            });
     }
 }

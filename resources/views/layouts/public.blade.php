@@ -6,6 +6,37 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>@yield('title', config('app.name'))</title>
         
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="@yield('description', __('meta.home_description'))">
+        <meta name="keywords" content="samlekort, pokemon kort, trading cards, kortsamling, deck builder, kort værdi">
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:title" content="@yield('title', config('app.name'))">
+        <meta property="og:description" content="@yield('description', __('meta.home_description'))">
+        <meta property="og:site_name" content="{{ __('meta.og_site_name') }}">
+        <meta property="og:locale" content="{{ __('meta.og_locale') }}">
+        @hasSection('og_image')
+            <meta property="og:image" content="@yield('og_image')">
+        @else
+            <meta property="og:image" content="{{ asset('images/og-default.jpg') }}">
+        @endif
+        
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ url()->current() }}">
+        <meta name="twitter:title" content="@yield('title', config('app.name'))">
+        <meta name="twitter:description" content="@yield('description', __('meta.home_description'))">
+        @hasSection('twitter_image')
+            <meta name="twitter:image" content="@yield('twitter_image')">
+        @else
+            <meta name="twitter:image" content="{{ asset('images/og-default.jpg') }}">
+        @endif
+        
+        <!-- Canonical URL -->
+        <link rel="canonical" href="@yield('canonical', url()->current())">
+        
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

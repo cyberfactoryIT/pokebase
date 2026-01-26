@@ -46,19 +46,19 @@
                 </ul>
             </div>
             
-            <!-- One Piece -->
-            <div class="bg-gradient-to-br from-orange-600/10 to-red-600/10 border border-orange-600/20 rounded-2xl p-8 hover:border-orange-600/40 transition">
+            <!-- Yu-Gi-Oh! -->
+            <div class="bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-purple-600/20 rounded-2xl p-8 hover:border-purple-600/40 transition">
                 <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-orange-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">🏴‍☠️</span>
+                    <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-3xl">🎴</span>
                     </div>
-                    <h3 class="text-2xl font-bold mb-2">One Piece TCG</h3>
+                    <h3 class="text-2xl font-bold mb-2">Yu-Gi-Oh!</h3>
                 </div>
                 <ul class="space-y-3 text-gray-400">
                     @foreach(['feat1', 'feat2', 'feat3'] as $feat)
                     <li class="flex items-start">
-                        <span class="text-orange-400 mr-2">•</span>
-                        {{ __('features/multigame.onepiece_' . $feat) }}
+                        <span class="text-purple-400 mr-2">•</span>
+                        {{ __('features/multigame.yugioh_' . $feat) }}
                     </li>
                     @endforeach
                 </ul>
@@ -69,7 +69,7 @@
         <div class="text-center bg-gradient-to-r from-pink-600/10 to-purple-600/10 border border-pink-600/20 rounded-2xl p-8">
             <p class="text-gray-400 mb-2">{{ __('features/multigame.coming_label') }}</p>
             <div class="flex flex-wrap justify-center gap-4 text-lg font-semibold">
-                <span class="px-4 py-2 bg-white/5 rounded-lg">Yu-Gi-Oh!</span>
+                <span class="px-4 py-2 bg-white/5 rounded-lg">One Piece TCG</span>
                 <span class="px-4 py-2 bg-white/5 rounded-lg">Digimon</span>
                 <span class="px-4 py-2 bg-white/5 rounded-lg">Disney Lorcana</span>
                 <span class="px-4 py-2 bg-white/5 rounded-lg">{{ __('features/multigame.coming_more') }}</span>

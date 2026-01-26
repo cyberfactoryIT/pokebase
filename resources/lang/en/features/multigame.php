@@ -13,9 +13,9 @@ return [
     'magic_feat2' => 'Integration with MTGO and Arena',
     'magic_feat3' => 'Reserved List tracking',
     
-    'onepiece_feat1' => 'Updated to the latest sets',
-    'onepiece_feat2' => 'Japanese and English price tracking',
-    'onepiece_feat3' => 'Deck builders specific to OP TCG',
+    'yugioh_feat1' => 'Updated to the latest sets',
+    'yugioh_feat2' => 'Duel Monsters, Rush Duel and Speed Duel',
+    'yugioh_feat3' => 'Deck builders for all formats',
     
     'coming_label' => 'Coming soon:',
     'coming_more' => 'and more...',

@@ -3,20 +3,20 @@
 return [
     'badge' => 'Simple & Fast',
     'title' => 'How to get started',
-    'subtitle' => 'From registration to professional collection management in minutes.',
+    'subtitle' => 'Get started in minutes. Create an account, add your cards – and get overview immediately.',
     
-    'step1_title' => 'Create your account',
-    'step1_description' => 'Sign up for free in seconds. No credit card required.',
+    'step1_title' => 'Create an account',
+    'step1_description' => 'Create a free account – no credit card and no commitment.',
     
     'step2_title' => 'Add your cards',
-    'step2_description' => 'Scan QR codes, import from CSV or add manually. It\'s fast and easy.',
+    'step2_description' => 'Add your cards the way that suits you – scan, import, or add manually.',
     
     'step3_title' => 'Track value',
-    'step3_description' => 'See your collection value update automatically with real-time market prices.',
+    'step3_description' => 'See the total value of your collection – based on updated market prices.',
     
-    'step4_title' => 'Build decks & play',
-    'step4_description' => 'Use our AI-assisted deck builder to create winning strategies.',
+    'step4_title' => 'Build decks with overview',
+    'step4_description' => 'Plan and maintain decks with full overview of cards, formats, and missing pieces.',
     
-    'cta' => 'Get started free',
-    'cta_subtitle' => 'No credit card required • Free plan available',
+    'cta' => 'Get started for free',
+    'cta_subtitle' => 'No credit card • Free plan • Cancel anytime',
 ];

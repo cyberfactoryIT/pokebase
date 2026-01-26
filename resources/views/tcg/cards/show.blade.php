@@ -444,18 +444,11 @@
                         $tcgdxCardmarket = $tcgdxPricing['cardmarket'] ?? [];
                         $tcgdxUpdated = $tcgdxTcgplayer['updated'] ?? null;
                         
-                        // Get Cardmarket prices from cardmarket_price_quotes using direct field
-                        $latestQuote = null;
-                        $cardmarketProductId = $card->cardmarket_product_id ?? null;
+                        // Get Cardmarket prices from cardmarket_price_quotes using eager loaded relation
+                        $latestQuote = $card->cardmarketProduct?->latestPriceQuote;
                         
                         // Use the same link as the external links section
                         $cardmarketPriceUrl = $card->rapidapiCard && $card->rapidapiCard->links ? ($card->rapidapiCard->links['cardmarket'] ?? null) : null;
-                        
-                        if ($cardmarketProductId) {
-                            $latestQuote = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $cardmarketProductId)
-                                ->latest('as_of_date')
-                                ->first();
-                        }
                         
                         // Extract price data from quote
                         $marketPriceEur = $latestQuote?->avg ?? $latestQuote?->trend ?? 0;

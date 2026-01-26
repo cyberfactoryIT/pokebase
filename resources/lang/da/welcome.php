@@ -5,10 +5,10 @@ return [
     'hero_subtitle' => 'Følg markedsværdi på Pokémon, Magic og One Piece baseret på europæiske Cardmarket-priser.',
     'cta_create_profile' => 'Opret gratis profil – se din værdi',
     'cta_learn_more' => 'Lær mere',
-    'stat_games' => '3 spil',
-    'stat_games_label' => 'Data, ikke hype',
-    'stat_cardmarket' => 'Cardmarket',
-    'stat_cardmarket_label' => 'Cardmarket-baseret',
+    'stat_games' => 'Data, ikke hype',
+    'stat_games_label' => '',
+    'stat_cardmarket' => 'Cardmarket-baseret',
+    'stat_cardmarket_label' => '',
     
     // Legacy (keep for compatibility)
     'title' => 'Udforsk din samling. <br/>Forstå dens værdi.',
@@ -208,8 +208,9 @@ return [
     // Stats
     'stat_games' => 'Data, ikke hype',
 
+    'stat_games_label' => '',
     'stat_cardmarket' => 'Cardmarket-baseret',
-    
+    'stat_cardmarket_label' => '',
     'stat_users' => '5,000+',
     'stat_users_label' => 'samlere i Norden',
     'stat_cards' => '30k+',

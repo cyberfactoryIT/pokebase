@@ -1,9 +1,38 @@
 <!-- EU PRICES Section -->
+@php
+    $user = auth()->user();
+    $preferredCurrency = $user?->preferred_currency ?? 'EUR';
+    $needsConversion = $preferredCurrency && $preferredCurrency !== 'EUR';
+    $currencySymbol = $needsConversion ? \App\Services\CurrencyService::getSymbol($preferredCurrency) : '€';
+    
+    // Helper function to format price with conversion
+    $formatPrice = function($eurAmount) use ($needsConversion, $preferredCurrency, $currencySymbol) {
+        if (!$eurAmount) return null;
+        
+        if ($needsConversion) {
+            $converted = \App\Services\CurrencyService::convert($eurAmount, 'EUR', $preferredCurrency);
+            return [
+                'display' => number_format($converted, 2),
+                'original' => number_format($eurAmount, 2),
+                'symbol' => $currencySymbol
+            ];
+        }
+        
+        return [
+            'display' => number_format($eurAmount, 2),
+            'original' => null,
+            'symbol' => '€'
+        ];
+    };
+@endphp
 <div class="mb-8">
     <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold text-white flex items-center gap-2">
             <span>🇪🇺</span>
             <span>EU PRICES</span>
+            @if($needsConversion)
+            <span class="text-xs text-gray-400 font-normal">({{ $currencySymbol }} {{ $preferredCurrency }})</span>
+            @endif
         </h3>
         @if($cardmarketPriceUrl)
         <a href="{{ $cardmarketPriceUrl }}" target="_blank" rel="noopener" class="text-emerald-400 hover:text-emerald-300 text-sm flex items-center gap-1">
@@ -130,6 +159,7 @@
             </thead>
             <tbody class="divide-y divide-white/5">
                 @if($latestQuote->trend)
+                @php $trendPrice = $formatPrice($latestQuote->trend); @endphp
                 <tr class="hover:bg-white/5 bg-emerald-500/10">
                     <td class="py-4 px-4 text-gray-200 font-semibold">
                         <div class="flex items-center gap-2">
@@ -140,43 +170,62 @@
                         </div>
                     </td>
                     <td class="py-4 px-4 text-right">
-                        <span class="text-2xl font-bold text-emerald-400">€{{ number_format($latestQuote->trend, 2) }}</span>
+                        <span class="text-2xl font-bold text-emerald-400">{{ $trendPrice['symbol'] }}{{ $trendPrice['display'] }}</span>
+                        @if($trendPrice['original'])
+                        <span class="block text-xs text-gray-400 mt-1">(€{{ $trendPrice['original'] }})</span>
+                        @endif
                     </td>
                 </tr>
                 @endif
                 
                 @if($latestQuote->avg)
+                @php $avgPrice = $formatPrice($latestQuote->avg); @endphp
                 <tr class="hover:bg-white/5">
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.average') }}</td>
                     <td class="py-3 px-4 text-right">
-                        <span class="text-lg font-bold text-white">€{{ number_format($latestQuote->avg, 2) }}</span>
+                        <span class="text-lg font-bold text-white">{{ $avgPrice['symbol'] }}{{ $avgPrice['display'] }}</span>
+                        @if($avgPrice['original'])
+                        <span class="block text-xs text-gray-400 mt-1">(€{{ $avgPrice['original'] }})</span>
+                        @endif
                     </td>
                 </tr>
                 @endif
                 
                 @if($latestQuote->low)
+                @php $lowPrice = $formatPrice($latestQuote->low); @endphp
                 <tr class="hover:bg-white/5">
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.low_price') }}</td>
                     <td class="py-3 px-4 text-right">
-                        <span class="text-base font-semibold text-gray-200">€{{ number_format($latestQuote->low, 2) }}</span>
+                        <span class="text-base font-semibold text-gray-200">{{ $lowPrice['symbol'] }}{{ $lowPrice['display'] }}</span>
+                        @if($lowPrice['original'])
+                        <span class="block text-xs text-gray-400">(€{{ $lowPrice['original'] }})</span>
+                        @endif
                     </td>
                 </tr>
                 @endif
                 
                 @if($latestQuote->avg7)
+                @php $avg7Price = $formatPrice($latestQuote->avg7); @endphp
                 <tr class="hover:bg-white/5">
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.7d_average') }}</td>
                     <td class="py-3 px-4 text-right">
-                        <span class="text-base font-semibold text-gray-200">€{{ number_format($latestQuote->avg7, 2) }}</span>
+                        <span class="text-base font-semibold text-gray-200">{{ $avg7Price['symbol'] }}{{ $avg7Price['display'] }}</span>
+                        @if($avg7Price['original'])
+                        <span class="block text-xs text-gray-400">(€{{ $avg7Price['original'] }})</span>
+                        @endif
                     </td>
                 </tr>
                 @endif
                 
                 @if($latestQuote->avg30)
+                @php $avg30Price = $formatPrice($latestQuote->avg30); @endphp
                 <tr class="hover:bg-white/5">
                     <td class="py-3 px-4 text-gray-300">{{ __('tcg/cards/show.30d_average') }}</td>
                     <td class="py-3 px-4 text-right">
-                        <span class="text-base font-semibold text-gray-200">€{{ number_format($latestQuote->avg30, 2) }}</span>
+                        <span class="text-base font-semibold text-gray-200">{{ $avg30Price['symbol'] }}{{ $avg30Price['display'] }}</span>
+                        @if($avg30Price['original'])
+                        <span class="block text-xs text-gray-400">(€{{ $avg30Price['original'] }})</span>
+                        @endif
                     </td>
                 </tr>
                 @endif
@@ -193,21 +242,33 @@
             </h4>
             <div class="grid grid-cols-3 gap-3">
                 @if($latestQuote->trend_holo)
+                @php $trendHoloPrice = $formatPrice($latestQuote->trend_holo); @endphp
                 <div class="bg-black/30 rounded-lg p-3 border border-yellow-400/20">
                     <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.trend') }}</div>
-                    <div class="text-xl font-bold text-yellow-400">€{{ number_format($latestQuote->trend_holo, 2) }}</div>
+                    <div class="text-xl font-bold text-yellow-400">{{ $trendHoloPrice['symbol'] }}{{ $trendHoloPrice['display'] }}</div>
+                    @if($trendHoloPrice['original'])
+                    <div class="text-xs text-gray-400">(€{{ $trendHoloPrice['original'] }})</div>
+                    @endif
                 </div>
                 @endif
                 @if($latestQuote->avg_holo)
+                @php $avgHoloPrice = $formatPrice($latestQuote->avg_holo); @endphp
                 <div class="bg-black/30 rounded-lg p-3 border border-yellow-400/20">
                     <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.average') }}</div>
-                    <div class="text-lg font-semibold text-white">€{{ number_format($latestQuote->avg_holo, 2) }}</div>
+                    <div class="text-lg font-semibold text-white">{{ $avgHoloPrice['symbol'] }}{{ $avgHoloPrice['display'] }}</div>
+                    @if($avgHoloPrice['original'])
+                    <div class="text-xs text-gray-400">(€{{ $avgHoloPrice['original'] }})</div>
+                    @endif
                 </div>
                 @endif
                 @if($latestQuote->low_holo)
+                @php $lowHoloPrice = $formatPrice($latestQuote->low_holo); @endphp
                 <div class="bg-black/30 rounded-lg p-3 border border-yellow-400/20">
                     <div class="text-xs text-gray-400 uppercase mb-1">{{ __('tcg/cards/show.low_price') }}</div>
-                    <div class="text-base font-semibold text-gray-200">€{{ number_format($latestQuote->low_holo, 2) }}</div>
+                    <div class="text-base font-semibold text-gray-200">{{ $lowHoloPrice['symbol'] }}{{ $lowHoloPrice['display'] }}</div>
+                    @if($lowHoloPrice['original'])
+                    <div class="text-xs text-gray-400">(€{{ $lowHoloPrice['original'] }})</div>
+                    @endif
                 </div>
                 @endif
             </div>
