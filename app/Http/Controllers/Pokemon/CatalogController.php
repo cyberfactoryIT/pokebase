@@ -19,8 +19,12 @@ class CatalogController extends Controller
     {
         $currentGame = $request->attributes->get('currentGame');
         
+        // If no current game (user not logged in), default to Pokemon
         if (!$currentGame) {
-            abort(404, 'No game selected');
+            $currentGame = \App\Models\Game::where('code', 'pokemon')->first();
+            if (!$currentGame) {
+                abort(404, 'Pokemon game not found');
+            }
         }
         
         // Use TCGDEX data
@@ -55,8 +59,12 @@ class CatalogController extends Controller
     {
         $currentGame = $request->attributes->get('currentGame');
         
+        // If no current game (user not logged in), default to Pokemon
         if (!$currentGame) {
-            abort(404, 'No game selected');
+            $currentGame = \App\Models\Game::where('code', 'pokemon')->first();
+            if (!$currentGame) {
+                abort(404, 'Pokemon game not found');
+            }
         }
         
         // Use TCGDEX data
@@ -103,8 +111,12 @@ class CatalogController extends Controller
     {
         $currentGame = $request->attributes->get('currentGame');
         
+        // If no current game (user not logged in), default to Pokemon
         if (!$currentGame) {
-            abort(404, 'No game selected');
+            $currentGame = \App\Models\Game::where('code', 'pokemon')->first();
+            if (!$currentGame) {
+                abort(404, 'Pokemon game not found');
+            }
         }
         
         // Use TCGDEX data
