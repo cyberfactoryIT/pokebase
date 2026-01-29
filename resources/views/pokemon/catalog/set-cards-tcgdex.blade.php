@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="py-12">
+<div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Back Link -->
             <div class="mb-4">
@@ -76,10 +76,3 @@
         </div>
     </div>
 @endsection
-
-@push('header')
-    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        {{ $set->name_en }}
-        <span class="text-sm text-gray-500">(TCGDEX)</span>
-    </h2>
-@endpush

@@ -14,24 +14,27 @@ if (!function_exists('catalog_backend')) {
         
         // TCGDEX is ONLY available for specific games
         if ($backend === 'tcgdex') {
+            // Check if we're in a Pokemon route (public or authenticated)
+            if (request()->is('pokemon/*')) {
+                return 'tcgdex'; // Allow TCGDEX for Pokemon routes
+            }
+            
             $currentGame = request()->attributes->get('currentGame');
             
-            // If no game is set, we're likely in a public route context
-            // In Pokemon routes (e.g., /pokemon/*), we can assume Pokemon game
-            if (!$currentGame) {
-                // Check if we're in a Pokemon route
-                if (request()->is('pokemon/*')) {
-                    return 'tcgdex'; // Allow TCGDEX for Pokemon routes
+            // If we have a game set, check if it's in supported list
+            if ($currentGame) {
+                $supportedGames = config('catalog.tcgdex_supported_games', [1]);
+                
+                // If game not in supported list, fallback to TCGCSV
+                if (!in_array($currentGame->id, $supportedGames)) {
+                    return 'tcgcsv';
                 }
-                return 'tcgcsv'; // Fallback for other routes
+                
+                return 'tcgdex';
             }
             
-            $supportedGames = config('catalog.tcgdex_supported_games', [1]);
-            
-            // If game not in supported list, fallback to TCGCSV
-            if (!in_array($currentGame->id, $supportedGames)) {
-                return 'tcgcsv';
-            }
+            // Fallback to TCGCSV for non-Pokemon routes without game
+            return 'tcgcsv';
         }
         
         return $backend;

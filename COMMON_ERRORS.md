@@ -598,6 +598,62 @@ README.md               → Add setup instructions here
 - ❌ Bug fixes (add to COMMON_ERRORS.md instead)
 - ❌ Implementation details (add comments in code or PROJECT_STATUS.md)
 
+---
+
+## 🎨 Blade Component vs Traditional Layout Issue
+
+### ❌ PROBLEM: x-app-layout component not rendering
+When using `<x-app-layout>` in Pokemon TCGDEX views, the content was not displaying despite:
+- Controller returning data correctly (verified with dd())
+- Data being passed to view
+- Route working properly
+
+```blade
+{{-- ❌ This didn't work in Pokemon catalog views --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2>Pokemon Sets</h2>
+    </x-slot>
+    
+    <div class="py-12">
+        {{-- Content here was not rendering --}}
+    </div>
+</x-app-layout>
+```
+
+### ✅ SOLUTION: Use traditional @extends layout
+Replace `<x-app-layout>` with traditional Blade `@extends` directive:
+
+```blade
+{{-- ✅ This works correctly --}}
+@extends('layouts.app')
+
+@section('content')
+<div class="py-12">
+    {{-- Content renders properly --}}
+</div>
+@endsection
+```
+
+### 📋 Files affected:
+- `resources/views/pokemon/catalog/sets-tcgdex.blade.php`
+- `resources/views/pokemon/catalog/set-cards-tcgdex.blade.php`
+- `resources/views/pokemon/catalog/card-tcgdex.blade.php`
+
+### 🔍 Debug steps if content not showing:
+1. Test with dd() in controller to verify data exists
+2. Create minimal HTML test view without layout
+3. If HTML test works but layout doesn't → layout component issue
+4. Switch to `@extends('layouts.app')` instead of `<x-app-layout>`
+5. Clear caches: `php artisan view:clear && php artisan optimize:clear`
+
+### 💡 Rule of thumb:
+- **Consistent layout approach**: Use same layout method across similar views
+- **Test progressively**: HTML → Layout → Components → Full styling
+- **Component issues**: If x-components fail, traditional Blade directives are more reliable
+
+---
+
 ### 💡 Rule of thumb:
 - **1 feature = 1 section** in existing docs
 - **1 major system = 1 new guide** (only if truly complex)

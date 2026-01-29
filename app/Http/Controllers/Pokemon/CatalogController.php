@@ -27,8 +27,8 @@ class CatalogController extends Controller
             }
         }
         
-        // Use TCGDEX data
-        if (is_tcgdex_catalog()) {
+        // Pokemon routes ALWAYS use TCGDEX when configured
+        if (config('catalog.backend') === 'tcgdex') {
             $sets = TcgdxSet::where('game_id', $currentGame->id)
                 ->orderByDesc('release_date')
                 ->paginate(24);
@@ -67,8 +67,8 @@ class CatalogController extends Controller
             }
         }
         
-        // Use TCGDEX data
-        if (is_tcgdex_catalog()) {
+        // Pokemon routes ALWAYS use TCGDEX when configured
+        if (config('catalog.backend') === 'tcgdex') {
             // Find set by tcgdex_id
             $set = TcgdxSet::where('tcgdex_id', $setId)
                 ->where('game_id', $currentGame->id)
@@ -119,8 +119,8 @@ class CatalogController extends Controller
             }
         }
         
-        // Use TCGDEX data
-        if (is_tcgdex_catalog()) {
+        // Pokemon routes ALWAYS use TCGDEX when configured
+        if (config('catalog.backend') === 'tcgdex') {
             $card = TcgdxCard::where('tcgdex_id', $cardId)
                 ->whereHas('set', function($q) use ($currentGame) {
                     $q->where('game_id', $currentGame->id);

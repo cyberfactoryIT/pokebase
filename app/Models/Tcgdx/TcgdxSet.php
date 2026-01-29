@@ -24,6 +24,7 @@ class TcgdxSet extends Model
 
     protected $casts = [
         'name' => 'array',
+        'series' => 'array',
         'raw' => 'array',
         'release_date' => 'date',
         'card_count_total' => 'integer',
