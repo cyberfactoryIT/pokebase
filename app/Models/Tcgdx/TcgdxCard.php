@@ -28,6 +28,8 @@ class TcgdxCard extends Model
         'cardmarket_product_id',
         'raw',
         'visible_lookup_key',
+        'price_eur',
+        'price_usd',
     ];
 
     protected $casts = [
@@ -36,6 +38,8 @@ class TcgdxCard extends Model
         'subtypes' => 'array',
         'raw' => 'array',
         'hp' => 'integer',
+        'price_eur' => 'decimal:2',
+        'price_usd' => 'decimal:2',
     ];
 
     protected $appends = ['name_en'];
