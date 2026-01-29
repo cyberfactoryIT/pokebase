@@ -1,42 +1,37 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <a href="{{ route('pokemon.set.cards', $card->set->tcgdex_id) }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                    ← Back to {{ $card->set->name['en'] ?? 'Set' }}
-                </a>
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight mt-2">
-                    {{ $card->name['en'] ?? $card->tcgdex_id }}
-                    <span class="text-sm text-gray-500">(TCGDEX)</span>
-                </h2>
-            </div>
-        </div>
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <!-- Back Link -->
+            <div class="mb-4">
+                <a href="{{ route('pokemon.set.cards', $card->set->tcgdex_id) }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                    ← Back to {{ $card->set->name_en ?? 'Set' }}
+                </a>
+            </div>
+
+            <div class="bg-[#161615] border border-white/15 shadow-xl rounded-2xl overflow-hidden">
+                <div class="p-6 text-gray-100">
                     
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <!-- Card Image -->
                         <div>
                             @if($card->image_large_url)
-                                <img src="{{ $card->image_large_url }}" 
-                                     alt="{{ $card->name['en'] ?? $card->tcgdex_id }}"
+                                <img src="{{ $card->image_large_url }}/high.webp" 
+                                     alt="{{ $card->name_en ?? $card->tcgdex_id }}"
                                      class="w-full max-w-md mx-auto rounded-lg shadow-lg">
                             @endif
                         </div>
                         
                         <!-- Card Details -->
                         <div>
-                            <h3 class="text-3xl font-bold mb-4">{{ $card->name['en'] ?? $card->tcgdex_id }}</h3>
+                            <h3 class="text-3xl font-bold mb-4 text-white">{{ $card->name_en ?? $card->tcgdex_id }}</h3>
                             
-                            <div class="space-y-3">
+                            <div class="space-y-3 text-gray-300">
                                 <div>
-                                    <span class="font-semibold">Set:</span>
+                                    <span class="font-semibold text-white">Set:</span>
                                     <a href="{{ route('pokemon.set.cards', $card->set->tcgdex_id) }}" class="text-blue-600 hover:underline">
-                                        {{ $card->set->name['en'] ?? $card->set->tcgdex_id }}
+                                        {{ $card->set->name_en ?? $card->set->tcgdex_id }}
                                     </a>
                                 </div>
                                 
@@ -46,50 +41,50 @@
                                 
                                 @if($card->supertype)
                                     <div>
-                                        <span class="font-semibold">Type:</span> {{ $card->supertype }}
+                                        <span class="font-semibold text-white">Type:</span> {{ $card->supertype }}
                                     </div>
                                 @endif
                                 
                                 @if($card->types)
                                     <div>
-                                        <span class="font-semibold">Types:</span> {{ implode(', ', $card->types) }}
+                                        <span class="font-semibold text-white">Types:</span> {{ implode(', ', $card->types) }}
                                     </div>
                                 @endif
                                 
                                 @if($card->subtypes)
                                     <div>
-                                        <span class="font-semibold">Subtypes:</span> {{ implode(', ', $card->subtypes) }}
+                                        <span class="font-semibold text-white">Subtypes:</span> {{ implode(', ', $card->subtypes) }}
                                     </div>
                                 @endif
                                 
                                 @if($card->hp)
                                     <div>
-                                        <span class="font-semibold">HP:</span> {{ $card->hp }}
+                                        <span class="font-semibold text-white">HP:</span> {{ $card->hp }}
                                     </div>
                                 @endif
                                 
                                 @if($card->rarity)
                                     <div>
-                                        <span class="font-semibold">Rarity:</span> {{ $card->rarity }}
+                                        <span class="font-semibold text-white">Rarity:</span> {{ $card->rarity }}
                                     </div>
                                 @endif
                                 
                                 @if($card->illustrator)
                                     <div>
-                                        <span class="font-semibold">Illustrator:</span> {{ $card->illustrator }}
+                                        <span class="font-semibold text-white">Illustrator:</span> {{ $card->illustrator }}
                                     </div>
                                 @endif
                                 
                                 @if($card->evolves_from)
                                     <div>
-                                        <span class="font-semibold">Evolves from:</span> {{ $card->evolves_from }}
+                                        <span class="font-semibold text-white">Evolves from:</span> {{ $card->evolves_from }}
                                     </div>
                                 @endif
                             </div>
                             
                             <!-- Pricing -->
-                            <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                <h4 class="font-bold text-lg mb-3">Market Prices</h4>
+                            <div class="mt-6 p-4 bg-[#1a1a19] border border-white/20 rounded-lg">
+                                <h4 class="font-bold text-lg mb-3 text-white">Market Prices</h4>
                                 <div class="space-y-2">
                                     @if($card->price_eur)
                                         <div class="flex justify-between">
@@ -128,4 +123,11 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection
+
+@push('header')
+    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        {{ $card->name_en ?? $card->tcgdex_id }}
+        <span class="text-sm text-gray-500">(TCGDEX)</span>
+    </h2>
+@endpush
