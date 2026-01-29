@@ -1,6 +1,6 @@
 # 📊 Basecard - Project Status
 
-*Last Updated: 13 January 2026*
+*Last Updated: 29 January 2026*
 
 ---
 
@@ -17,12 +17,16 @@
 ## 🏗️ Architecture
 
 ### Stack Tecnologico
-- **Backend**: Laravel 11 (PHP 8.2+)
+- **Backend**: Laravel 11 (PHP 8.4+)
 - **Frontend**: Blade Templates + Alpine.js + Tailwind CSS
 - **Database**: MySQL 8.0+
 - **Email**: Brevo SMTP
 - **Payments**: Stripe (Subscriptions + One-time purchases)
-- **APIs**: TCGCSV (pricing data), Cardmarket (EU pricing)
+- **APIs**: 
+  - TCGCSV (pricing data - current production)
+  - TCGDEX (alternative catalog data - experimental)
+  - Cardmarket (EU pricing)
+  - RapidAPI Pokemon (episodes & cards mapping)
 
 ### Multi-Game System
 - Sistema con scoping automatico per supportare 3 giochi
@@ -48,6 +52,22 @@
 - ✅ Visualizzazione valore totale collezione
 - ✅ Filtri per set, rarità, tipo
 - ✅ Gating dei prezzi (solo per Advanced/Premium o con Deck Evaluation attivo)
+
+### 3. Catalog System (NEW - Jan 2026)
+- ✅ **Dual Backend Support**: Sistema configurabile per switchare tra TCGCSV e TCGDEX
+- ✅ **Config Flag**: `CATALOG_BACKEND` in .env (valori: `tcgcsv` | `tcgdex`)
+- ✅ **Helper Functions**: `is_tcgdex_catalog()`, `is_tcgcsv_catalog()`, `catalog_backend()`
+- ✅ **Unified Routes**: `/pokemon/*` nasconde il backend sottostante
+- ✅ **Backend-Agnostic Views**: Blade templates che si adattano al backend attivo
+- ✅ **TCGDEX Integration**: Lettura da tabelle staging `tcgdx_sets` e `tcgdx_cards`
+- ✅ **TCGDEX Asset URLs**: Logo e immagini con estensione `.webp` corretta
+- ⚠️ **Experimental**: TCGDEX è in fase di testing, TCGCSV rimane il backend di produzione
+
+#### Catalog Routes
+- `/pokemon/sets` - Lista set Pokemon
+- `/pokemon/sets/{setId}` - Dettaglio set con carte
+- `/pokemon/cards/{cardId}` - Dettaglio singola carta
+- AJAX endpoints per ricerca e paginazione
 
 ### 3. Deck Building System
 - ✅ Creazione deck con search dinamica carte
@@ -165,6 +185,8 @@ STRIPE_KEY=pk_live_...
 BREVO_API_KEY=...
 CARDMARKET_APP_TOKEN=...
 RAPIDAPI_KEY=...
+CATALOG_BACKEND=tcgcsv (o tcgdex per testing)
+CATALOG_EXPERIMENTAL=false
 ```
 
 ---

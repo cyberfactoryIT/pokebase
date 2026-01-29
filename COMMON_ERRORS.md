@@ -454,7 +454,158 @@ php artisan optimize:clear
 
 ---
 
-## 🔍 How to Use This Document
+## � CurrencyService Null Handling
+
+### ❌ Type error when user has no preferred_currency
+```php
+// Service expects non-null string
+public static function getSymbol(string $currency): string
+{
+    return match($currency) {
+        'USD' => '$',
+        'EUR' => '€',
+        // ...
+    };
+}
+
+// View where user->preferred_currency can be null
+{{ CurrencyService::getSymbol($user->preferred_currency) }} 
+// ❌ TypeError: must be string, null given
+```
+
+### ✅ SOLUTION: Make parameter nullable with default fallback
+```php
+public static function getSymbol(?string $currency): string
+{
+    // Handle null case with default
+    if ($currency === null) {
+        return '€'; // Default to EUR
+    }
+    
+    return match($currency) {
+        'USD' => '$',
+        'EUR' => '€',
+        'GBP' => '£',
+        default => '€',
+    };
+}
+```
+
+### 🎯 When to use nullable types:
+- ✅ User preferences that might not be set
+- ✅ Optional database fields
+- ✅ API responses that might omit fields
+- ✅ Form inputs with default values
+
+---
+
+## 🚫 TCGDEX Backend: Wrong Database Fields
+
+### ❌ Using non-existent fields from TCGCSV in TCGDEX queries
+```php
+// Trying to use TCGCSV field names on TCGDEX table
+$card = TcgdxCard::where('visible_lookup_key', $cardId)->first();
+// ❌ SQLSTATE[42S22]: Column not found: Unknown column 'visible_lookup_key'
+```
+
+### ✅ SOLUTION: Use correct TCGDEX field names
+```php
+// TCGDEX uses different field structure
+$card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
+// ✅ Uses correct field: tcgdex_id (format: "base1-1", "me02-001")
+```
+
+### 📋 Field Mapping Reference:
+| TCGCSV | TCGDEX | Notes |
+|--------|--------|-------|
+| `visible_lookup_key` | `tcgdex_id` | Primary identifier |
+| `name` (string) | `name` (JSON) | TCGDEX stores localized names |
+| `set_name` | `set.name['en']` | Via relationship |
+| N/A | `local_id` | Card number within set |
+| `image_url` | `image_large_url` + `/high.webp` | Needs extension |
+| `logo_url` (direct) | `logo_url` + `.webp` | Needs extension |
+
+### 🎯 TCGDEX Asset URL Rules:
+- **Logos**: Append `.webp` → `https://assets.tcgdex.net/.../logo.webp`
+- **Symbols**: Append `.webp` → `https://assets.tcgdex.net/.../symbol.webp`
+- **Card Images**: Append `/high.webp` or `/low.webp` for quality
+
+---
+
+## 🚫 Scheduled Tasks Using Wrong PHP Version
+
+### ❌ Cron job fails with PHP version error
+```bash
+# Crontab entry
+0 2 * * * cd /var/www/app/ && ./run-pipeline.sh
+
+# Error in logs:
+# Composer detected issues: requires PHP >= 8.4.0, running 7.4.33
+```
+
+### ✅ SOLUTION: Use correct PHP binary in scripts
+```bash
+# In your bash scripts, auto-detect PHP version
+#!/bin/bash
+
+# PHP Command - Auto-detect php84 or fall back to php
+if command -v php84 &> /dev/null; then
+    PHP_CMD="php84"
+elif command -v php8.4 &> /dev/null; then
+    PHP_CMD="php8.4"
+else
+    PHP_CMD="php"
+fi
+
+# Then use $PHP_CMD instead of php
+$PHP_CMD artisan schedule:run
+```
+
+### 🎯 Or specify in crontab directly:
+```bash
+# Use explicit PHP binary path
+0 2 * * * cd /var/www/app/ && php84 artisan schedule:run
+```
+
+---
+
+## 📝 Documentation Best Practices
+
+### ❌ Creating too many redundant documentation files
+```
+CATALOG_BACKEND_IMPLEMENTATION.md
+PHASE_2_SCHEMA_SUMMARY.md
+PHASE_2_COMPLETE.md
+IMPLEMENTATION_SUMMARY.md
+BUGFIX_CURRENCY_SERVICE.md
+FIX_SCHEDULED_PHP_VERSION.md
+... (6 new files for one feature!)
+```
+
+### ✅ SOLUTION: Consolidate into existing structure
+```
+PROJECT_STATUS.md        → Add new features here
+COMMON_ERRORS.md         → Add new bugs/fixes here
+ROADMAP.md              → Add future plans here
+DEPRECATION.md          → Add deprecations here
+README.md               → Add setup instructions here
+```
+
+### 🎯 When to create a new .md file:
+- ✅ New major system that needs dedicated guide (e.g., STRIPE_SETUP_GUIDE.md)
+- ✅ Complex integration with multiple steps (e.g., INTEGRATION_GUIDE_*.md)
+- ❌ Phase completion summaries (update PROJECT_STATUS.md instead)
+- ❌ Bug fixes (add to COMMON_ERRORS.md instead)
+- ❌ Implementation details (add comments in code or PROJECT_STATUS.md)
+
+### 💡 Rule of thumb:
+- **1 feature = 1 section** in existing docs
+- **1 major system = 1 new guide** (only if truly complex)
+- **Keep root clean**: Max 10-15 .md files in root directory
+
+---
+
+## �🔍 How to Use This Document
 
 1. **Before coding**: Review relevant sections
 2. **During code review**: Check against this list
@@ -463,4 +614,4 @@ php artisan optimize:clear
 
 ---
 
-*Last updated: January 18, 2026*
+*Last updated: January 29, 2026*

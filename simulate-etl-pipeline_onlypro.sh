@@ -11,6 +11,13 @@
 
 set -e  # Exit on error
 
+# PHP Command - Auto-detect php84 or fall back to php
+if command -v php84 &> /dev/null; then
+    PHP_CMD="php84"
+else
+    PHP_CMD="php"
+fi
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -60,7 +67,7 @@ echo -e "${CYAN}⏱️  Estimated duration: ~8-10 minutes (171 episodes × 3s ra
 echo -e "${YELLOW}⚠️  Rate limit: 300 req/minute${NC}"
 echo ""
 step6_start=$(date +%s)
-php artisan rapidapi:sync-cards pokemon
+$PHP_CMD artisan rapidapi:sync-cards pokemon
 step6_end=$(date +%s)
 step6_duration=$((step6_end - step6_start))
 echo ""
@@ -77,7 +84,7 @@ echo -e "${CYAN}📝 Mapping RapidAPI cards to TCGCSV products${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
 echo ""
 step5_start=$(date +%s)
-php artisan cards:map
+$PHP_CMD artisan cards:map
 step5_end=$(date +%s)
 step5_duration=$((step5_end - step5_start))
 echo ""
@@ -95,7 +102,7 @@ echo -e "${CYAN}📝 Phase 2: Fuzzy matching for remaining products${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~2-3 minutes (tutti i prodotti, no limit)${NC}"
 echo ""
 step6_start=$(date +%s)
-php artisan cardmarket:match-metacards --auto-confirm
+$PHP_CMD artisan cardmarket:match-metacards --auto-confirm
 step6_end=$(date +%s)
 step6_duration=$((step6_end - step6_start))
 echo ""
@@ -114,7 +121,7 @@ echo -e "${CYAN}📝 Mapping RapidAPI episodes to TCGCSV groups${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
 echo ""
 step8_start=$(date +%s)
-php artisan rapidapi:map-episodes
+$PHP_CMD artisan rapidapi:map-episodes
 step8_end=$(date +%s)
 step8_duration=$((step8_end - step8_start))
 echo ""
@@ -131,7 +138,7 @@ echo -e "${CYAN}📝 Mapping TCGdex sets/cards to TCGCSV (fuzzy matching + logos
 echo -e "${CYAN}⏱️  Estimated duration: ~5-15 seconds${NC}"
 echo ""
 step9_start=$(date +%s)
-php artisan tcgdex:map-to-tcgcsv
+$PHP_CMD artisan tcgdex:map-to-tcgcsv
 step9_end=$(date +%s)
 step9_duration=$((step9_end - step9_start))
 echo ""
@@ -148,7 +155,7 @@ echo -e "${CYAN}📝 Extracting CardMarket product IDs from TCGdex JSON${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~5-15 seconds${NC}"
 echo ""
 step9b_start=$(date +%s)
-php artisan tcgdex:map-cardmarket
+$PHP_CMD artisan tcgdex:map-cardmarket
 step9b_end=$(date +%s)
 step9b_duration=$((step9b_end - step9b_start))
 echo ""
@@ -165,7 +172,7 @@ echo -e "${CYAN}📝 Enriching TCGCSV with HD images, prices, links, details${NC
 echo -e "${CYAN}⏱️  Estimated duration: ~2-5 minutes${NC}"
 echo ""
 step10_start=$(date +%s)
-php artisan tcgcsv:enrich --all
+$PHP_CMD artisan tcgcsv:enrich --all
 step10_end=$(date +%s)
 step10_duration=$((step10_end - step10_start))
 echo ""
@@ -182,7 +189,7 @@ echo -e "${CYAN}📝 Syncing Cardmarket trend prices to TCGCSV products${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~1-2 minutes${NC}"
 echo ""
 step11_start=$(date +%s)
-php artisan cardmarket:sync-prices --force
+$PHP_CMD artisan cardmarket:sync-prices --force
 step11_end=$(date +%s)
 step11_duration=$((step11_end - step11_start))
 echo ""
@@ -223,7 +230,7 @@ echo ""
 # Show pipeline_runs table
 echo -e "${BLUE}📋 PIPELINE RUNS (tracking log):${NC}"
 echo ""
-php artisan tinker --execute="
+$PHP_CMD artisan tinker --execute="
 \$runs = \App\Models\PipelineRun::orderBy('started_at')->get();
 echo str_pad('TASK', 30) . str_pad('STATUS', 12) . str_pad('DURATION', 12) . str_pad('ROWS', 15) . 'ERRORS' . PHP_EOL;
 echo str_repeat('─', 90) . PHP_EOL;
