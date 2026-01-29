@@ -11,6 +11,7 @@ class TcgdxSet extends Model
 
     protected $fillable = [
         'tcgdex_id',
+        'game_id',
         'name',
         'series',
         'logo_url',
@@ -27,9 +28,10 @@ class TcgdxSet extends Model
         'release_date' => 'date',
         'card_count_total' => 'integer',
         'card_count_official' => 'integer',
+        'game_id' => 'integer',
     ];
 
-    protected $appends = ['name_en'];
+    protected $appends = ['name_en', 'series_name', 'released_at'];
 
     public function cards(): HasMany
     {
@@ -61,5 +63,25 @@ class TcgdxSet extends Model
         }
         
         return $this->name ?? 'Unknown';
+    }
+    
+    /**
+     * Get series_name attribute (accessor for compatibility)
+     * TCGDEX stores series as string, but we need it as array like name
+     */
+    public function getSeriesNameAttribute()
+    {
+        if ($this->series) {
+            return ['en' => $this->series];
+        }
+        return ['en' => 'N/A'];
+    }
+    
+    /**
+     * Get released_at attribute (alias for release_date)
+     */
+    public function getReleasedAtAttribute()
+    {
+        return $this->release_date;
     }
 }

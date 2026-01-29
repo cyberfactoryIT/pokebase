@@ -268,6 +268,12 @@ Route::prefix('tcgdex')->group(function () {
 
 // Pokemon Deck Valuation Flow (guest lead capture)
 Route::prefix('pokemon')->group(function () {
+    // Catalog routes (TCGDEX/TCGCSV backend switching)
+    Route::get('/sets', [\App\Http\Controllers\Pokemon\CatalogController::class, 'sets'])->name('pokemon.sets');
+    Route::get('/sets/{setId}', [\App\Http\Controllers\Pokemon\CatalogController::class, 'setCards'])->name('pokemon.set.cards');
+    Route::get('/cards/{cardId}', [\App\Http\Controllers\Pokemon\CatalogController::class, 'card'])->name('pokemon.card');
+    
+    // Deck Valuation Flow
     Route::get('/deck-valuation', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Show'])->name('pokemon.deck-valuation.step1');
     Route::get('/deck-valuation/search', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Search'])->name('pokemon.deck-valuation.search');
     Route::post('/deck-valuation/add', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Add'])->name('pokemon.deck-valuation.add');
