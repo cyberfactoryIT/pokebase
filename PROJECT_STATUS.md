@@ -69,6 +69,13 @@
 - `/pokemon/cards/{cardId}` - Dettaglio singola carta
 - AJAX endpoints per ricerca e paginazione
 
+#### Catalog Features (Updated Jan 30, 2026)
+- ✅ **Cardmarket Buy Links**: Direct purchase links from card detail pages using RapidAPI mapping
+- ✅ **Full i18n for Catalog**: All TCGdex views fully localized (EN/DA)
+- ✅ **Translation System**: 70+ translation keys for catalog interface (`resources/lang/*/catalog.php`)
+- ✅ **No Hardcoded Text**: All UI strings use `__('catalog.key')` helper
+- ✅ **Artist Display**: Illustrator info shown on card badges (from TCGdex data)
+
 ### 3. Deck Building System
 - ✅ Creazione deck con search dinamica carte
 - ✅ Valutazione automatica prezzo deck
@@ -79,6 +86,8 @@
 ### 4. Pricing System
 - ✅ Integrazione TCGCSV per prezzi USA (market, low, mid, high)
 - ✅ Integrazione Cardmarket per prezzi EU (avg, low, trend, holo variants)
+- ✅ **Cardmarket Direct Buy Links** (Jan 30, 2026): Link diretto per acquisto su Cardmarket
+- ✅ **RapidAPI Card Mapping**: TCGdex → RapidAPI → Cardmarket URL resolution
 - ✅ Toggle US ↔ EU con persistenza localStorage
 - ✅ Conversione automatica USD → EUR
 - ✅ Historical pricing (7-day, 30-day averages)
@@ -95,9 +104,11 @@
 ### 6. Multi-Language Support
 - ✅ Supporto completo EN, IT, DA (Danese)
 - ✅ Tutte le stringhe UI tradotte
+- ✅ **Catalog Views Localization** (Jan 30, 2026): TCGdex catalog completamente localizzato
+- ✅ **Translation Files**: `resources/lang/{en,da}/catalog.php` con 70+ chiavi
 - ✅ Email templates tradotte
 - ✅ Validation messages tradotti
-- ✅ File di traduzioni: messages.php, auth.php, passwords.php, validation.php, legal.php
+- ✅ File di traduzioni: messages.php, auth.php, passwords.php, validation.php, legal.php, **catalog.php**
 
 ### 7. Admin Features
 - ✅ Superadmin dashboard
