@@ -128,10 +128,25 @@ class CatalogController extends Controller
                 ->with('set')
                 ->firstOrFail();
             
+            // Get price history if cardmarket idProduct is available
+            $priceHistory = $this->getCardmarketPriceHistory($card);
+            
+            // Get Cardmarket link from RapidAPI using cardmarket_id from TCGdex JSON
+            $cardmarketUrl = null;
+            $cardmarketId = $card->raw['pricing']['cardmarket']['idProduct'] ?? null;
+            if ($cardmarketId) {
+                $rapidCard = \App\Models\RapidapiCard::where('cardmarket_id', $cardmarketId)->first();
+                if ($rapidCard && isset($rapidCard->links['cardmarket'])) {
+                    $cardmarketUrl = $rapidCard->links['cardmarket'];
+                }
+            }
+            
             return view('pokemon.catalog.card-tcgdex', [
                 'card' => $card,
                 'currentGame' => $currentGame,
                 'backend' => 'tcgdex',
+                'priceHistory' => $priceHistory,
+                'cardmarketUrl' => $cardmarketUrl,
             ]);
         }
         
@@ -146,5 +161,55 @@ class CatalogController extends Controller
             'currentGame' => $currentGame,
             'backend' => 'tcgcsv',
         ]);
+    }
+    
+    /**
+     * Get price history from Cardmarket for a TcgdxCard
+     */
+    private function getCardmarketPriceHistory(TcgdxCard $card): array
+    {
+        // Extract cardmarket idProduct from raw data
+        $pricing = $card->raw['pricing'] ?? null;
+        $cardmarket = $pricing['cardmarket'] ?? null;
+        $idProduct = $cardmarket['idProduct'] ?? null;
+        
+        if (!$idProduct) {
+            return ['trend' => [], 'trend_holo' => []];
+        }
+        
+        // Get last 30 days of quotes
+        $quotes = \App\Models\CardmarketPriceQuote::where('cardmarket_product_id', $idProduct)
+            ->where('as_of_date', '>=', now()->subDays(30))
+            ->orderBy('as_of_date', 'asc')
+            ->get();
+        
+        if ($quotes->isEmpty()) {
+            return ['trend' => [], 'trend_holo' => []];
+        }
+        
+        // Build trend data
+        $trendData = [];
+        $trendHoloData = [];
+        
+        foreach ($quotes as $quote) {
+            if ($quote->trend !== null) {
+                $trendData[] = [
+                    'x' => $quote->as_of_date->format('Y-m-d'),
+                    'y' => (float) $quote->trend
+                ];
+            }
+            
+            if ($quote->trend_holo !== null) {
+                $trendHoloData[] = [
+                    'x' => $quote->as_of_date->format('Y-m-d'),
+                    'y' => (float) $quote->trend_holo
+                ];
+            }
+        }
+        
+        return [
+            'trend' => $trendData,
+            'trend_holo' => $trendHoloData,
+        ];
     }
 }

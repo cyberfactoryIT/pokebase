@@ -7,7 +7,7 @@
             <div class="p-6 text-gray-100">
                 
                 @if($sets->isEmpty())
-                    <p class="text-gray-500">No sets found.</p>
+                    <p class="text-gray-500">{{ __('catalog.no_sets_found') }}</p>
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         @foreach($sets as $set)
@@ -26,10 +26,10 @@
                                 </h3>
                                 
                                 <div class="text-sm text-gray-400">
-                                    <p>Series: {{ $set->series_name['en'] ?? 'N/A' }}</p>
-                                    <p>Cards: {{ $set->card_count_total ?? 0 }}</p>
+                                    <p>{{ __('catalog.series') }}: {{ $set->series_name['en'] ?? 'N/A' }}</p>
+                                    <p>{{ __('catalog.cards') }}: {{ $set->card_count_total ?? 0 }}</p>
                                     @if($set->released_at)
-                                        <p>Released: {{ $set->released_at->format('Y-m-d') }}</p>
+                                        <p>{{ __('catalog.released') }}: {{ $set->released_at->format('Y-m-d') }}</p>
                                     @endif
                                 </div>
                             </a>

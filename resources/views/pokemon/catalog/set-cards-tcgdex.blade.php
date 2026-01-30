@@ -6,7 +6,7 @@
             <!-- Back Link -->
             <div class="mb-4">
                 <a href="{{ route('pokemon.sets') }}" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                    ← Back to Sets
+                    ← {{ __('catalog.back_to_sets') }}
                 </a>
             </div>
 
@@ -21,10 +21,10 @@
                         @endif
                         <div>
                             <h3 class="text-2xl font-bold mb-2 text-white">{{ $set->name_en }}</h3>
-                            <p class="text-gray-400">Series: {{ $set->series_name['en'] ?? 'N/A' }}</p>
-                            <p class="text-gray-400">Total Cards: {{ $set->card_count_total ?? 0 }}</p>
+                            <p class="text-gray-400">{{ __('catalog.series') }}: {{ $set->series_name['en'] ?? 'N/A' }}</p>
+                            <p class="text-gray-400">{{ __('catalog.total_cards') }}: {{ $set->card_count_total ?? 0 }}</p>
                             @if($set->released_at)
-                                <p class="text-gray-400">Released: {{ $set->released_at->format('F j, Y') }}</p>
+                                <p class="text-gray-400">{{ __('catalog.released') }}: {{ $set->released_at->format('F j, Y') }}</p>
                             @endif
                         </div>
                     </div>
@@ -35,7 +35,7 @@
             <div class="bg-[#161615] border border-white/15 shadow-xl rounded-2xl overflow-hidden">
                 <div class="p-6 text-gray-100">
                     @if($cards->isEmpty())
-                        <p class="text-gray-500">No cards found in this set.</p>
+                        <p class="text-gray-500">{{ __('catalog.no_cards_found') }}</p>
                     @else
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             @foreach($cards as $card)

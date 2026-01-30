@@ -409,6 +409,43 @@ if (!config('organizations.enabled')) {
 
 ## � Translation/Cache Issues
 
+### ❌ WRONG: Translation files in `lang/` directory (root)
+```bash
+# ❌ WRONG - Files in project root lang/ directory
+lang/
+  ├── en/
+  │   └── catalog.php
+  └── da/
+      └── catalog.php
+```
+
+**PROBLEM**: Laravel expects translation files in `resources/lang/`, NOT in root `lang/` directory!
+
+### ✅ CORRECT: Translation files MUST be in `resources/lang/`
+```bash
+# ✅ CORRECT - Files in resources/lang/ directory
+resources/
+  └── lang/
+      ├── en/
+      │   └── catalog.php
+      ├── da/
+      │   └── catalog.php
+      └── it/
+          └── catalog.php
+```
+
+### 🔧 Quick Fix:
+```bash
+# Move files from wrong location to correct location:
+mv lang/en/catalog.php resources/lang/en/
+mv lang/da/catalog.php resources/lang/da/
+
+# Then clear caches:
+php artisan config:clear && php artisan cache:clear && php artisan view:clear
+```
+
+---
+
 ### ❌ Translation keys not working after adding new translations
 ```php
 // Created new translation file: resources/lang/da/billing.php
