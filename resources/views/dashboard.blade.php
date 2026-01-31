@@ -96,7 +96,11 @@
             @endif
 
             <!-- Missing Cards (Full Width) -->
-            @include('dashboard.missing-cards')
+            @if($catalogBackend === 'tcgdex')
+                @include('dashboard.tcgdex.missing-cards')
+            @else
+                @include('dashboard.tcgcsv.missing-cards')
+            @endif
         
 
             <!-- Quick Stats -->
