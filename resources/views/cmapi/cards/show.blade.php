@@ -131,12 +131,7 @@
                         </div>
                         @endif
                         
-                        @if($card->cardmarket_id)
-                        <div class="flex justify-between py-2 border-b border-white/10">
-                            <dt class="text-sm font-medium text-gray-400">CardMarket ID</dt>
-                            <dd class="text-sm text-white">{{ $card->cardmarket_id }}</dd>
-                        </div>
-                        @endif
+                        
                     </dl>
                 </div>
             </div>
@@ -294,62 +289,56 @@
 
                 <!-- Pricing Information -->
                 <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-white mb-4">Market Prices</h2>
-                    @include('cmapi.cards.partials.prices', ['card' => $card, 'size' => 'large'])
-                    
-                    @if($card->tcggo_url)
-                    <div class="mt-4 pt-4 border-t border-white/10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white">Market Prices</h2>
+                        @if($card->tcggo_url)
                         <a href="{{ $card->tcggo_url }}" target="_blank" class="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                             </svg>
                             View on CardMarket
                         </a>
+                        @endif
+                    </div>
+                    <!-- Price History Chart -->
+                    @if($card->id)
+                    <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-white">Price History</h2>
+                            
+                            <!-- Filters -->
+                            <div class="flex gap-2">
+                                <select id="languageFilter" class="bg-gray-800 text-white text-sm rounded px-3 py-1.5 border border-gray-700">
+                                    <option value="en">English</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="it">Italian</option>
+                                </select>
+                                <select id="daysFilter" class="bg-gray-800 text-white text-sm rounded px-3 py-1.5 border border-gray-700">
+                                    <option value="7">7 days</option>
+                                    <option value="30" selected>30 days</option>
+                                    <option value="90">90 days</option>
+                                    <option value="180">6 months</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="relative h-64">
+                            <canvas id="priceChart"></canvas>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 text-center">Near Mint (NM) condition prices from CardMarket</p>
+                        
+                       
                     </div>
                     @endif
+
+                    @include('cmapi.cards.partials.prices', ['card' => $card, 'size' => 'large'])
+                    
+                   
                 </div>
 
-                <!-- Price History Chart -->
-                @if($card->id)
-                <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-white">Price History</h2>
-                        
-                        <!-- Filters -->
-                        <div class="flex gap-2">
-                            <select id="languageFilter" class="bg-gray-800 text-white text-sm rounded px-3 py-1.5 border border-gray-700">
-                                <option value="en">English</option>
-                                <option value="fr">French</option>
-                                <option value="de">German</option>
-                                <option value="es">Spanish</option>
-                                <option value="it">Italian</option>
-                            </select>
-                            <select id="daysFilter" class="bg-gray-800 text-white text-sm rounded px-3 py-1.5 border border-gray-700">
-                                <option value="7">7 days</option>
-                                <option value="30" selected>30 days</option>
-                                <option value="90">90 days</option>
-                                <option value="180">6 months</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="relative h-64">
-                        <canvas id="priceChart"></canvas>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2 text-center">Near Mint (NM) condition prices from CardMarket</p>
-                    
-                    @if($card->tcggo_url)
-                    <div class="mt-4 pt-4 border-t border-white/10 text-center">
-                        <a href="{{ $card->tcggo_url }}" target="_blank" class="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                            View detailed price breakdown on CardMarket
-                        </a>
-                    </div>
-                    @endif
-                </div>
-                @endif
+                
 
                 
             </div>
