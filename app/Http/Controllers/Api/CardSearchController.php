@@ -210,19 +210,19 @@ class CardSearchController extends Controller
         // - Set code (tcgdex_sets.tcgdex_id like "base1", "swsh1")
         // - Set name (English from JSON)
         $results->where(function($q) use ($escapedQuery) {
-                $q->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) LIKE ?', ["%{$escapedQuery}%"])
+                $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en"))) LIKE LOWER(?)', ["%{$escapedQuery}%"])
                   ->orWhere('tcgdx_cards.local_id', 'LIKE', "%{$escapedQuery}%")
                   ->orWhere('tcgdx_cards.tcgdex_id', 'LIKE', "%{$escapedQuery}%")
                   ->orWhere('tcgdx_sets.tcgdex_id', 'LIKE', "%{$escapedQuery}%")
-                  ->orWhereRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en")) LIKE ?', ["%{$escapedQuery}%"]);
+                  ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en"))) LIKE LOWER(?)', ["%{$escapedQuery}%"]);
             })
             ->orderByRaw(
                 'CASE 
                     WHEN tcgdx_cards.local_id = ? THEN 0
                     WHEN tcgdx_sets.tcgdex_id = ? THEN 1
-                    WHEN JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) LIKE ? THEN 2 
+                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en"))) LIKE LOWER(?) THEN 2 
                     WHEN tcgdx_cards.local_id LIKE ? THEN 3
-                    WHEN JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en")) LIKE ? THEN 4
+                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en"))) LIKE LOWER(?) THEN 4
                     ELSE 5 
                 END',
                 [$escapedQuery, $escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%", "{$escapedQuery}%"]
