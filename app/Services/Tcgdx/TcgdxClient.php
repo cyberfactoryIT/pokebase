@@ -172,6 +172,10 @@ class TcgdxClient
      */
     public function normalizeCard(array $cardData, int $setDbId): array
     {
+        if (!$setDbId) {
+            throw new \Exception("Invalid set_tcgdx_id: cannot be null or 0");
+        }
+        
         // Extract USD price from TCGPlayer midPrice (lowest, excluding 1st edition)
         $priceUsd = $this->extractUsdPrice($cardData);
         
@@ -180,7 +184,7 @@ class TcgdxClient
         
         return [
             'tcgdex_id' => $cardData['id'] ?? null,
-            'set_tcgdex_id' => $setDbId,
+            'set_tcgdx_id' => $setDbId,
             'local_id' => $cardData['localId'] ?? null,
             'number' => $cardData['number'] ?? $cardData['localId'] ?? null,
             'name' => $this->extractName($cardData),

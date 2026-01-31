@@ -14,7 +14,8 @@ class TcgdxImportCommand extends Command
 {
     protected $signature = 'tcgdx:import 
                             {--set= : Import only one set by tcgdex id}
-                            {--fresh : Truncate tcgdx tables before import}';
+                            {--fresh : Truncate tcgdx tables before import}
+                            {--cards-only : Import only cards for existing sets, skip set import}';
 
     protected $description = 'Import Pokemon sets and cards from TCGdex API';
 
@@ -47,6 +48,7 @@ class TcgdxImportCommand extends Command
 
         // Import single set or all
         $setId = $this->option('set');
+        $cardsOnly = $this->option('cards-only');
         
         if ($setId) {
             $this->info("📦 Importing set: {$setId}");
@@ -64,6 +66,32 @@ class TcgdxImportCommand extends Command
                 return self::SUCCESS;
             } catch (\Throwable $e) {
                 $this->error("❌ Failed: {$e->getMessage()}");
+                return self::FAILURE;
+            }
+        }
+
+        // Import only cards for existing sets
+        if ($cardsOnly) {
+            $this->info('🎴 Importing cards only (sets already exist)');
+            $this->newLine();
+            
+            try {
+                $result = $service->runImportCardsOnly(function($message) {
+                    $this->line($message);
+                }, $pipelineRun);
+                
+                $this->newLine();
+                $this->info('✅ Cards import completed!');
+                $this->line("   Total Cards: {$result['cards_total']}");
+                
+                $pipelineRun->markSuccess([
+                    'rows_created' => $result['cards_total'],
+                ]);
+                
+                return self::SUCCESS;
+            } catch (\Throwable $e) {
+                $this->error("❌ Failed: {$e->getMessage()}");
+                $pipelineRun->markFailed($e->getMessage());
                 return self::FAILURE;
             }
         }

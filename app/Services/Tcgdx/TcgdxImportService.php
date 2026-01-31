@@ -15,6 +15,7 @@ use Throwable;
  * - Import all: php artisan tcgdx:import
  * - Import one set: php artisan tcgdx:import --set=base1
  * - Fresh import: php artisan tcgdx:import --fresh
+ * - Cards only: php artisan tcgdx:import --cards-only
  * 
  * This service is idempotent and resumable:
  * - Sets are upserted by tcgdex_id
@@ -29,6 +30,56 @@ class TcgdxImportService
     public function __construct(TcgdxClient $client)
     {
         $this->client = $client;
+    }
+
+    /**
+     * Import only cards for existing sets in database
+     * 
+     * @param callable|null $output Progress callback
+     * @param \App\Models\PipelineRun|null $pipelineRun Pipeline run to update
+     * @return array Stats
+     */
+    public function runImportCardsOnly(?callable $output = null, $pipelineRun = null): array
+    {
+        $allSets = TcgdxSet::all();
+        $cardsTotal = 0;
+        
+        if ($output) {
+            $output("🎴 Importing cards for {$allSets->count()} existing sets...\n\n");
+        }
+        
+        foreach ($allSets as $index => $set) {
+            $progress = $index + 1;
+            $total = $allSets->count();
+            
+            if ($output) {
+                $output("[$progress/$total] Importing cards for set: {$set->tcgdex_id}...\n");
+            }
+
+            try {
+                $result = $this->importCardsForSet($set, $output);
+                $cardsTotal += $result['cards_imported'] ?? 0;
+                
+                if ($output) {
+                    $output("  ✅ {$result['cards_imported']} cards imported\n\n");
+                }
+                
+                // Update pipeline stats every 20 sets
+                if ($pipelineRun && $progress % 20 === 0) {
+                    $pipelineRun->updateStats([
+                        'rows_created' => $cardsTotal,
+                    ]);
+                }
+            } catch (Throwable $e) {
+                if ($output) {
+                    $output("  ❌ Failed importing cards: {$e->getMessage()}\n\n");
+                }
+            }
+        }
+        
+        return [
+            'cards_total' => $cardsTotal,
+        ];
     }
 
     /**
@@ -71,6 +122,7 @@ class TcgdxImportService
             $setsFailed = 0;
             $cardsTotal = 0;
             $failedSets = [];
+            $importedSetIds = []; // Track successfully imported sets
 
             // Phase 1: Import all sets first (without cards)
             if ($output) {
@@ -100,6 +152,7 @@ class TcgdxImportService
                             $normalizedSet
                         );
                         $setsImported++;
+                        $importedSetIds[] = $setId; // Track this set
                         if ($output) {
                             $output("  ✅ Set imported\n\n");
                         }
@@ -116,15 +169,15 @@ class TcgdxImportService
                 }
             }
 
-            // Phase 2: Import cards for all sets
+            // Phase 2: Import cards only for successfully imported sets
             if ($output) {
                 $output("\n🎴 Phase 2: Importing cards...\n\n");
             }
 
-            $allSets = TcgdxSet::all();
-            foreach ($allSets as $index => $set) {
+            $importedSets = TcgdxSet::whereIn('tcgdex_id', $importedSetIds)->get();
+            foreach ($importedSets as $index => $set) {
                 $progress = $index + 1;
-                $total = $allSets->count();
+                $total = $importedSets->count();
                 
                 if ($output) {
                     $output("[$progress/$total] Importing cards for set: {$set->tcgdex_id}...\n");
@@ -237,6 +290,11 @@ class TcgdxImportService
      */
     public function importCardsForSet(TcgdxSet $set, ?callable $output = null): array
     {
+        // Ensure set has an ID from database
+        if (!$set->id) {
+            throw new \Exception("Set {$set->tcgdex_id} does not have a database ID");
+        }
+        
         // Fetch card summaries from set endpoint
         $cardSummaries = $this->client->listCardsBySet($set->tcgdex_id);
         $cardsImported = 0;
