@@ -37,8 +37,8 @@
                         <h4 class="text-white font-medium text-sm mb-1 truncate">
                             {{ is_array($expansion->name) ? ($expansion->name['en'] ?? $expansion->tcgdex_id) : $expansion->name }}
                         </h4>
-                        @if($expansion->released_at)
-                            <p class="text-gray-400 text-xs">{{ $expansion->released_at->format('Y') }}</p>
+                        @if($expansion->release_date)
+                            <p class="text-gray-400 text-xs">{{ $expansion->release_date->format('Y') }}</p>
                         @endif
                     </div>
                 </a>

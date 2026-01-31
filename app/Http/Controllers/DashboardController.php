@@ -255,12 +255,12 @@ class DashboardController extends Controller
                 ->pluck('tcgdx_cards.set_tcgdx_id');
             
             $userExpansions = \App\Models\Tcgdx\TcgdxSet::whereIn('id', $userSetIds)
-                ->orderBy('released_at', 'desc')
+                ->orderBy('release_date', 'desc')
                 ->limit(10)
                 ->get();
             
             // Featured expansions for carousel
-            $featuredExpansions = \App\Models\Tcgdx\TcgdxSet::orderBy('released_at', 'desc')
+            $featuredExpansions = \App\Models\Tcgdx\TcgdxSet::orderBy('release_date', 'desc')
                 ->limit(6)
                 ->get();
         } else {
