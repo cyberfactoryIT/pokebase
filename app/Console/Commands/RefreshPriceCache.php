@@ -2,12 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\UserCollection;
-use App\Models\DeckCard;
-use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class RefreshPriceCache extends Command
 {
@@ -55,240 +51,152 @@ class RefreshPriceCache extends Command
     }
     
     /**
-     * Refresh prices for user_collection table
+     * Refresh prices for user_collection table using direct SQL updates
      */
     private function refreshCollectionPrices(bool $force, ?int $userId): int
     {
-        $query = UserCollection::query();
-        
-        // Filter by user if specified
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
-        
-        // Skip recently updated unless force
-        if (!$force) {
-            $query->where(function($q) {
-                $q->whereNull('cached_price_updated_at')
-                  ->orWhere('cached_price_updated_at', '<', now()->subHours(12));
-            });
-        }
-        
-        // Process in chunks to avoid memory issues
         $updated = 0;
+        $now = now();
         
-        $query->with(['user', 'tcgdexCard'])
-            ->chunkById(500, function ($items) use (&$updated) {
-                foreach ($items as $item) {
-                    try {
-                        // Eager load card relations only for TCGCSV items
-                        if ($item->product_id) {
-                            $item->load('card.prices', 'card.cardmarketProduct.latestPriceQuote');
-                        }
-                        
-                        $price = $this->getPriceForCollectionItem($item);
-                        
-                        if ($price !== null) {
-                            $item->update([
-                                'cached_price' => $price['amount'],
-                                'cached_price_currency' => $price['currency'],
-                                'cached_price_updated_at' => now(),
-                            ]);
-                            $updated++;
-                        }
-                    } catch (\Exception $e) {
-                        // Log error but continue processing
-                        Log::warning('Failed to update price for collection item ' . $item->id . ': ' . $e->getMessage());
-                    }
-                }
-            });
+        // Build WHERE conditions
+        $whereConditions = [];
+        $bindings = [];
+        
+        if ($userId) {
+            $whereConditions[] = 'uc.user_id = ?';
+            $bindings[] = $userId;
+        }
+        
+        if (!$force) {
+            $whereConditions[] = '(uc.cached_price_updated_at IS NULL OR uc.cached_price_updated_at < ?)';
+            $bindings[] = $now->copy()->subHours(12);
+        }
+        
+        $whereClause = !empty($whereConditions) ? 'AND ' . implode(' AND ', $whereConditions) : '';
+        
+        // Update TCGDEX items
+        $tcgdexSql = "
+            UPDATE user_collection uc
+            JOIN tcgdx_cards tc ON uc.tcgdex_card_id = tc.id
+            JOIN users u ON uc.user_id = u.id
+            SET 
+                uc.cached_price = CASE 
+                    WHEN u.preferred_currency = 'USD' THEN tc.price_usd
+                    ELSE COALESCE(tc.price_eur, tc.price_usd)
+                END,
+                uc.cached_price_currency = CASE 
+                    WHEN u.preferred_currency = 'USD' AND tc.price_usd IS NOT NULL THEN 'USD'
+                    WHEN tc.price_eur IS NOT NULL THEN 'EUR'
+                    WHEN tc.price_usd IS NOT NULL THEN 'USD'
+                    ELSE COALESCE(u.preferred_currency, 'USD')
+                END,
+                uc.cached_price_updated_at = ?
+            WHERE uc.tcgdex_card_id IS NOT NULL
+            AND (tc.price_usd IS NOT NULL OR tc.price_eur IS NOT NULL)
+            {$whereClause}
+        ";
+        
+        $updated += DB::update($tcgdexSql, array_merge([$now], $bindings));
+        
+        // Update TCGCSV items  
+        $tcgcsvSql = "
+            UPDATE user_collection uc
+            JOIN tcgcsv_products tp ON uc.product_id = tp.product_id
+            JOIN users u ON uc.user_id = u.id
+            SET 
+                uc.cached_price = CASE 
+                    WHEN u.preferred_currency = 'USD' THEN tp.price_usd
+                    ELSE COALESCE(tp.cardmarket_price_eur, tp.price_usd)
+                END,
+                uc.cached_price_currency = CASE 
+                    WHEN u.preferred_currency = 'USD' AND tp.price_usd IS NOT NULL THEN 'USD'
+                    WHEN tp.cardmarket_price_eur IS NOT NULL THEN 'EUR'
+                    WHEN tp.price_usd IS NOT NULL THEN 'USD'
+                    ELSE COALESCE(u.preferred_currency, 'USD')
+                END,
+                uc.cached_price_updated_at = ?
+            WHERE uc.product_id IS NOT NULL
+            AND (tp.price_usd IS NOT NULL OR tp.cardmarket_price_eur IS NOT NULL)
+            {$whereClause}
+        ";
+        
+        $updated += DB::update($tcgcsvSql, array_merge([$now], $bindings));
         
         return $updated;
     }
     
     /**
-     * Refresh prices for deck_cards table
+     * Refresh prices for deck_cards table using direct SQL updates
      */
     private function refreshDeckPrices(bool $force, ?int $userId): int
     {
-        $query = DeckCard::query();
-        
-        // Filter by deck owner if user specified
-        if ($userId) {
-            $query->whereHas('deck', function($q) use ($userId) {
-                $q->where('user_id', $userId);
-            });
-        }
-        
-        // Skip recently updated unless force
-        if (!$force) {
-            $query->where(function($q) {
-                $q->whereNull('cached_price_updated_at')
-                  ->orWhere('cached_price_updated_at', '<', now()->subHours(12));
-            });
-        }
-        
-        // Process in chunks
         $updated = 0;
+        $now = now();
         
-        $query->with(['deck.user', 'tcgdexCard'])
-            ->chunkById(500, function ($items) use (&$updated) {
-                foreach ($items as $item) {
-                    try {
-                        // Eager load card relations only for TCGCSV items
-                        if ($item->product_id) {
-                            $item->load('card.prices', 'card.cardmarketProduct.latestPriceQuote');
-                        }
-                        
-                        $price = $this->getPriceForDeckCard($item);
-                        
-                        if ($price !== null) {
-                            $item->update([
-                                'cached_price' => $price['amount'],
-                                'cached_price_currency' => $price['currency'],
-                                'cached_price_updated_at' => now(),
-                            ]);
-                            $updated++;
-                        }
-                    } catch (\Exception $e) {
-                        // Log error but continue processing
-                        Log::warning('Failed to update price for deck card ' . $item->id . ': ' . $e->getMessage());
-                    }
-                }
-            });
+        // Build WHERE conditions
+        $whereConditions = [];
+        $bindings = [];
+        
+        if ($userId) {
+            $whereConditions[] = 'd.user_id = ?';
+            $bindings[] = $userId;
+        }
+        
+        if (!$force) {
+            $whereConditions[] = '(dc.cached_price_updated_at IS NULL OR dc.cached_price_updated_at < ?)';
+            $bindings[] = $now->copy()->subHours(12);
+        }
+        
+        $whereClause = !empty($whereConditions) ? 'AND ' . implode(' AND ', $whereConditions) : '';
+        
+        // Update TCGDEX deck cards
+        $tcgdexSql = "
+            UPDATE deck_cards dc
+            JOIN decks d ON dc.deck_id = d.id
+            JOIN tcgdx_cards tc ON dc.tcgdex_card_id = tc.id
+            JOIN users u ON d.user_id = u.id
+            SET 
+                dc.cached_price = CASE 
+                    WHEN u.preferred_currency = 'USD' THEN tc.price_usd
+                    ELSE COALESCE(tc.price_eur, tc.price_usd)
+                END,
+                dc.cached_price_currency = CASE 
+                    WHEN u.preferred_currency = 'USD' AND tc.price_usd IS NOT NULL THEN 'USD'
+                    WHEN tc.price_eur IS NOT NULL THEN 'EUR'
+                    WHEN tc.price_usd IS NOT NULL THEN 'USD'
+                    ELSE COALESCE(u.preferred_currency, 'USD')
+                END,
+                dc.cached_price_updated_at = ?
+            WHERE dc.tcgdex_card_id IS NOT NULL
+            AND (tc.price_usd IS NOT NULL OR tc.price_eur IS NOT NULL)
+            {$whereClause}
+        ";
+        
+        $updated += DB::update($tcgdexSql, array_merge([$now], $bindings));
+        
+        // Update TCGCSV deck cards
+        $tcgcsvSql = "
+            UPDATE deck_cards dc
+            JOIN decks d ON dc.deck_id = d.id
+            JOIN tcgcsv_products tp ON dc.product_id = tp.product_id
+            JOIN users u ON d.user_id = u.id
+            SET 
+                dc.cached_price = CASE 
+                    WHEN COALESCE(u.preferred_currency, 'USD') = 'USD' THEN tp.price_usd
+                    ELSE tp.cardmarket_price_eur
+                END,
+                dc.cached_price_currency = COALESCE(u.preferred_currency, 'USD'),
+                dc.cached_price_updated_at = ?
+            WHERE dc.product_id IS NOT NULL
+            AND (
+                (COALESCE(u.preferred_currency, 'USD') = 'USD' AND tp.price_usd IS NOT NULL) OR
+                (COALESCE(u.preferred_currency, 'USD') = 'EUR' AND tp.cardmarket_price_eur IS NOT NULL)
+            )
+            {$whereClause}
+        ";
+        
+        $updated += DB::update($tcgcsvSql, array_merge([$now], $bindings));
         
         return $updated;
-    }
-    
-    /**
-     * Get price for a collection item (supports both TCGCSV and TCGDEX)
-     */
-    private function getPriceForCollectionItem(UserCollection $item): ?array
-    {
-        // Determine user's preferred currency (default to USD if not set)
-        $currency = $item->user->preferred_currency ?? 'USD';
-        
-        // TCGDEX card
-        if ($item->tcgdex_card_id && $item->tcgdexCard) {
-            return $this->getTcgdexPrice($item->tcgdexCard, $currency);
-        }
-        
-        // TCGCSV card
-        if ($item->product_id && $item->card) {
-            return $this->getTcgcsvPrice($item->card, $currency);
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Get price for a deck card (supports both TCGCSV and TCGDEX)
-     */
-    private function getPriceForDeckCard(DeckCard $item): ?array
-    {
-        // Determine deck owner's preferred currency (default to USD if not set)
-        $currency = $item->deck->user->preferred_currency ?? 'USD';
-        
-        // TCGDEX card
-        if ($item->tcgdex_card_id && $item->tcgdexCard) {
-            return $this->getTcgdexPrice($item->tcgdexCard, $currency);
-        }
-        
-        // TCGCSV card
-        if ($item->product_id && $item->card) {
-            return $this->getTcgcsvPrice($item->card, $currency);
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Get price from TCGDEX card data
-     * Note: USD and EUR are different markets (TCGPlayer vs Cardmarket) - no conversion
-     */
-    private function getTcgdexPrice($card, string $currency): ?array
-    {
-        // Use pre-calculated price columns (populated during import)
-        $priceUsd = $card->price_usd;
-        $priceEur = $card->price_eur;
-        
-        // If both null, try fallback to raw field
-        if ($priceUsd === null && $priceEur === null) {
-            // Legacy fallback for cards without price columns
-            $pricing = $card->raw['pricing'] ?? null;
-            
-            if ($pricing && isset($pricing['cardmarket']['averageSellPrice'])) {
-                $priceEur = $pricing['cardmarket']['averageSellPrice'];
-            }
-        }
-        
-        // Return price in requested currency (no conversion between markets)
-        if ($currency === 'USD' && $priceUsd !== null) {
-            return [
-                'amount' => round($priceUsd, 2),
-                'currency' => 'USD',
-            ];
-        }
-        
-        if ($currency === 'EUR' && $priceEur !== null) {
-            return [
-                'amount' => round($priceEur, 2),
-                'currency' => 'EUR',
-            ];
-        }
-        
-        // No price available for requested market
-        return null;
-    }
-    
-    /**
-     * Get price from TCGCSV card data
-     */
-    private function getTcgcsvPrice($card, string $currency): ?array
-    {
-        // Try Cardmarket first if available (EUR pricing)
-        if ($card->cardmarketProduct && $card->cardmarketProduct->latestPriceQuote) {
-            $quote = $card->cardmarketProduct->latestPriceQuote;
-            $priceEur = $quote->avg_sell_price ?? $quote->trend_price;
-            
-            if ($priceEur) {
-                if ($currency === 'USD') {
-                    // Convert EUR to USD
-                    return [
-                        'amount' => round($priceEur * 1.10, 2),
-                        'currency' => 'USD',
-                    ];
-                }
-                
-                return [
-                    'amount' => $priceEur,
-                    'currency' => 'EUR',
-                ];
-            }
-        }
-        
-        // Fallback to TCGCSV prices (USD)
-        $latestPrice = $card->prices()->latest('snapshot_at')->first();
-        
-        if ($latestPrice) {
-            $priceUsd = $latestPrice->market ?? $latestPrice->mid;
-            
-            if ($priceUsd) {
-                if ($currency === 'EUR') {
-                    // Convert USD to EUR
-                    return [
-                        'amount' => round($priceUsd / 1.10, 2),
-                        'currency' => 'EUR',
-                    ];
-                }
-                
-                return [
-                    'amount' => $priceUsd,
-                    'currency' => 'USD',
-                ];
-            }
-        }
-        
-        return null;
     }
 }
