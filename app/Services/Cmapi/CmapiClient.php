@@ -160,7 +160,7 @@ class CmapiClient
             'price_usd' => $priceUsd,
             'artist_name' => $cardData['artist']['name'] ?? null,
             'slug' => $cardData['slug'] ?? null,
-            'tcggo_url' => $cardData['tcggo_url'] ?? null,
+            'tcggo_url' => $cardData['links']['cardmarket'] ?? $cardData['tcggo_url'] ?? null,
             'cardmarket_id' => $cardData['cardmarket_id'] ?? null,
             'hp' => $cardData['hp'] ?? null,
             'raw' => $cardData,
