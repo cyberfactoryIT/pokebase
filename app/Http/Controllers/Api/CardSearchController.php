@@ -188,7 +188,7 @@ class CardSearchController extends Controller
                 'tcgdx_cards.set_tcgdx_id',
                 'tcgdx_sets.name as set_name',
                 'tcgdx_sets.tcgdex_id as set_code',
-                'tcgdx_sets.card_count as set_total',
+                'tcgdx_sets.card_count_official as set_total',
                 'tcgdx_cards.image_small_url as image_url',
             ])
             ->leftJoin('tcgdx_sets', 'tcgdx_cards.set_tcgdx_id', '=', 'tcgdx_sets.id');
