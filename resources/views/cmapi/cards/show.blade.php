@@ -131,17 +131,6 @@
                         </div>
                         @endif
                         
-                        @if($card->tcggo_url)
-                        <div class="py-2 border-b border-white/10">
-                            <dt class="text-sm font-medium text-gray-400 mb-1">View on TCGGO</dt>
-                            <dd>
-                                <a href="{{ $card->tcggo_url }}" target="_blank" class="text-sm text-blue-400 hover:text-blue-300 underline">
-                                    Open Card →
-                                </a>
-                            </dd>
-                        </div>
-                        @endif
-                        
                         @if($card->cardmarket_id)
                         <div class="flex justify-between py-2 border-b border-white/10">
                             <dt class="text-sm font-medium text-gray-400">CardMarket ID</dt>
@@ -307,6 +296,17 @@
                 <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
                     <h2 class="text-xl font-bold text-white mb-4">Market Prices</h2>
                     @include('cmapi.cards.partials.prices', ['card' => $card, 'size' => 'large'])
+                    
+                    @if($card->tcggo_url)
+                    <div class="mt-4 pt-4 border-t border-white/10">
+                        <a href="{{ $card->tcggo_url }}" target="_blank" class="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                            View on CardMarket
+                        </a>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Price History Chart -->
@@ -337,6 +337,17 @@
                         <canvas id="priceChart"></canvas>
                     </div>
                     <p class="text-xs text-gray-500 mt-2 text-center">Near Mint (NM) condition prices from CardMarket</p>
+                    
+                    @if($card->tcggo_url)
+                    <div class="mt-4 pt-4 border-t border-white/10 text-center">
+                        <a href="{{ $card->tcggo_url }}" target="_blank" class="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                            View detailed price breakdown on CardMarket
+                        </a>
+                    </div>
+                    @endif
                 </div>
                 @endif
 
