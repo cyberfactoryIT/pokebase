@@ -293,7 +293,7 @@ class CmapiImportService
         $now = now();
         $snapshots = [];
 
-        // Extract all language-specific prices from cardmarket
+        // Extract CardMarket prices if available
         if (isset($cardData['prices']['cardmarket'])) {
             $prices = $cardData['prices']['cardmarket'];
             
@@ -301,7 +301,7 @@ class CmapiImportService
             if (isset($prices['lowest_near_mint']) && $prices['lowest_near_mint']) {
                 $snapshots[] = [
                     'cmapi_card_id' => $card->id,
-                    'price_eur' => round($prices['lowest_near_mint'], 2),
+                    'price_eur' => round($prices['lowest_near_mint'] / 100, 2), // Convert cents to EUR
                     'price_usd' => null,
                     'language' => null,
                     'condition' => 'NM',
@@ -318,7 +318,7 @@ class CmapiImportService
                     if ($value && is_numeric($value)) {
                         $snapshots[] = [
                             'cmapi_card_id' => $card->id,
-                            'price_eur' => round($value, 2),
+                            'price_eur' => round($value / 100, 2), // Convert cents to EUR
                             'price_usd' => null,
                             'language' => $language,
                             'condition' => 'NM',
@@ -328,6 +328,23 @@ class CmapiImportService
                         ];
                     }
                 }
+            }
+        }
+        
+        // Fallback: TCGPlayer USD price if CardMarket not available
+        if (empty($snapshots) && isset($cardData['prices']['tcg_player']['market_price'])) {
+            $usdPrice = $cardData['prices']['tcg_player']['market_price'];
+            if ($usdPrice && is_numeric($usdPrice)) {
+                $snapshots[] = [
+                    'cmapi_card_id' => $card->id,
+                    'price_eur' => null,
+                    'price_usd' => round($usdPrice / 100, 2), // Convert cents to USD
+                    'language' => 'en', // TCGPlayer is US-based
+                    'condition' => 'NM',
+                    'recorded_at' => $now,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
         }
 

@@ -29,22 +29,48 @@ Route::middleware(['web', 'auth'])->get('/expansions/{id}/missing-cards', [Expan
 /**
  * Get price history for CMAPI card
  * GET /api/cmapi/cards/{id}/price-history?language=en&condition=NM&days=30
- * Returns historical price data for charting
+ * Returns historical price data for charting (CardMarket or RapidAPI fallback)
  */
 Route::get('/cmapi/cards/{id}/price-history', function ($id) {
     $language = request('language', 'en');
     $condition = request('condition', 'NM');
     $days = request('days', 30);
+    $cutoffDate = now()->subDays($days);
     
-    $history = DB::table('cmapi_price_history')
+    // Try CardMarket history first (more detailed with conditions)
+    $cardmarketHistory = DB::table('cmapi_price_history')
         ->where('cmapi_card_id', $id)
         ->where('language', $language)
         ->where('condition', $condition)
-        ->where('price_date', '>=', now()->subDays($days))
+        ->where('price_date', '>=', $cutoffDate)
         ->orderBy('price_date', 'asc')
         ->get(['price_date', 'price_eur', 'price_trend_eur']);
     
-    return response()->json($history);
+    // If CardMarket has data, use it
+    if ($cardmarketHistory->isNotEmpty()) {
+        return response()->json($cardmarketHistory);
+    }
+    
+    // Fallback to RapidAPI snapshots (no condition filtering, simpler)
+    $rapidapiHistory = DB::table('cmapi_card_price_snapshots')
+        ->where('cmapi_card_id', $id)
+        ->where('condition', $condition)
+        ->where(function($query) use ($language) {
+            $query->where('language', $language)
+                  ->orWhereNull('language'); // Include language-neutral prices
+        })
+        ->where('recorded_at', '>=', $cutoffDate)
+        ->orderBy('recorded_at', 'asc')
+        ->get()
+        ->map(function ($snapshot) {
+            return [
+                'price_date' => $snapshot->recorded_at,
+                'price_eur' => $snapshot->price_eur,
+                'price_trend_eur' => $snapshot->price_eur, // No trend calculation for snapshots
+            ];
+        });
+    
+    return response()->json($rapidapiHistory);
 })->name('api.cmapi.cards.price-history');
 
 /**
