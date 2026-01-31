@@ -49,6 +49,7 @@ return [
     
     // Recent Additions
     'recent_additions' => 'Seneste Tilføjelser',
+    'new' => 'Ny',
     'unknown_set' => 'Ukendt Sæt',
     'view_all_collection' => 'Se Hele Samlingen',
     

@@ -49,6 +49,7 @@ return [
     
     // Recent Additions
     'recent_additions' => 'Recent Additions',
+    'new' => 'New',
     'unknown_set' => 'Unknown Set',
     'view_all_collection' => 'View All Collection',
     

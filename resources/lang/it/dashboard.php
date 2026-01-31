@@ -49,6 +49,7 @@ return [
     
     // Recent Additions
     'recent_additions' => 'Ultime Carte Aggiunte',
+    'new' => 'Nuovo',
     'unknown_set' => 'Set Sconosciuto',
     'view_all_collection' => 'Vedi Tutta la Collezione',
     
