@@ -71,17 +71,29 @@
                     @include('dashboard.quick-add')
 
                     <!-- Recent Additions -->
-                    @include('dashboard.recent-additions')
+                    @if($catalogBackend === 'tcgdex')
+                        @include('dashboard.tcgdex.recent-additions')
+                    @else
+                        @include('dashboard.tcgcsv.recent-additions')
+                    @endif
                 </div>
 
                 <!-- Right Column: Top Valuable Cards (1/3 width) -->
                 <div class="lg:col-span-1">
-                    @include('dashboard.top-cards')
+                    @if($catalogBackend === 'tcgdex')
+                        @include('dashboard.tcgdex.top-cards')
+                    @else
+                        @include('dashboard.tcgcsv.top-cards')
+                    @endif
                 </div>
             </div>
 
             <!-- Featured Expansions Carousel -->
-            @include('dashboard.featured-expansions')
+            @if($catalogBackend === 'tcgdex')
+                @include('dashboard.tcgdex.featured-expansions')
+            @else
+                @include('dashboard.tcgcsv.featured-expansions')
+            @endif
 
             <!-- Missing Cards (Full Width) -->
             @include('dashboard.missing-cards')

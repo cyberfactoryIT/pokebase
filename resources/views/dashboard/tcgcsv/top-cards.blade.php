@@ -14,23 +14,49 @@
     
     <div class="space-y-4">
         @foreach($topCards as $index => $item)
-        <a href="{{ route('tcg.cards.show', $item->card->product_id) }}" 
+        @php
+            $card = $item->card;
+            
+            // Use cached_price if available, otherwise calculate
+            if ($item->cached_price && $item->cached_price > 0) {
+                $priceEur = $item->cached_price;
+            } else {
+                $priceEur = null;
+                // Priority 1: Cardmarket price quotes (latest trend)
+                $cardmarketProduct = $card->cardmarketProduct;
+                if ($cardmarketProduct) {
+                    $latestQuote = $cardmarketProduct->latestPriceQuote;
+                    if ($latestQuote && $latestQuote->trend > 0) {
+                        $priceEur = $latestQuote->trend;
+                    } elseif ($latestQuote && $latestQuote->avg > 0) {
+                        $priceEur = $latestQuote->avg;
+                    }
+                }
+                
+                // Priority 2: Cardmarket EUR from tcgcsv_products
+                if (!$priceEur && $card->cardmarket_price_eur && $card->cardmarket_price_eur > 0) {
+                    $priceEur = $card->cardmarket_price_eur;
+                }
+                
+                // Priority 3: RapidAPI Cardmarket data
+                if (!$priceEur) {
+                    $rapidapiCard = $card->rapidapiCard;
+                    if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                        $priceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                    }
+                }
+            }
+            
+            $totalValue = $priceEur ? $priceEur * $item->quantity : null;
+        @endphp
+        <a href="{{ route('tcg.cards.show', $card->product_id) }}" 
            class="group flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-lg hover:border-yellow-500/50 hover:bg-white/10 transition-all">
-            <!-- Rank Badge -->
-            <!--div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold
-                        @if($index === 0) bg-gradient-to-br from-yellow-400 to-yellow-600 text-black
-                        @elseif($index === 1) bg-gradient-to-br from-gray-300 to-gray-500 text-black
-                        @elseif($index === 2) bg-gradient-to-br from-orange-400 to-orange-600 text-white
-                        @else bg-white/10 text-gray-400
-                        @endif">
-                {{ $index + 1 }}
-            </div-->
             
             <!-- Card Image Thumbnail -->
             <div class="flex-shrink-0 w-16 h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10">
-                @if($item->card->image_url)
-                    <img src="{{ $item->card->image_url }}" 
-                         alt="{{ $item->card->name }}" 
+                @if($card->image_url)
+                    <img src="{{ $card->image_url }}" 
+                         alt="{{ $card->name }}" 
                          class="w-full h-full object-cover group-hover:scale-110 transition-transform"
                          loading="lazy">
                 @else
@@ -45,49 +71,14 @@
             <!-- Card Details -->
             <div class="flex-grow min-w-0">
                 <h4 class="font-semibold text-white mb-1 truncate group-hover:text-yellow-400 transition">
-                    {{ $item->card->name }}
+                    {{ $card->name }}
                 </h4>
                 <p class="text-sm text-gray-400 truncate">
-                    {{ $item->card->group->name ?? __('dashboard.unknown_set') }}
+                    {{ $card->group->name ?? __('dashboard.unknown_set') }}
                 </p>
 
-                <!-- Price & Total Value -->
+                <!-- Quantity & Total Value -->
                 @php
-                    // Get base EUR price
-                    $priceEur = null;
-                    
-                    // Priority 1: Cardmarket price quotes (latest trend)
-                    $cardmarketProduct = $item->card->cardmarketProduct;
-                    if ($cardmarketProduct) {
-                        $latestQuote = $cardmarketProduct->latestPriceQuote;
-                        if ($latestQuote && $latestQuote->trend > 0) {
-                            $priceEur = $latestQuote->trend;
-                        } elseif ($latestQuote && $latestQuote->avg > 0) {
-                            $priceEur = $latestQuote->avg;
-                        }
-                    }
-                    
-                    // Priority 2: Cardmarket EUR from tcgcsv_products
-                    if (!$priceEur && $item->card->cardmarket_price_eur && $item->card->cardmarket_price_eur > 0) {
-                        $priceEur = $item->card->cardmarket_price_eur;
-                    }
-                    
-                    // Priority 3: RapidAPI Cardmarket data
-                    if (!$priceEur) {
-                        $rapidapiCard = $item->card->rapidapiCard;
-                        if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                            $priceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
-                        }
-                    }
-                    
-                    // Priority 4: Convert USD to EUR
-                    if (!$priceEur) {
-                        $latestPrice = $item->card->prices->first();
-                        if ($latestPrice?->market_price) {
-                            $priceEur = convertUsdToEur($latestPrice->market_price);
-                        }
-                    }
-                    
                     // Convert to user's preferred currency
                     $user = Auth::user();
                     $preferredCurrency = $user->preferred_currency ?? 'EUR';
@@ -98,19 +89,46 @@
                         $displayPrice = \App\Services\CurrencyService::convert($priceEur, 'EUR', $preferredCurrency);
                         $currencySymbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
                     }
+                    
+                    $displayTotal = $totalValue;
+                    if ($preferredCurrency && $preferredCurrency !== 'EUR' && $totalValue) {
+                        $displayTotal = \App\Services\CurrencyService::convert($totalValue, 'EUR', $preferredCurrency);
+                    }
                 @endphp
+                
+                <div class="flex items-center gap-3 mt-2">
+                    <span class="px-2 py-1 bg-white/5 rounded text-sm">
+                        {{ $item->quantity }}x
+                    </span>
+                    @if($totalValue)
+                    <span class="text-sm font-semibold text-green-400">
+                        @if(in_array($preferredCurrency, ['DKK', 'SEK', 'NOK']))
+                            {{ number_format($displayTotal, 2, ',', '.') }} {{ $currencySymbol }}
+                        @else
+                            {{ $currencySymbol }}{{ number_format($displayTotal, 2, '.', ',') }}
+                        @endif
+                    </span>
+                    @endif
+                </div>
+            </div>
+            
+            <!-- Price on the right -->
+            <div class="flex-shrink-0 text-right">
                 @if($displayPrice)
                     <p class="text-lg font-bold text-green-400">
-                        {{ $currencySymbol }} {{ number_format($displayPrice, 2) }}
+                        @if(in_array($preferredCurrency, ['DKK', 'SEK', 'NOK']))
+                            {{ number_format($displayPrice, 2, ',', '.') }} {{ $currencySymbol }}
+                        @else
+                            {{ $currencySymbol }}{{ number_format($displayPrice, 2, '.', ',') }}
+                        @endif
                     </p>
+                    @if($preferredCurrency !== 'EUR')
+                    <p class="text-xs text-gray-500">(€{{ number_format($priceEur, 2) }})</p>
+                    @endif
                 @else
                     <p class="text-sm text-gray-500">{{ __('dashboard.price_unavailable') }}</p>
                 @endif
-               
             </div>
-            
-            
-          
             
             <!-- Arrow Icon -->
             <svg class="w-5 h-5 text-gray-600 group-hover:text-yellow-400 group-hover:translate-x-1 transition-all" 

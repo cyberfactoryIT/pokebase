@@ -35,9 +35,11 @@
                 @endif
                 
                 <!-- Condition Badge -->
+                @if($item->condition)
                 <div class="absolute bottom-2 left-2 bg-black/80 text-white px-2 py-1 rounded text-xs font-semibold">
                     {{ $item->condition }}
                 </div>
+                @endif
             </div>
             
             <!-- Card Info -->
@@ -54,13 +56,21 @@
                         {{ $item->created_at->diffForHumans() }}
                     </span>
                     
-                    @php
-                        $latestPrice = $item->card->prices->first();
-                    @endphp
-                    @if($latestPrice && $latestPrice->market_price)
-                    <span class="text-green-400 font-semibold">
-                        {{ $latestPrice->currency }} {{ number_format($latestPrice->market_price, 2) }}
-                    </span>
+                    @if($isTcgdex)
+                        @if($item->cached_price && $item->cached_price > 0)
+                        <span class="text-green-400 font-semibold">
+                            €{{ number_format($item->cached_price, 2) }}
+                        </span>
+                        @endif
+                    @else
+                        @php
+                            $latestPrice = $card->prices->first();
+                        @endphp
+                        @if($latestPrice && $latestPrice->market_price)
+                        <span class="text-green-400 font-semibold">
+                            {{ $latestPrice->currency }} {{ number_format($latestPrice->market_price, 2) }}
+                        </span>
+                        @endif
                     @endif
                 </div>
             </div>
