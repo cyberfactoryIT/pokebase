@@ -188,6 +188,7 @@ class CardSearchController extends Controller
                 'tcgdx_cards.set_tcgdx_id',
                 'tcgdx_sets.name as set_name',
                 'tcgdx_sets.tcgdex_id as set_code',
+                'tcgdx_sets.card_count as set_total',
                 'tcgdx_cards.image_small_url as image_url',
             ])
             ->leftJoin('tcgdx_sets', 'tcgdx_cards.set_tcgdx_id', '=', 'tcgdx_sets.id');
@@ -254,6 +255,7 @@ class CardSearchController extends Controller
                 'product_id' => null, // Not applicable for TCGDEX
                 'name' => $nameEn,
                 'card_number' => $card->card_number,
+                'set_total' => $card->set_total,
                 'set_code' => $card->set_code,
                 'set_name' => $setNameEn,
                 'image_url' => $card->image_url ? $card->image_url . '/low.webp' : null,

@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="flex-1 min-w-0">
                         <div class="font-semibold text-white truncate">${escapeHtml(card.name)}</div>
                         <div class="text-sm text-gray-400 truncate">${escapeHtml(card.set_name || card.group_name || 'Unknown Set')}</div>
-                        ${card.card_number ? `<div class="text-xs text-gray-500">#${escapeHtml(card.card_number)}</div>` : ''}
+                        ${card.card_number ? `<div class="text-xs text-gray-500">#${escapeHtml(card.card_number)}${card.set_total ? '/' + card.set_total : ''}</div>` : ''}
                     </div>
                 </div>
             `;

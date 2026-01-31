@@ -129,11 +129,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="flex-1 min-w-0">
                             <div class="font-medium text-sm truncate">${escapeHtml(card.name)}</div>
                             <div class="text-xs mt-0.5" style="color: var(--text-muted)">
-                                ${escapeHtml(card.group_name || 'Unknown Set')}
+                                ${escapeHtml(card.set_name || card.group_name || 'Unknown Set')}
                             </div>
                         </div>
                         <div class="text-xs font-mono flex-shrink-0" style="color: var(--text-muted)">
-                            #${escapeHtml(card.card_number || 'N/A')}
+                            #${escapeHtml(card.card_number || 'N/A')}${card.set_total ? '/' + card.set_total : ''}
                         </div>
                     </div>
                 </a>
