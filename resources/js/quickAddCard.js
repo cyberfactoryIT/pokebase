@@ -88,12 +88,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return `
                 <div class="search-result-card flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition border-b border-white/5 last:border-0" 
-                     data-card-id="${card.product_id}" 
+                     data-card-id="${card.product_id || card.tcgdex_card_id}" 
+                     data-tcgdex-id="${card.tcgdex_card_id || ''}"
                      data-card-name="${escapeHtml(card.name)}">
                     ${imageHtml}
                     <div class="flex-1 min-w-0">
                         <div class="font-semibold text-white truncate">${escapeHtml(card.name)}</div>
-                        <div class="text-sm text-gray-400 truncate">${escapeHtml(card.group_name || 'Unknown Set')}</div>
+                        <div class="text-sm text-gray-400 truncate">${escapeHtml(card.set_name || card.group_name || 'Unknown Set')}</div>
                         ${card.card_number ? `<div class="text-xs text-gray-500">#${escapeHtml(card.card_number)}</div>` : ''}
                     </div>
                 </div>
@@ -113,13 +114,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Select a card from results
     function selectCard(element) {
         const cardId = element.dataset.cardId;
+        const tcgdexId = element.dataset.tcgdexId;
         const cardName = element.dataset.cardName;
         
         selectedCardId.value = cardId;
         searchInput.value = cardName;
+        
+        // Store card type in hidden field or data attribute for backend
+        if (tcgdexId) {
+            selectedCardId.setAttribute('data-is-tcgdex', 'true');
+            selectedCardId.setAttribute('data-tcgdex-id', tcgdexId);
+        } else {
+            selectedCardId.removeAttribute('data-is-tcgdex');
+            selectedCardId.removeAttribute('data-tcgdex-id');
+        }
+        
         hideResults();
         
-        console.log('Card selected:', { cardId, cardName });
+        console.log('Card selected:', { cardId, tcgdexId, cardName });
     }
     
     // Show results dropdown
@@ -150,6 +162,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const formData = new FormData(form);
+        
+        // Add TCGDEX card ID if applicable
+        if (selectedCardId.hasAttribute('data-is-tcgdex')) {
+            formData.delete('card_id'); // Remove product_id
+            formData.append('tcgdex_card_id', selectedCardId.getAttribute('data-tcgdex-id'));
+        }
+        
         const submitBtn = form.querySelector('button[type="submit"]');
         
         // Save original button content

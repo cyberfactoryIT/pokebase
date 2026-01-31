@@ -770,18 +770,35 @@ class CollectionController extends Controller
      */
     public function quickAdd(Request $request)
     {
-        $validated = $request->validate([
-            'card_id' => 'required|integer|exists:tcgcsv_products,product_id',
-            'quantity' => 'required|integer|min:1|max:100',
-            'condition' => 'required|string|in:M,NM,LP,MP,HP,D',
-        ]);
+        // Determine if this is TCGDEX or TCGCSV card
+        $isTcgdex = $request->has('tcgdex_card_id');
+        
+        if ($isTcgdex) {
+            $validated = $request->validate([
+                'tcgdex_card_id' => 'required|integer|exists:tcgdx_cards,id',
+                'quantity' => 'required|integer|min:1|max:100',
+                'condition' => 'required|string|in:M,NM,LP,MP,HP,D',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'card_id' => 'required|integer|exists:tcgcsv_products,product_id',
+                'quantity' => 'required|integer|min:1|max:100',
+                'condition' => 'required|string|in:M,NM,LP,MP,HP,D',
+            ]);
+        }
 
         try {
             // Check if user already has this card
-            $existingCard = UserCollection::where('user_id', Auth::id())
-                ->where('product_id', $validated['card_id'])
-                ->where('condition', $validated['condition'])
-                ->first();
+            $query = UserCollection::where('user_id', Auth::id())
+                ->where('condition', $validated['condition']);
+            
+            if ($isTcgdex) {
+                $query->where('tcgdex_card_id', $validated['tcgdex_card_id']);
+            } else {
+                $query->where('product_id', $validated['card_id']);
+            }
+            
+            $existingCard = $query->first();
 
             if ($existingCard) {
                 // Update quantity if card already exists
@@ -796,13 +813,20 @@ class CollectionController extends Controller
                 ]);
             } else {
                 // Create new collection entry
-                UserCollection::create([
+                $data = [
                     'user_id' => Auth::id(),
-                    'product_id' => $validated['card_id'],
                     'quantity' => $validated['quantity'],
                     'condition' => $validated['condition'],
                     'is_foil' => false, // Default to non-foil for quick add
-                ]);
+                ];
+                
+                if ($isTcgdex) {
+                    $data['tcgdex_card_id'] = $validated['tcgdex_card_id'];
+                } else {
+                    $data['product_id'] = $validated['card_id'];
+                }
+                
+                UserCollection::create($data);
 
                 return response()->json([
                     'success' => true,
@@ -813,7 +837,8 @@ class CollectionController extends Controller
         } catch (\Exception $e) {
             Log::error('Quick add card error', [
                 'user_id' => Auth::id(),
-                'card_id' => $validated['card_id'],
+                'card_id' => $validated['card_id'] ?? null,
+                'tcgdex_card_id' => $validated['tcgdex_card_id'] ?? null,
                 'error' => $e->getMessage(),
             ]);
 
