@@ -2511,6 +2511,223 @@ protected $signature = 'cmapi:import
 
 ---
 
+## 🏪 Appendix B: CardMarket Price Historicization
+
+### IMPORTANT: CardMarket API vs S3 Data
+
+**⚠️ CRITICAL NOTE**: The CardMarket API mentioned in this guide (via RapidAPI) **DOES NOT EXIST** as a real API. It's actually S3-hosted static JSON files.
+
+### What Actually Works
+
+CardMarket provides public S3 buckets with daily price data:
+
+**Products Catalog**:
+```
+https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_{GAME_ID}.json
+```
+
+**Price Guide**:
+```
+https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_{GAME_ID}.json
+```
+
+**Game IDs**:
+- Lorcana: `19`
+- One Piece: `26`
+- Pokemon: `6`
+- Magic: `1`
+- Yu-Gi-Oh: `3`
+
+### Data Format (JSON, not CSV!)
+
+**Products File Structure**:
+```json
+{
+  "version": 1,
+  "createdAt": "2026-01-31T09:21:45+0100",
+  "products": [
+    {
+      "idProduct": 726997,
+      "name": "Mickey Mouse - Brave Little Tailor",
+      "idCategory": 1629,
+      "categoryName": "Lorcana Single",
+      "idExpansion": 5435,
+      "idMetacard": 422798,
+      "dateAdded": "2023-08-09 17:02:49"
+    }
+  ]
+}
+```
+
+**Price Guide Structure**:
+```json
+{
+  "version": 1,
+  "createdAt": "2026-01-31T02:44:21+0100",
+  "priceGuides": [
+    {
+      "idProduct": 726997,
+      "1": {"MINT": 12.50, "EXC": 9.00, "POOR": 3.50},
+      "2": {"MINT": 13.00, "EXC": 9.50, "POOR": 4.00}
+    }
+  ]
+}
+```
+
+**Language Codes** (numeric keys in price guide):
+- `1` = English
+- `2` = French
+- `3` = German
+- `4` = Spanish
+- `5` = Italian
+
+### Implementation: Separate Staging Tables
+
+For price historicization, you need **separate staging tables**:
+
+**Migration**:
+```php
+// 1. Staging products (downloaded from S3)
+Schema::create('staging_cmapi_products', function (Blueprint $table) {
+    $table->id();
+    $table->string('cardmarket_id')->index();
+    $table->string('game')->index(); // lorcana, onepiece
+    $table->string('name');
+    $table->string('set_name')->nullable();
+    $table->string('number')->nullable();
+    $table->json('raw_data');
+    $table->timestamp('fetched_at');
+    $table->string('status')->default('pending'); // pending, matched, error
+    $table->timestamps();
+});
+
+// 2. Staging prices (multi-language)
+Schema::create('staging_cmapi_prices', function (Blueprint $table) {
+    $table->id();
+    $table->string('cardmarket_id')->index();
+    $table->string('language', 5)->index(); // en, fr, de, es, it
+    $table->string('condition', 10)->index(); // NM, EXC, GD, LP, PL, POOR
+    $table->decimal('price_eur', 10, 2);
+    $table->timestamp('price_date')->index();
+    $table->timestamps();
+});
+
+// 3. Production price history (after validation)
+Schema::create('cmapi_price_history', function (Blueprint $table) {
+    $table->id();
+    $table->unsignedBigInteger('cmapi_card_id')->index();
+    $table->string('language', 5)->index();
+    $table->string('condition', 10)->index();
+    $table->decimal('price_eur', 10, 2);
+    $table->decimal('price_trend_eur', 10, 2)->nullable();
+    $table->date('price_date')->index();
+    $table->timestamps();
+    
+    $table->foreign('cmapi_card_id')
+          ->references('id')
+          ->on('cmapi_cards')
+          ->onDelete('cascade');
+    
+    $table->unique(['cmapi_card_id', 'language', 'condition', 'price_date']);
+});
+```
+
+### Workflow
+
+1. **Download** → S3 JSON files (products + prices)
+2. **Stage** → Insert to `staging_cmapi_*` tables
+3. **Validate** → Match products to existing `cmapi_cards` by:
+   - Primary: `cardmarket_id`
+   - Fallback: `set_name` + `number`
+4. **Promote** → Create `cmapi_price_history` records
+5. **Clean** → Delete staging data >7 days old
+
+### Service Template
+
+```php
+// app/Services/Cmapi/CardMarketPriceSyncService.php
+
+public function importFromS3(string $game): array
+{
+    $gameId = ['lorcana' => 19, 'onepiece' => 26][$game];
+    
+    // Step 1: Download products JSON
+    $productsUrl = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_{$gameId}.json";
+    $productsData = Http::get($productsUrl)->json();
+    $this->importProducts($game, $productsData['products']); // Extract 'products' array!
+    
+    // Step 2: Download prices JSON
+    $pricesUrl = "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_{$gameId}.json";
+    $pricesData = Http::get($pricesUrl)->json();
+    $this->importPrices($game, $pricesData['priceGuides']); // Extract 'priceGuides' array!
+}
+
+protected function importProducts(string $game, array $products): int
+{
+    foreach ($products as $product) {
+        if (!is_array($product)) continue; // Skip metadata
+        
+        DB::table('staging_cmapi_products')->insert([
+            'cardmarket_id' => $product['idProduct'],
+            'game' => $game,
+            'name' => $product['name'],
+            'set_name' => $product['categoryName'] ?? null,
+            'raw_data' => json_encode($product),
+            'fetched_at' => now(),
+        ]);
+    }
+}
+
+protected function importPrices(string $game, array $priceGuides): int
+{
+    $languageMap = [1 => 'en', 2 => 'fr', 3 => 'de', 4 => 'es', 5 => 'it'];
+    
+    foreach ($priceGuides as $guide) {
+        if (!is_array($guide)) continue;
+        
+        foreach ($guide as $langId => $prices) {
+            if (!is_numeric($langId) || !isset($languageMap[$langId])) continue;
+            
+            foreach ($prices as $condition => $price) {
+                DB::table('staging_cmapi_prices')->insert([
+                    'cardmarket_id' => $guide['idProduct'],
+                    'language' => $languageMap[$langId],
+                    'condition' => strtoupper($condition),
+                    'price_eur' => $price,
+                    'price_date' => now(),
+                ]);
+            }
+        }
+    }
+}
+```
+
+### Important Notes
+
+1. **Ask for S3 Links First**: Before implementing, verify the game has public S3 files
+2. **JSON Structure**: Always extract nested arrays (`products`, `priceGuides`)
+3. **No API Authentication**: S3 files are public, no keys needed
+4. **Update Frequency**: Files update daily around 2 AM CET
+5. **Staging Area Required**: Don't write directly to production tables
+
+### Daily Sync Script
+
+```bash
+#!/bin/bash
+# Daily CardMarket price sync
+
+php artisan cardmarket:sync-prices --game=lorcana  # Download to staging
+php artisan cardmarket:sync-prices --game=lorcana --promote  # Staging → Production
+php artisan cardmarket:sync-prices --game=lorcana --clean  # Remove old staging
+```
+
+For complete implementation, see:
+- `CARDMARKET_PRICE_SYNC_GUIDE.md`
+- `app/Services/Cmapi/CardMarketPriceSyncService.php`
+- `database/migrations/*_create_cardmarket_staging_and_history_tables.php`
+
+---
+
 **End of Guide**
 
 This checklist ensures a systematic, non-zigzag implementation of new games following the proven TCGDEX pattern. Work through phases sequentially and check off items as completed.
