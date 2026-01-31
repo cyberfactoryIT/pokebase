@@ -80,8 +80,8 @@ class CollectionController extends Controller
         $focusSet = $insightsService->identifyFocusSet($detailedStats['top_sets']);
         $setsInsight = $insightsService->generateSetsInsight($detailedStats['top_sets'], $focusSet ?? []);
         
-        // Calculate collection value
-        $valuation = $this->calculateCollectionValue($userId, $currentGame, $catalogBackend);
+        // Calculate collection value (with rarity filter applied)
+        $valuation = $this->calculateCollectionValue($userId, $currentGame, $catalogBackend, $rarityFilter);
 
         return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation', 'rarityInsight', 'conditionInsight', 'setsInsight', 'focusSet'));
     }
@@ -561,7 +561,7 @@ class CollectionController extends Controller
      * Calculate total collection value in USD and EUR
      * Uses cached prices for performance, falls back to real-time queries if cache is null
      */
-    private function calculateCollectionValue($userId, $currentGame, $catalogBackend): array
+    private function calculateCollectionValue($userId, $currentGame, $catalogBackend, $rarityFilter = null): array
     {
         $user = \App\Models\User::find($userId);
         $preferredCurrency = $user->preferred_currency ?? 'USD';
@@ -570,14 +570,29 @@ class CollectionController extends Controller
         $cachedQuery = UserCollection::where('user_id', $userId)
             ->whereNotNull('cached_price');
             
-        if ($currentGame) {
-            $cachedQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
-        
         if ($catalogBackend === 'tcgdex') {
             $cachedQuery->whereNotNull('tcgdex_card_id');
+            // No currentGame filter for TCGDEX (it's always Pokemon)
+            
+            // Apply rarity filter for TCGDEX
+            if ($rarityFilter) {
+                $cachedQuery->whereHas('tcgdexCard', function($q) use ($rarityFilter) {
+                    $q->where('rarity', $rarityFilter);
+                });
+            }
         } else {
             $cachedQuery->whereNotNull('product_id');
+            // Filter by current game (only for TCGCSV)
+            if ($currentGame) {
+                $cachedQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+            }
+            
+            // Apply rarity filter for TCGCSV
+            if ($rarityFilter) {
+                $cachedQuery->whereHas('card', function($q) use ($rarityFilter) {
+                    $q->where('rarity', $rarityFilter);
+                });
+            }
         }
         
         $cachedItems = $cachedQuery->get();
@@ -588,37 +603,47 @@ class CollectionController extends Controller
         $cardsWithCachedPrices = $cachedItems->count();
         
         foreach ($cachedItems as $item) {
-            if ($item->cached_price_currency === 'USD') {
-                $totalValueUsd += $item->cached_price * $item->quantity;
-                // Convert to EUR (approximate)
-                $totalValueEur += ($item->cached_price / 1.10) * $item->quantity;
-            } else {
-                $totalValueEur += $item->cached_price * $item->quantity;
-                // Convert to USD (approximate)
-                $totalValueUsd += ($item->cached_price * 1.10) * $item->quantity;
-            }
+            // All cached prices are now in EUR (from price_eur or cardmarket_price_eur)
+            $totalValueEur += $item->cached_price * $item->quantity;
+            // Convert to USD (approximate)
+            $totalValueUsd += ($item->cached_price * 1.10) * $item->quantity;
         }
         
         // Fallback: Get items without cached prices and calculate real-time
         $uncachedQuery = UserCollection::where('user_id', $userId)
-            ->whereNull('cached_price')
-            ->with([
-                'card.prices' => function($q) {
-                    $q->latest('snapshot_at')->limit(1);
-                },
-                'card.rapidapiCard',
-                'card.cardmarketProduct.latestPriceQuote',
-                'tcgdexCard'
-            ]);
+            ->whereNull('cached_price');
             
-        if ($currentGame) {
-            $uncachedQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
-        
         if ($catalogBackend === 'tcgdex') {
-            $uncachedQuery->whereNotNull('tcgdex_card_id');
+            $uncachedQuery->whereNotNull('tcgdex_card_id')
+                         ->with('tcgdexCard');
+            // No currentGame filter for TCGDEX
+            
+            // Apply rarity filter for TCGDEX
+            if ($rarityFilter) {
+                $uncachedQuery->whereHas('tcgdexCard', function($q) use ($rarityFilter) {
+                    $q->where('rarity', $rarityFilter);
+                });
+            }
         } else {
-            $uncachedQuery->whereNotNull('product_id');
+            $uncachedQuery->whereNotNull('product_id')
+                         ->with([
+                             'card.prices' => function($q) {
+                                 $q->latest('snapshot_at')->limit(1);
+                             },
+                             'card.rapidapiCard',
+                             'card.cardmarketProduct.latestPriceQuote'
+                         ]);
+            // Filter by current game (only for TCGCSV)
+            if ($currentGame) {
+                $uncachedQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+            }
+            
+            // Apply rarity filter for TCGCSV
+            if ($rarityFilter) {
+                $uncachedQuery->whereHas('card', function($q) use ($rarityFilter) {
+                    $q->where('rarity', $rarityFilter);
+                });
+            }
         }
         
         $uncachedItems = $uncachedQuery->get();

@@ -436,7 +436,33 @@
                 <div class="p-3">
                     <h4 class="text-white text-sm font-semibold truncate">{{ $cardName }}</h4>
                     <div class="flex items-center justify-between mt-2">
-                        <span class="text-gray-400 text-xs">{{ __('collection/index.qty_label') }}: {{ $item->quantity }}</span>
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-gray-400 text-xs">{{ __('collection/index.qty_label') }}: {{ $item->quantity }}</span>
+                            @if(auth()->user()->isAdvanced() || auth()->user()->isPremium())
+                                @if($item->cached_price && $item->cached_price > 0)
+                                    @php
+                                        $user = auth()->user();
+                                        $preferredCurrency = $user->preferred_currency ?? 'EUR';
+                                        $needsConversion = $preferredCurrency && $preferredCurrency !== 'EUR';
+                                        
+                                        if ($needsConversion) {
+                                            $convertedPrice = \App\Services\CurrencyService::convert($item->cached_price, 'EUR', $preferredCurrency);
+                                            $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                            $symbolAfter = in_array($preferredCurrency, ['DKK', 'SEK', 'NOK']);
+                                            $formatted = $symbolAfter ? number_format($convertedPrice, 2) . ' ' . $symbol : $symbol . number_format($convertedPrice, 2);
+                                        } else {
+                                            $formatted = '€' . number_format($item->cached_price, 2);
+                                        }
+                                    @endphp
+                                    <span class="text-green-400 text-xs font-semibold">
+                                        {{ $formatted }} {{ __('collection/index.each') }}
+                                        @if($needsConversion)
+                                            <span class="text-gray-500">(€{{ number_format($item->cached_price, 2) }})</span>
+                                        @endif
+                                    </span>
+                                @endif
+                            @endif
+                        </div>
                         @if($item->is_foil)
                         <span class="text-yellow-400 text-xs flex items-center gap-1">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

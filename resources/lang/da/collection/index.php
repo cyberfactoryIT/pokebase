@@ -25,6 +25,7 @@ return [
     
     // Card Grid
     'qty_label' => 'Antal',
+    'each' => 'stk',
     'foil' => 'Foil',
     'remove' => 'Fjern',
     'confirm_remove' => 'Fjern fra samling?',

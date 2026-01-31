@@ -103,8 +103,25 @@
                                                 @if($card->price_eur)
                                                     @auth
                                                         @if(auth()->user()->isAdvanced() || auth()->user()->isPremium())
+                                                            @php
+                                                                $user = auth()->user();
+                                                                $preferredCurrency = $user->preferred_currency ?? 'EUR';
+                                                                $needsConversion = $preferredCurrency && $preferredCurrency !== 'EUR';
+                                                                
+                                                                if ($needsConversion) {
+                                                                    $convertedPrice = \App\Services\CurrencyService::convert($card->price_eur, 'EUR', $preferredCurrency);
+                                                                    $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                                                                    $symbolAfter = in_array($preferredCurrency, ['DKK', 'SEK', 'NOK']);
+                                                                    $formatted = $symbolAfter ? number_format($convertedPrice, 2) . ' ' . $symbol : $symbol . number_format($convertedPrice, 2);
+                                                                } else {
+                                                                    $formatted = '€' . number_format($card->price_eur, 2);
+                                                                }
+                                                            @endphp
                                                             <span class="text-sm font-semibold text-green-400 mt-2">
-                                                                €{{ number_format($card->price_eur, 2) }}
+                                                                {{ $formatted }}
+                                                                @if($needsConversion)
+                                                                    <span class="text-xs text-gray-500">(€{{ number_format($card->price_eur, 2) }})</span>
+                                                                @endif
                                                             </span>
                                                         @endif
                                                     @endauth

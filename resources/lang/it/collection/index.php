@@ -25,6 +25,7 @@ return [
     
     // Card Grid
     'qty_label' => 'Qtà',
+    'each' => 'cad.',
     'foil' => 'Foil',
     'remove' => 'Rimuovi',
     'confirm_remove' => 'Rimuovere dalla collezione?',
