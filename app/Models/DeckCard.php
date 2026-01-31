@@ -39,6 +39,6 @@ class DeckCard extends Model
      */
     public function tcgdexCard(): BelongsTo
     {
-        return $this->belongsTo(TcgdxCard::class, 'tcgdex_card_id');
+        return $this->belongsTo(\App\Models\Tcgdx\TcgdxCard::class, 'tcgdex_card_id');
     }
 }

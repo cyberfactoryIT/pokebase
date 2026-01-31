@@ -33,17 +33,25 @@ class RefreshPriceCache extends Command
         
         $this->info('Starting price cache refresh...');
         
-        // Refresh collection prices
-        $collectionUpdated = $this->refreshCollectionPrices($force, $userId);
-        $this->info("Updated {$collectionUpdated} collection items");
-        
-        // Refresh deck prices
-        $deckUpdated = $this->refreshDeckPrices($force, $userId);
-        $this->info("Updated {$deckUpdated} deck cards");
-        
-        $this->info('Price cache refresh completed!');
-        
-        return 0;
+        try {
+            // Refresh collection prices
+            $this->info('Refreshing collection prices...');
+            $collectionUpdated = $this->refreshCollectionPrices($force, $userId);
+            $this->info("Updated {$collectionUpdated} collection items");
+            
+            // Refresh deck prices
+            $this->info('Refreshing deck prices...');
+            $deckUpdated = $this->refreshDeckPrices($force, $userId);
+            $this->info("Updated {$deckUpdated} deck cards");
+            
+            $this->info('Price cache refresh completed!');
+            
+            return 0;
+        } catch (\Exception $e) {
+            $this->error('Error during price refresh: ' . $e->getMessage());
+            $this->error($e->getTraceAsString());
+            return 1;
+        }
     }
     
     /**
@@ -69,18 +77,28 @@ class RefreshPriceCache extends Command
         // Process in chunks to avoid memory issues
         $updated = 0;
         
-        $query->with(['card.prices', 'card.cardmarketProduct.latestPriceQuote', 'tcgdexCard'])
+        $query->with(['user', 'tcgdexCard'])
             ->chunkById(500, function ($items) use (&$updated) {
                 foreach ($items as $item) {
-                    $price = $this->getPriceForCollectionItem($item);
-                    
-                    if ($price !== null) {
-                        $item->update([
-                            'cached_price' => $price['amount'],
-                            'cached_price_currency' => $price['currency'],
-                            'cached_price_updated_at' => now(),
-                        ]);
-                        $updated++;
+                    try {
+                        // Eager load card relations only for TCGCSV items
+                        if ($item->product_id) {
+                            $item->load('card.prices', 'card.cardmarketProduct.latestPriceQuote');
+                        }
+                        
+                        $price = $this->getPriceForCollectionItem($item);
+                        
+                        if ($price !== null) {
+                            $item->update([
+                                'cached_price' => $price['amount'],
+                                'cached_price_currency' => $price['currency'],
+                                'cached_price_updated_at' => now(),
+                            ]);
+                            $updated++;
+                        }
+                    } catch (\Exception $e) {
+                        // Log error but continue processing
+                        Log::warning('Failed to update price for collection item ' . $item->id . ': ' . $e->getMessage());
                     }
                 }
             });
@@ -113,18 +131,28 @@ class RefreshPriceCache extends Command
         // Process in chunks
         $updated = 0;
         
-        $query->with(['card.prices', 'card.cardmarketProduct.latestPriceQuote', 'tcgdexCard'])
+        $query->with(['deck.user', 'tcgdexCard'])
             ->chunkById(500, function ($items) use (&$updated) {
                 foreach ($items as $item) {
-                    $price = $this->getPriceForDeckCard($item);
-                    
-                    if ($price !== null) {
-                        $item->update([
-                            'cached_price' => $price['amount'],
-                            'cached_price_currency' => $price['currency'],
-                            'cached_price_updated_at' => now(),
-                        ]);
-                        $updated++;
+                    try {
+                        // Eager load card relations only for TCGCSV items
+                        if ($item->product_id) {
+                            $item->load('card.prices', 'card.cardmarketProduct.latestPriceQuote');
+                        }
+                        
+                        $price = $this->getPriceForDeckCard($item);
+                        
+                        if ($price !== null) {
+                            $item->update([
+                                'cached_price' => $price['amount'],
+                                'cached_price_currency' => $price['currency'],
+                                'cached_price_updated_at' => now(),
+                            ]);
+                            $updated++;
+                        }
+                    } catch (\Exception $e) {
+                        // Log error but continue processing
+                        Log::warning('Failed to update price for deck card ' . $item->id . ': ' . $e->getMessage());
                     }
                 }
             });
@@ -137,7 +165,7 @@ class RefreshPriceCache extends Command
      */
     private function getPriceForCollectionItem(UserCollection $item): ?array
     {
-        // Determine user's preferred currency
+        // Determine user's preferred currency (default to USD if not set)
         $currency = $item->user->preferred_currency ?? 'USD';
         
         // TCGDEX card
@@ -158,7 +186,7 @@ class RefreshPriceCache extends Command
      */
     private function getPriceForDeckCard(DeckCard $item): ?array
     {
-        // Determine deck owner's preferred currency
+        // Determine deck owner's preferred currency (default to USD if not set)
         $currency = $item->deck->user->preferred_currency ?? 'USD';
         
         // TCGDEX card
