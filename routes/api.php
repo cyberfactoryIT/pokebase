@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CardSearchController;
 use App\Http\Controllers\Api\ExpansionController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Public API routes (no authentication required for read operations)
@@ -24,6 +25,27 @@ Route::middleware(['web'])->get('/search/cards', [CardSearchController::class, '
  */
 Route::middleware(['web', 'auth'])->get('/expansions/{id}/missing-cards', [ExpansionController::class, 'getMissingCards'])
     ->name('api.expansions.missing-cards');
+
+/**
+ * Get price history for CMAPI card
+ * GET /api/cmapi/cards/{id}/price-history?language=en&condition=NM&days=30
+ * Returns historical price data for charting
+ */
+Route::get('/cmapi/cards/{id}/price-history', function ($id) {
+    $language = request('language', 'en');
+    $condition = request('condition', 'NM');
+    $days = request('days', 30);
+    
+    $history = DB::table('cmapi_price_history')
+        ->where('cmapi_card_id', $id)
+        ->where('language', $language)
+        ->where('condition', $condition)
+        ->where('price_date', '>=', now()->subDays($days))
+        ->orderBy('price_date', 'asc')
+        ->get(['price_date', 'price_eur', 'price_trend_eur']);
+    
+    return response()->json($history);
+})->name('api.cmapi.cards.price-history');
 
 /**
  * Get missing cards for TCGDEX set (requires authentication)

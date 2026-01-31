@@ -22,12 +22,22 @@ This guide provides a step-by-step checklist to implement a new card game (Magic
 ## 🎯 Prerequisites
 
 Before starting, decide:
-1. **Game to implement**: [ ] MTG  [ ] YGO  [ ] Lorcana
+1. **Game to implement**: [ ] MTG  [ ] YGO  [ ] Lorcana  [ ] One Piece
 2. **API Source**: 
    - MTG: Scryfall API (https://scryfall.com/docs/api)
    - YGO: YGOPRODeck API (https://ygoprodeck.com/api-guide/)
-   - Lorcana: TBD
-3. **Backend code name**: `scryfall` / `ygoprodeck` / `lorcana`
+   - Lorcana: CardMarket API via RapidAPI (https://rapidapi.com/tcggopro/api/cardmarket-api-tcg)
+   - One Piece: CardMarket API via RapidAPI (same as Lorcana)
+3. **Backend code name**: `scryfall` / `ygoprodeck` / `cmapi` (CardMarket API)
+4. **API Authentication**:
+   - Scryfall: None required (rate limited)
+   - YGOPRODeck: None required
+   - CardMarket API: RapidAPI key required (query param or X-RapidAPI-Key header)
+5. **Rate Limits** (CardMarket API):
+   - Basic (Free): 100 req/day, 30 req/min
+   - Pro ($9.90/mo): 3,000 req/day, 300 req/min
+   - Ultra ($24.90/mo): 15,000 req/day, 300 req/min
+   - Mega ($49.50/mo): 50,000 req/day, 600 req/min
 
 ---
 
@@ -41,6 +51,14 @@ Before starting, decide:
 -- Example for MTG
 INSERT INTO games (id, name, slug, tcgcsv_category_id, catalog_backend, created_at, updated_at)
 VALUES (2, 'Magic: The Gathering', 'magic', 1, 'scryfall', NOW(), NOW());
+
+-- Example for Lorcana (using CardMarket API)
+INSERT INTO games (id, name, slug, tcgcsv_category_id, catalog_backend, created_at, updated_at)
+VALUES (3, 'Disney Lorcana', 'lorcana', NULL, 'cmapi', NOW(), NOW());
+
+-- Example for One Piece (using CardMarket API)
+INSERT INTO games (id, name, slug, tcgcsv_category_id, catalog_backend, created_at, updated_at)
+VALUES (4, 'One Piece', 'onepiece', NULL, 'cmapi', NOW(), NOW());
 ```
 
 **Checklist**:
@@ -685,6 +703,210 @@ class {Backend}Client
 }
 ```
 
+#### CardMarket API Client Template (for Lorcana/One Piece via RapidAPI):
+
+```php
+// app/Services/Cmapi/CmapiClient.php
+
+<?php
+
+namespace App\Services\Cmapi;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * CardMarket API Client (via RapidAPI)
+ * 
+ * Documentation: https://rapidapi.com/tcggopro/api/cardmarket-api-tcg
+ * Supported games: pokemon, lorcana, onepiece
+ * 
+ * Endpoints:
+ * - GET /{game}/episodes - List all sets ("episodes")
+ * - GET /{game}/episodes/{id}/cards - List cards in a set
+ * - GET /{game}/cards/{id} - Get single card
+ * - GET /{game}/cards?search={query} - Search cards
+ */
+class CmapiClient
+{
+    protected string $baseUrl;
+    protected int $timeout;
+    protected string $rapidApiKey;
+    protected string $rapidApiHost;
+    protected string $game; // 'lorcana', 'onepiece', etc.
+
+    public function __construct(string $game = 'lorcana')
+    {
+        $this->baseUrl = config('cmapi.base_url');
+        $this->timeout = config('cmapi.timeout', 30);
+        $this->rapidApiKey = config('cmapi.rapidapi_key');
+        $this->rapidApiHost = config('cmapi.rapidapi_host');
+        $this->game = $game;
+    }
+
+    /**
+     * Fetch all sets (called "episodes" in CMAPI)
+     */
+    public function listSets(): array
+    {
+        $response = Http::timeout($this->timeout)
+            ->withHeaders($this->getHeaders())
+            ->get("{$this->baseUrl}/{$this->game}/episodes");
+
+        if (!$response->successful()) {
+            Log::error("CMAPI listSets failed: {$response->status()}", [
+                'body' => $response->body(),
+            ]);
+            throw new \Exception("Failed to fetch sets: {$response->status()}");
+        }
+
+        return $response->json() ?? [];
+    }
+
+    /**
+     * Fetch single set details
+     */
+    public function getSet(string $episodeId): ?array
+    {
+        // CMAPI doesn't have dedicated episode detail endpoint
+        // Get all episodes and filter by ID
+        $episodes = $this->listSets();
+        
+        foreach ($episodes as $episode) {
+            if (($episode['id'] ?? null) == $episodeId) {
+                return $episode;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Fetch cards for a set/episode
+     */
+    public function listCardsBySet(string $episodeId): array
+    {
+        $response = Http::timeout($this->timeout)
+            ->withHeaders($this->getHeaders())
+            ->get("{$this->baseUrl}/{$this->game}/episodes/{$episodeId}/cards");
+
+        if (!$response->successful()) {
+            Log::error("CMAPI listCardsBySet failed: {$response->status()}", [
+                'episode_id' => $episodeId,
+                'body' => $response->body(),
+            ]);
+            throw new \Exception("Failed to fetch cards for episode {$episodeId}");
+        }
+
+        return $response->json() ?? [];
+    }
+
+    /**
+     * Fetch single card details
+     */
+    public function getCard(string $cardId): ?array
+    {
+        $response = Http::timeout($this->timeout)
+            ->withHeaders($this->getHeaders())
+            ->get("{$this->baseUrl}/{$this->game}/cards/{$cardId}");
+
+        if (!$response->successful()) {
+            Log::warning("CMAPI getCard failed: {$response->status()}", [
+                'card_id' => $cardId,
+            ]);
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Normalize set/episode data for database
+     */
+    public function normalizeSet(array $episodeData): array
+    {
+        return [
+            'cmapi_id' => $episodeData['id'],
+            'name' => $episodeData['name'] ?? $episodeData['title'] ?? 'Unknown',
+            'code' => $episodeData['code'] ?? $episodeData['slug'] ?? null,
+            'logo_url' => $episodeData['logo_url'] ?? $episodeData['image_url'] ?? null,
+            'release_date' => $episodeData['release_date'] ?? $episodeData['released_at'] ?? null,
+            'card_count' => $episodeData['card_count'] ?? $episodeData['total_cards'] ?? null,
+            'raw' => $episodeData,
+        ];
+    }
+
+    /**
+     * Normalize card data for database
+     */
+    public function normalizeCard(array $cardData, int $setDbId): array
+    {
+        if (!$setDbId) {
+            throw new \Exception("Invalid set_id: cannot be null or 0");
+        }
+
+        // Extract pricing from nested structure
+        $priceEur = $this->extractPrice($cardData, 'cardmarket', 'lowest_near_mint');
+        $priceUsd = $this->extractPrice($cardData, 'tcg_player', 'market_price');
+
+        return [
+            'cmapi_id' => $cardData['id'],
+            'set_cmapi_id' => $setDbId,
+            'name' => $cardData['name'],
+            'number' => $cardData['number'] ?? $cardData['card_number'] ?? null,
+            'rarity' => $cardData['rarity'] ?? null,
+            'image_small_url' => $cardData['image_url'] ?? $cardData['images']['small'] ?? null,
+            'image_large_url' => $cardData['image_url_hires'] ?? $cardData['images']['large'] ?? null,
+            'price_eur' => $priceEur,
+            'price_usd' => $priceUsd,
+            'raw' => $cardData,
+        ];
+    }
+
+    /**
+     * Extract price from CMAPI nested pricing structure
+     * 
+     * Example structure:
+     * {
+     *   "prices": {
+     *     "cardmarket": {
+     *       "currency": "EUR",
+     *       "lowest_near_mint": 750,
+     *       "30d_average": 192.79
+     *     },
+     *     "tcg_player": {
+     *       "currency": "USD",
+     *       "market_price": 146.69
+     *     }
+     *   }
+     * }
+     */
+    protected function extractPrice(array $cardData, string $marketplace, string $priceKey): ?float
+    {
+        // Check nested prices structure
+        if (isset($cardData['prices'][$marketplace][$priceKey])) {
+            $price = $cardData['prices'][$marketplace][$priceKey];
+            // CMAPI returns prices in cents, convert to decimal
+            return $price ? round($price / 100, 2) : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get RapidAPI headers
+     */
+    protected function getHeaders(): array
+    {
+        return [
+            'Accept' => 'application/json',
+            'X-RapidAPI-Key' => $this->rapidApiKey,
+            'X-RapidAPI-Host' => $this->rapidApiHost,
+        ];
+    }
+}
+```
+
 **Checklist**:
 - [ ] Create `app/Services/{Backend}/` directory
 - [ ] Create {Backend}Client class
@@ -1019,10 +1241,38 @@ return [
 ];
 ```
 
+#### CardMarket API Config Example (for Lorcana/One Piece):
+
+```php
+// config/cmapi.php
+
+<?php
+
+return [
+    'base_url' => env('CMAPI_BASE_URL', 'https://cardmarket-api-tcg.p.rapidapi.com'),
+    'timeout' => env('CMAPI_TIMEOUT', 30),
+    'retry_count' => env('CMAPI_RETRY_COUNT', 3),
+    'retry_sleep_ms' => env('CMAPI_RETRY_SLEEP_MS', 1000),
+    
+    // RapidAPI authentication
+    'rapidapi_key' => env('CMAPI_RAPIDAPI_KEY'),
+    'rapidapi_host' => env('CMAPI_RAPIDAPI_HOST', 'cardmarket-api-tcg.p.rapidapi.com'),
+    
+    // Rate limiting (Free tier: 100 req/day, 30 req/min)
+    'rate_limit_per_minute' => env('CMAPI_RATE_LIMIT_PER_MINUTE', 30),
+];
+```
+
 **Add to .env**:
 ```env
 {BACKEND_UPPERCASE}_BASE_URL=https://api.example.com
 {BACKEND_UPPERCASE}_API_KEY=your_key_here
+
+# For CardMarket API via RapidAPI (Lorcana, One Piece):
+CMAPI_BASE_URL=https://cardmarket-api-tcg.p.rapidapi.com
+CMAPI_RAPIDAPI_KEY=your_rapidapi_key_here
+CMAPI_RAPIDAPI_HOST=cardmarket-api-tcg.p.rapidapi.com
+CMAPI_TIMEOUT=30
 ```
 
 **Checklist**:
@@ -1854,6 +2104,410 @@ When encountering issues, check:
 4. **Model relationships**: `php artisan tinker` → test relationships
 5. **Routes**: `php artisan route:list`
 6. **Translations**: Verify keys exist in all language files
+
+---
+
+## 💰 Phase 12: Currency Conversion & Price Visibility
+
+### Overview
+
+Basecard has a subscription-based pricing model with different price visibility rules:
+- **Free**: Can see individual card prices in original currency (EUR/USD)
+- **Advanced/Premium**: See prices converted to their preferred currency
+
+### 12.1 Prerequisites
+
+**Existing Infrastructure**:
+- `User.preferred_currency` column (EUR, USD, GBP, DKK, etc.)
+- `App\Services\CurrencyService` with conversion rates
+- `User::isAdvanced()` and `User::isPremium()` helper methods
+
+**Checklist**:
+- [ ] Verify CurrencyService exists with latest exchange rates
+- [ ] Test User tier detection methods work
+
+---
+
+### 12.2 Create Price Display Partial
+
+**File**: `resources/views/{backend}/cards/partials/prices.blade.php`
+
+```php
+{{--
+    Card Prices Partial for {BACKEND}
+    
+    Props:
+    - $card: Card model instance with price_eur/price_usd
+    - $size: 'large'|'small' (optional, default 'large')
+--}}
+
+@php
+    $user = auth()->user();
+    $canSeePrices = $user && ($user->isAdvanced() || $user->isPremium());
+    $preferredCurrency = $canSeePrices && $user ? ($user->preferred_currency ?? 'EUR') : 'EUR';
+    $needsConversion = $preferredCurrency && $preferredCurrency !== 'EUR';
+    $size = $size ?? 'large';
+    $isLarge = $size === 'large';
+@endphp
+
+@if($card->price_eur || $card->price_usd)
+    <div class="space-y-3">
+        {{-- EUR Price (CardMarket) --}}
+        @if($card->price_eur)
+        <div class="flex justify-between items-center py-3 border-b border-white/10">
+            <span class="{{ $isLarge ? 'text-sm' : 'text-xs' }} font-medium text-gray-400">
+                CardMarket
+            </span>
+            @if($canSeePrices && $needsConversion)
+                @php
+                    $convertedPrice = \App\Services\CurrencyService::convert(
+                        $card->price_eur, 
+                        'EUR', 
+                        $preferredCurrency
+                    );
+                    $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                @endphp
+                <div class="text-right">
+                    <div class="{{ $isLarge ? 'text-2xl' : 'text-lg' }} font-bold text-green-400">
+                        {{ $symbol }}{{ number_format($convertedPrice, 2) }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        (€{{ number_format($card->price_eur, 2) }})
+                    </div>
+                </div>
+            @else
+                <span class="{{ $isLarge ? 'text-2xl' : 'text-lg' }} font-bold text-green-400">
+                    €{{ number_format($card->price_eur, 2) }}
+                </span>
+            @endif
+        </div>
+        @endif
+        
+        {{-- USD Price (TCGPlayer) --}}
+        @if($card->price_usd)
+        <div class="flex justify-between items-center py-3 border-b border-white/10">
+            <span class="{{ $isLarge ? 'text-sm' : 'text-xs' }} font-medium text-gray-400">
+                TCGPlayer
+            </span>
+            @if($canSeePrices && $needsConversion && $preferredCurrency !== 'USD')
+                @php
+                    $convertedPrice = \App\Services\CurrencyService::convert(
+                        $card->price_usd, 
+                        'USD', 
+                        $preferredCurrency
+                    );
+                    $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
+                @endphp
+                <div class="text-right">
+                    <div class="{{ $isLarge ? 'text-2xl' : 'text-lg' }} font-bold text-blue-400">
+                        {{ $symbol }}{{ number_format($convertedPrice, 2) }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        (${{ number_format($card->price_usd, 2) }})
+                    </div>
+                </div>
+            @else
+                <span class="{{ $isLarge ? 'text-2xl' : 'text-lg' }} font-bold text-blue-400">
+                    ${{ number_format($card->price_usd, 2) }}
+                </span>
+            @endif
+        </div>
+        @endif
+        
+        <div class="text-xs text-gray-500 mt-4">
+            Prices from CardMarket API
+            @if($canSeePrices && $needsConversion)
+                <br>Converted to {{ $preferredCurrency }} (original price shown below)
+            @endif
+        </div>
+    </div>
+@else
+    <div class="text-sm text-gray-400 text-center py-4">
+        No price data available
+    </div>
+@endif
+```
+
+**Checklist**:
+- [ ] Create partial file
+- [ ] Test with Free user (sees only EUR/USD)
+- [ ] Test with Advanced user with preferred_currency = DKK (sees converted price)
+
+---
+
+### 12.3 Update Card Detail View
+
+**File**: `resources/views/{backend}/cards/show.blade.php`
+
+Replace inline price display with partial:
+
+```php
+<!-- Pricing Information -->
+<div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
+    <h2 class="text-xl font-bold text-white mb-4">Market Prices</h2>
+    @include('{backend}.cards.partials.prices', ['card' => $card, 'size' => 'large'])
+</div>
+```
+
+**Checklist**:
+- [ ] Replace inline price code with include
+- [ ] Verify page still renders correctly
+- [ ] Test with both user types
+
+---
+
+### 12.4 Add Price Display in Card Grid (Sets List)
+
+**File**: `resources/views/{backend}/sets/show.blade.php`
+
+Add JavaScript currency conversion for AJAX-loaded cards:
+
+```javascript
+<script>
+// User preferences for price display
+@php
+    $user = auth()->user();
+    $canSeePrices = $user && ($user->isAdvanced() || $user->isPremium());
+    $preferredCurrency = $canSeePrices && $user ? ($user->preferred_currency ?? 'EUR') : 'EUR';
+@endphp
+const userCanSeePrices = {{ $canSeePrices ? 'true' : 'false' }};
+const preferredCurrency = '{{ $preferredCurrency }}';
+
+// Exchange rates (mirror of CurrencyService)
+const exchangeRates = {
+    'EUR': 1.0,
+    'USD': 1.05,
+    'GBP': 0.85,
+    'DKK': 7.46,
+    'SEK': 11.20,
+    'NOK': 11.50,
+    'CHF': 0.95,
+    'JPY': 155.0,
+    'CAD': 1.45,
+    'AUD': 1.65,
+};
+
+const currencySymbols = {
+    'EUR': '€',
+    'USD': '$',
+    'GBP': '£',
+    'DKK': 'kr',
+    'SEK': 'kr',
+    'NOK': 'kr',
+    'CHF': 'CHF',
+    'JPY': '¥',
+    'CAD': 'C$',
+    'AUD': 'A$',
+};
+
+function convertPrice(amount, from, to) {
+    if (from === to) return amount;
+    const amountInEur = amount / exchangeRates[from];
+    return amountInEur * exchangeRates[to];
+}
+
+function formatPrice(amount, currency) {
+    const symbol = currencySymbols[currency] || currency;
+    const formatted = amount.toFixed(2);
+    
+    // Symbol before for most currencies
+    if (['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'].includes(currency)) {
+        return `${symbol}${formatted}`;
+    }
+    // Symbol after for Nordic currencies
+    return `${formatted} ${symbol}`;
+}
+
+function createCardElement(card) {
+    // ... existing image/badge code ...
+    
+    // Price display (only for Advanced/Premium users)
+    let priceHtml = '';
+    if (userCanSeePrices && card.price_eur) {
+        let displayPrice = card.price_eur;
+        let displayCurrency = 'EUR';
+        
+        if (preferredCurrency !== 'EUR') {
+            displayPrice = convertPrice(card.price_eur, 'EUR', preferredCurrency);
+            displayCurrency = preferredCurrency;
+        }
+        
+        priceHtml = `
+            <div class="text-xs font-semibold text-green-400 mt-1">
+                ${formatPrice(displayPrice, displayCurrency)}
+            </div>
+        `;
+    }
+    
+    return `
+        <a href="/{game}/cards/${card.id}" class="block group">
+            <div class="bg-black/50 border border-white/20 rounded-lg overflow-hidden hover:border-blue-400 transition shadow-lg relative">
+                <!-- Card image, name, etc -->
+                <div class="p-2">
+                    <div class="text-sm font-semibold text-white truncate">
+                        ${card.name}
+                    </div>
+                    ${priceHtml}
+                </div>
+            </div>
+        </a>
+    `;
+}
+</script>
+```
+
+**Checklist**:
+- [ ] Add user preferences to JavaScript
+- [ ] Implement price conversion functions
+- [ ] Update card element creation to include price
+- [ ] Verify Free users don't see prices in grid
+- [ ] Verify Advanced/Premium users see converted prices
+
+---
+
+### 12.5 Testing Scenarios
+
+**Test Case 1: Free User**
+```bash
+# Set user to Free tier
+php artisan tinker
+>>> $user = User::find(1);
+>>> $user->organization_id = null; // Free tier
+>>> $user->save();
+```
+
+Expected:
+- Card detail page: Shows EUR price as-is (€0.03)
+- Card grid: No prices displayed
+- No conversion happens
+
+**Test Case 2: Advanced User with DKK**
+```bash
+php artisan tinker
+>>> $user = User::find(1);
+>>> $org = Organization::first();
+>>> $org->pricing_plan_id = PricingPlan::where('code', 'advanced')->first()->id;
+>>> $org->save();
+>>> $user->organization_id = $org->id;
+>>> $user->preferred_currency = 'DKK';
+>>> $user->save();
+```
+
+Expected:
+- Card detail page: Shows "0.22 kr (€0.03)"
+- Card grid: Shows "0.22 kr" on each card
+- Conversion: 0.03 EUR × 7.46 = 0.22 DKK
+
+**Test Case 3: Premium User with USD**
+```bash
+php artisan tinker
+>>> $user = User::find(1);
+>>> $user->preferred_currency = 'USD';
+>>> $user->save();
+```
+
+Expected:
+- Card detail page: Shows "$0.03 (€0.03)" [almost same due to 1.05 rate]
+- Card grid: Shows "$0.03" on each card
+
+---
+
+### 12.6 Checklist
+
+- [ ] Create price partial for card detail
+- [ ] Update card detail view to use partial
+- [ ] Add JavaScript conversion for card grids
+- [ ] Test with Free user (no conversion, grid has no prices)
+- [ ] Test with Advanced user + DKK (sees converted prices)
+- [ ] Test with Premium user + USD (sees USD conversion)
+- [ ] Verify original price shown in parentheses
+- [ ] Check performance (conversions are cheap calculations)
+
+---
+
+## 🎴 Appendix A: Lorcana Implementation (CardMarket API)
+
+### Quick Start for Lorcana
+
+**Backend name**: `cmapi` (CardMarket API)  
+**Game slug**: `lorcana`  
+**API**: https://rapidapi.com/tcggopro/api/cardmarket-api-tcg
+
+### Key Differences from TCGDEX:
+
+1. **API Terminology**:
+   - Sets = "Episodes" (endpoint: `/lorcana/episodes`)
+   - Cards endpoint: `/lorcana/episodes/{id}/cards`
+
+2. **Pricing Structure**:
+   ```json
+   {
+     "prices": {
+       "cardmarket": {
+         "currency": "EUR",
+         "lowest_near_mint": 750,  // In CENTS
+         "30d_average": 192.79,
+         "graded": {
+           "psa": { "psa10": 279 }
+         }
+       },
+       "tcg_player": {
+         "currency": "USD",
+         "market_price": 146.69  // In CENTS
+       }
+     }
+   }
+   ```
+   **Important**: Prices are in cents, divide by 100!
+
+3. **Additional Migration Columns for Lorcana**:
+   ```php
+   // Add to cmapi_cards migration
+   $table->integer('ink_cost')->nullable();
+   $table->string('card_type')->nullable(); // Character, Action, Item, Location
+   $table->integer('lore_value')->nullable();
+   $table->string('ink_color')->nullable(); // Amber, Amethyst, Emerald, Ruby, Sapphire, Steel
+   ```
+
+4. **Rate Limits** (Plan accordingly):
+   - Free: 100 req/day, 30 req/min → For testing only
+   - Pro ($9.90/mo): 3,000 req/day → Good for daily imports
+   - Ultra ($24.90/mo): 15,000 req/day → Full initial import
+
+5. **Sample Commands**:
+   ```bash
+   # Initial import
+   php artisan cmapi:import --game=lorcana
+   
+   # Import single set
+   php artisan cmapi:import --game=lorcana --episode=1
+   
+   # Cards only (after sets exist)
+   php artisan cmapi:import --game=lorcana --cards-only
+   ```
+
+### Reusable for One Piece
+
+The same `CmapiClient` can handle One Piece:
+```php
+// Just change game parameter
+$client = new CmapiClient('onepiece');
+```
+
+### Example Integration Code
+
+```php
+// config/cmapi.php - Already created above
+
+// app/Services/Cmapi/CmapiClient.php - See template in Phase 3
+
+// app/Console/Commands/CmapiImportCommand.php
+protected $signature = 'cmapi:import 
+                        {--game=lorcana : Game to import (lorcana, onepiece)}
+                        {--episode= : Import single episode/set}
+                        {--cards-only : Import only cards}
+                        {--fresh : Truncate tables}';
+```
 
 ---
 

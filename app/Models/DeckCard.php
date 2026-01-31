@@ -11,6 +11,7 @@ class DeckCard extends Model
         'deck_id',
         'product_id',
         'tcgdex_card_id',
+        'cmapi_card_id',
         'quantity',
     ];
 
@@ -40,5 +41,13 @@ class DeckCard extends Model
     public function tcgdexCard(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Tcgdx\TcgdxCard::class, 'tcgdex_card_id');
+    }
+
+    /**
+     * Get the card from CMAPI cards (Lorcana, One Piece)
+     */
+    public function cmapiCard(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Cmapi\CmapiCard::class, 'cmapi_card_id', 'cmapi_id');
     }
 }

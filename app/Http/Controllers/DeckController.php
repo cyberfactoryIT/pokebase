@@ -282,6 +282,63 @@ class DeckController extends Controller
     }
 
     /**
+     * Add a CMAPI card (Lorcana/One Piece) to deck
+     */
+    public function addCardCmapi(Request $request, Deck $deck): RedirectResponse
+    {
+        // Authorization check
+        if ($deck->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to this deck.');
+        }
+
+        $validated = $request->validate([
+            'cmapi_card_id' => 'required|string|max:100|exists:cmapi_cards,cmapi_id',
+            'quantity' => 'nullable|integer|min:1|max:4',
+        ]);
+
+        $user = Auth::user();
+        $quantityToAdd = $validated['quantity'] ?? 1;
+        
+        // Check if card already in deck - if so, we only add the difference
+        $existingCard = DeckCard::where('deck_id', $deck->id)
+            ->where('cmapi_card_id', $validated['cmapi_card_id'])
+            ->first();
+
+        $actualAmountToAdd = $quantityToAdd;
+        if ($existingCard) {
+            // We're incrementing, so only count the new quantity
+            $actualAmountToAdd = $quantityToAdd; // The increment amount
+        }
+
+        // Check card limit
+        if (!\Gate::forUser($user)->allows('addCards', $actualAmountToAdd)) {
+            $limit = $user->cardLimit();
+            $currentUsage = $user->currentCardUsage();
+            
+            return back()->with('error', __('limits.cards.reached.title'))
+                ->with('error_detail', __('limits.cards.reached.body_adding', [
+                    'amount' => $actualAmountToAdd,
+                    'limit' => $limit,
+                    'used' => $currentUsage,
+                ]));
+        }
+        
+        if ($existingCard) {
+            $existingCard->increment('quantity', $quantityToAdd);
+            $message = 'Card quantity updated in deck!';
+        } else {
+            DeckCard::create([
+                'deck_id' => $deck->id,
+                'cmapi_card_id' => $validated['cmapi_card_id'],
+                'quantity' => $quantityToAdd,
+            ]);
+            $message = 'Card added to deck!';
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
      * Remove a card from the deck
      */
     public function removeCard(Deck $deck, DeckCard $deckCard): RedirectResponse

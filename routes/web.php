@@ -100,6 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('decks', \App\Http\Controllers\DeckController::class);
     Route::post('decks/{deck}/cards', [\App\Http\Controllers\DeckController::class, 'addCard'])->name('decks.cards.add');
     Route::post('decks/{deck}/cards/tcgdex', [\App\Http\Controllers\DeckController::class, 'addCardTcgdex'])->name('decks.cards.add.tcgdex');
+    Route::post('decks/{deck}/cards/cmapi', [\App\Http\Controllers\DeckController::class, 'addCardCmapi'])->name('decks.cards.add.cmapi');
     Route::delete('decks/{deck}/cards/{deckCard}', [\App\Http\Controllers\DeckController::class, 'removeCard'])->name('decks.cards.remove');
     Route::patch('decks/{deck}/cards/{deckCard}/quantity', [\App\Http\Controllers\DeckController::class, 'updateCardQuantity'])->name('decks.cards.updateQuantity');
     
@@ -111,6 +112,7 @@ Route::middleware('auth')->group(function () {
     Route::get('collection', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collection.index');
     Route::post('collection/add', [\App\Http\Controllers\CollectionController::class, 'add'])->name('collection.add');
     Route::post('collection/add/tcgdex', [\App\Http\Controllers\CollectionController::class, 'addTcgdex'])->name('collection.add.tcgdex');
+    Route::post('collection/add/cmapi', [\App\Http\Controllers\CollectionController::class, 'addCmapi'])->name('collection.add.cmapi');
     Route::post('collection/quick-add', [\App\Http\Controllers\CollectionController::class, 'quickAdd'])->name('collection.quick-add');
     Route::delete('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'remove'])->name('collection.remove');
     Route::patch('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'update'])->name('collection.update');
@@ -266,6 +268,18 @@ Route::prefix('tcgdex')->group(function () {
     
     // Cards
     Route::get('/cards/{cardId}', [\App\Http\Controllers\TcgdxCardController::class, 'show'])->name('tcgdex.cards.show');
+});
+
+// CMAPI Browsing Routes (Lorcana, One Piece)
+Route::prefix('{game}')->whereIn('game', ['lorcana', 'onepiece'])->group(function () {
+    // Sets
+    Route::get('/sets', [\App\Http\Controllers\CmapiSetController::class, 'index'])->name('cmapi.sets.index');
+    Route::get('/sets/search', [\App\Http\Controllers\CmapiSetController::class, 'search'])->name('cmapi.sets.search');
+    Route::get('/sets/{episode}', [\App\Http\Controllers\CmapiSetController::class, 'show'])->name('cmapi.sets.show');
+    Route::get('/sets/{episode}/cards/search', [\App\Http\Controllers\CmapiSetController::class, 'cardsSearch'])->name('cmapi.sets.cards.search');
+    
+    // Cards
+    Route::get('/cards/{cardId}', [\App\Http\Controllers\CmapiSetController::class, 'showCard'])->name('cmapi.cards.show');
 });
 
 // Pokemon Deck Valuation Flow (guest lead capture)

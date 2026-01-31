@@ -501,6 +501,62 @@ class CollectionController extends Controller
     }
 
     /**
+     * Add a CMAPI card (Lorcana/One Piece) to user's collection
+     */
+    public function addCmapi(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'cmapi_card_id' => 'required|string|max:100|exists:cmapi_cards,cmapi_id',
+            'quantity' => 'nullable|integer|min:1|max:99',
+            'condition' => 'nullable|string|in:mint,near_mint,excellent,good,light_played,played,poor',
+            'is_foil' => 'nullable|boolean',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $user = Auth::user();
+        $quantityToAdd = $validated['quantity'] ?? 1;
+
+        // Check card limit
+        if (!\Gate::forUser($user)->allows('addCards', $quantityToAdd)) {
+            $limit = $user->cardLimit();
+            $currentUsage = $user->currentCardUsage();
+            
+            return back()->with('error', __('limits.cards.reached.title'))
+                ->with('error_detail', __('limits.cards.reached.body_adding', [
+                    'amount' => $quantityToAdd,
+                    'limit' => $limit,
+                    'used' => $currentUsage,
+                ]));
+        }
+
+        // Check if card already exists with same condition/foil
+        $existing = UserCollection::where('user_id', Auth::id())
+            ->where('cmapi_card_id', $validated['cmapi_card_id'])
+            ->where('condition', $validated['condition'] ?? null)
+            ->where('is_foil', $validated['is_foil'] ?? false)
+            ->first();
+
+        if ($existing) {
+            // Increment quantity
+            $existing->increment('quantity', $quantityToAdd);
+            $message = 'Card quantity updated in your collection!';
+        } else {
+            // Create new entry
+            UserCollection::create([
+                'user_id' => Auth::id(),
+                'cmapi_card_id' => $validated['cmapi_card_id'],
+                'quantity' => $validated['quantity'] ?? 1,
+                'condition' => $validated['condition'] ?? null,
+                'is_foil' => $validated['is_foil'] ?? false,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+            $message = 'Card added to your collection!';
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
      * Remove a card from collection
      */
     public function remove($id): RedirectResponse
