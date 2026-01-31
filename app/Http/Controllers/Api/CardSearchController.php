@@ -193,15 +193,16 @@ class CardSearchController extends Controller
         }
         
         // Search by name OR card_number OR tcgdex_id
+        // For JSON name field, extract English name for searching
         $results->where(function($q) use ($escapedQuery) {
-                $q->where('tcgdx_cards.name', 'LIKE', "%{$escapedQuery}%")
+                $q->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) LIKE ?', ["%{$escapedQuery}%"])
                   ->orWhere('tcgdx_cards.local_id', 'LIKE', "%{$escapedQuery}%")
                   ->orWhere('tcgdx_cards.tcgdex_id', 'LIKE', "%{$escapedQuery}%");
             })
             ->orderByRaw(
                 'CASE 
                     WHEN tcgdx_cards.local_id = ? THEN 0
-                    WHEN tcgdx_cards.name LIKE ? THEN 1 
+                    WHEN JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) LIKE ? THEN 1 
                     WHEN tcgdx_cards.local_id LIKE ? THEN 2
                     ELSE 3 
                 END',
