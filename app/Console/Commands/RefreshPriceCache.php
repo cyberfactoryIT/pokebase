@@ -204,6 +204,7 @@ class RefreshPriceCache extends Command
     
     /**
      * Get price from TCGDEX card data
+     * Note: USD and EUR are different markets (TCGPlayer vs Cardmarket) - no conversion
      */
     private function getTcgdexPrice($card, string $currency): ?array
     {
@@ -221,40 +222,22 @@ class RefreshPriceCache extends Command
             }
         }
         
-        // Return price in requested currency
-        if ($currency === 'USD') {
-            if ($priceUsd !== null) {
-                return [
-                    'amount' => round($priceUsd, 2),
-                    'currency' => 'USD',
-                ];
-            }
-            
-            // Convert EUR to USD if USD not available
-            if ($priceEur !== null) {
-                return [
-                    'amount' => round($priceEur * 1.10, 2),
-                    'currency' => 'USD',
-                ];
-            }
-        } else {
-            // EUR requested
-            if ($priceEur !== null) {
-                return [
-                    'amount' => round($priceEur, 2),
-                    'currency' => 'EUR',
-                ];
-            }
-            
-            // Convert USD to EUR if EUR not available
-            if ($priceUsd !== null) {
-                return [
-                    'amount' => round($priceUsd / 1.10, 2),
-                    'currency' => 'EUR',
-                ];
-            }
+        // Return price in requested currency (no conversion between markets)
+        if ($currency === 'USD' && $priceUsd !== null) {
+            return [
+                'amount' => round($priceUsd, 2),
+                'currency' => 'USD',
+            ];
         }
         
+        if ($currency === 'EUR' && $priceEur !== null) {
+            return [
+                'amount' => round($priceEur, 2),
+                'currency' => 'EUR',
+            ];
+        }
+        
+        // No price available for requested market
         return null;
     }
     
