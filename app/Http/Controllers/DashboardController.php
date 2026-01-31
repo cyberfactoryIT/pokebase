@@ -53,8 +53,11 @@ class DashboardController extends Controller
         
         // Get counts filtered by current game and catalog backend
         if ($catalogBackend === 'tcgdex') {
-            $cardsCount = \App\Models\Tcgdx\TcgdxCard::count();
-            $expansionsCount = \App\Models\Tcgdx\TcgdxSet::count();
+            // For TCGDEX, filter by game_id via set relationship
+            $cardsCount = \App\Models\Tcgdx\TcgdxCard::whereHas('set', function($q) use ($currentGame) {
+                $q->where('game_id', $currentGame->id);
+            })->count();
+            $expansionsCount = \App\Models\Tcgdx\TcgdxSet::where('game_id', $currentGame->id)->count();
         } else {
             $cardsCount = TcgcsvProduct::where('game_id', $currentGame->id)->count();
             $expansionsCount = TcgcsvGroup::where('game_id', $currentGame->id)->count();
@@ -260,7 +263,8 @@ class DashboardController extends Controller
                 ->get();
             
             // Featured expansions for carousel
-            $featuredExpansions = TcgdxSet::orderBy('release_date', 'desc')
+            $featuredExpansions = TcgdxSet::where('game_id', $currentGame->id)
+                ->orderBy('release_date', 'desc')
                 ->limit(6)
                 ->get();
         } else {

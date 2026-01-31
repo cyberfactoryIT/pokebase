@@ -29,7 +29,11 @@ class TcgdxSetController extends Controller
             'series' => 'nullable|string',
         ]);
 
-        $query = TcgdxSet::query()->withCount('cards');
+        $currentGame = $request->attributes->get('currentGame');
+        
+        $query = TcgdxSet::query()
+            ->where('game_id', $currentGame->id)
+            ->withCount('cards');
 
         $tab = $validated['tab'] ?? 'all';
 

@@ -150,6 +150,9 @@ class TcgdxClient
      */
     public function normalizeSet(array $setData): array
     {
+        // Get Pokemon game ID (TCGDEX is Pokemon-only for now)
+        $pokemonGameId = \DB::table('games')->where('code', 'pokemon')->value('id') ?? 1;
+        
         return [
             'tcgdex_id' => $setData['id'] ?? null,
             'name' => $this->extractName($setData),
@@ -159,6 +162,7 @@ class TcgdxClient
             'release_date' => $setData['releaseDate'] ?? null,
             'card_count_total' => $setData['cardCount']['total'] ?? null,
             'card_count_official' => $setData['cardCount']['official'] ?? null,
+            'game_id' => $pokemonGameId,
             'raw' => $setData,
         ];
     }
