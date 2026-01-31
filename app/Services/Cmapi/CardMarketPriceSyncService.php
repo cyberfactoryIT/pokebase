@@ -34,10 +34,10 @@ class CardMarketPriceSyncService
 
         // Step 1: Download and import products
         $productsUrl = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_{$gameId}.json";
-        $products = $this->downloadJson($productsUrl);
+        $productsData = $this->downloadJson($productsUrl);
         
-        if ($products) {
-            $stats['products_imported'] = $this->importProducts($game, $products);
+        if ($productsData && isset($productsData['products'])) {
+            $stats['products_imported'] = $this->importProducts($game, $productsData['products']);
         } else {
             Log::error("Failed to download products from {$productsUrl}");
             $stats['errors']++;
@@ -45,10 +45,10 @@ class CardMarketPriceSyncService
 
         // Step 2: Download and import prices
         $pricesUrl = "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_{$gameId}.json";
-        $prices = $this->downloadJson($pricesUrl);
+        $pricesData = $this->downloadJson($pricesUrl);
         
-        if ($prices) {
-            $stats['prices_imported'] = $this->importPrices($game, $prices);
+        if ($pricesData && isset($pricesData['priceGuides'])) {
+            $stats['prices_imported'] = $this->importPrices($game, $pricesData['priceGuides']);
         } else {
             Log::error("Failed to download prices from {$pricesUrl}");
             $stats['errors']++;
@@ -91,16 +91,18 @@ class CardMarketPriceSyncService
         $batch = [];
 
         foreach ($products as $product) {
-            // Skip non-single products (sealed, etc)
-            if (isset($product['categoryId']) && $product['categoryId'] != 1) {
+            // Skip non-array items (metadata, etc)
+            if (!is_array($product)) {
                 continue;
             }
+            
+            // We don't filter by categoryId here - just import all products from singles file
 
             $batch[] = [
                 'cardmarket_id' => (string)$product['idProduct'],
                 'game' => $game,
-                'name' => $product['enName'] ?? $product['locName'] ?? 'Unknown',
-                'set_name' => $product['expansionName'] ?? null,
+                'name' => $product['name'] ?? 'Unknown',
+                'set_name' => $product['expansionName'] ?? $product['categoryName'] ?? null,
                 'number' => $product['number'] ?? null,
                 'rarity' => $product['rarity'] ?? null,
                 'language' => null, // Products file doesn't have language

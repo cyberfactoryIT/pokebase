@@ -21,7 +21,7 @@ log "========================================="
 
 # Step 1: Import Lorcana cards from RapidAPI (CMAPI)
 log "Step 1: Importing Lorcana card data from RapidAPI..."
-if php84 artisan cmapi:import --game=lorcana >> "$LOG_FILE" 2>&1; then
+if php artisan cmapi:import --game=lorcana >> "$LOG_FILE" 2>&1; then
     log "✅ RapidAPI import complete"
 else
     log "❌ RapidAPI import failed"
@@ -31,7 +31,7 @@ fi
 # Step 2: Download products and prices from CardMarket S3
 log ""
 log "Step 2: Downloading CardMarket data from S3..."
-if php84 artisan cardmarket:sync-prices --game=lorcana >> "$LOG_FILE" 2>&1; then
+if php artisan cardmarket:sync-prices --game=lorcana >> "$LOG_FILE" 2>&1; then
     log "✅ CardMarket S3 download complete"
 else
     log "❌ CardMarket S3 download failed"
@@ -41,7 +41,7 @@ fi
 # Step 3: Promote CardMarket staging to production (update price history)
 log ""
 log "Step 3: Promoting CardMarket prices to production..."
-if php84 artisan cardmarket:sync-prices --game=lorcana --promote >> "$LOG_FILE" 2>&1; then
+if php artisan cardmarket:sync-prices --game=lorcana --promote >> "$LOG_FILE" 2>&1; then
     log "✅ Price promotion complete"
 else
     log "❌ Price promotion failed"
@@ -51,7 +51,7 @@ fi
 # Step 4: Clean old CardMarket staging data (>7 days)
 log ""
 log "Step 4: Cleaning old staging data..."
-if php84 artisan cardmarket:sync-prices --game=lorcana --clean >> "$LOG_FILE" 2>&1; then
+if php artisan cardmarket:sync-prices --game=lorcana --clean >> "$LOG_FILE" 2>&1; then
     log "✅ Staging cleanup complete"
 else
     log "⚠️  Staging cleanup failed (non-critical)"
@@ -60,8 +60,8 @@ fi
 # Step 5: Generate daily statistics
 log ""
 log "Step 5: Generating statistics..."
-CARD_COUNT=$(php84 artisan tinker --execute="echo App\Models\Cmapi\CmapiCard::where('game', 'lorcana')->count();" 2>/dev/null | tail -1)
-PRICE_HISTORY_COUNT=$(php84 artisan tinker --execute="echo DB::table('cmapi_price_history')->whereIn('cmapi_card_id', App\Models\Cmapi\CmapiCard::where('game', 'lorcana')->pluck('id'))->count();" 2>/dev/null | tail -1)
+CARD_COUNT=$(php artisan tinker --execute="echo App\Models\Cmapi\CmapiCard::where('game', 'lorcana')->count();" 2>/dev/null | tail -1)
+PRICE_HISTORY_COUNT=$(php artisan tinker --execute="echo DB::table('cmapi_price_history')->whereIn('cmapi_card_id', App\Models\Cmapi\CmapiCard::where('game', 'lorcana')->pluck('id'))->count();" 2>/dev/null | tail -1)
 
 log "📊 Statistics:"
 log "   Total Lorcana cards: ${CARD_COUNT}"
