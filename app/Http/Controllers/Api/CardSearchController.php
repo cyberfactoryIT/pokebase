@@ -97,6 +97,7 @@ class CardSearchController extends Controller
                 'tcgcsv_products.card_number',
                 'tcgcsv_products.group_id',
                 'tcgcsv_groups.name as group_name',
+                'tcgcsv_groups.abbreviation as group_code',
                 'tcgcsv_groups.published_on as group_published_on',
                 'tcgcsv_products.image_url',
             ])
@@ -118,19 +119,27 @@ class CardSearchController extends Controller
             });
         }
         
-        // Search by name OR card_number
+        // Search by:
+        // - Card name
+        // - Card number (like "1/102", "001")
+        // - Set abbreviation (like "BS", "SSH")
+        // - Set name
         $results->where(function($q) use ($escapedQuery) {
                 $q->where('tcgcsv_products.name', 'LIKE', "%{$escapedQuery}%")
-                  ->orWhere('tcgcsv_products.card_number', 'LIKE', "%{$escapedQuery}%");
+                  ->orWhere('tcgcsv_products.card_number', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('tcgcsv_groups.abbreviation', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('tcgcsv_groups.name', 'LIKE', "%{$escapedQuery}%");
             })
             ->orderByRaw(
                 'CASE 
                     WHEN tcgcsv_products.card_number = ? THEN 0
-                    WHEN tcgcsv_products.name LIKE ? THEN 1 
-                    WHEN tcgcsv_products.card_number LIKE ? THEN 2
-                    ELSE 3 
+                    WHEN tcgcsv_groups.abbreviation = ? THEN 1
+                    WHEN tcgcsv_products.name LIKE ? THEN 2 
+                    WHEN tcgcsv_products.card_number LIKE ? THEN 3
+                    WHEN tcgcsv_groups.name LIKE ? THEN 4
+                    ELSE 5 
                 END',
-                [$escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%"]
+                [$escapedQuery, $escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%", "{$escapedQuery}%"]
             )
             ->orderByRaw('tcgcsv_groups.published_on IS NULL')
             ->orderBy('tcgcsv_groups.published_on', 'DESC')
@@ -148,6 +157,7 @@ class CardSearchController extends Controller
                 'name' => $card->name,
                 'card_number' => $card->card_number,
                 'group_id' => $card->group_id,
+                'group_code' => $card->group_code,
                 'set_name' => $card->group_name,
                 'group_name' => $card->group_name,
                 'group_published_on' => $card->group_published_on 
@@ -177,6 +187,7 @@ class CardSearchController extends Controller
                 'tcgdx_cards.local_id as card_number',
                 'tcgdx_cards.set_tcgdx_id',
                 'tcgdx_sets.name as set_name',
+                'tcgdx_sets.tcgdex_id as set_code',
                 'tcgdx_cards.image_small_url as image_url',
             ])
             ->leftJoin('tcgdx_sets', 'tcgdx_cards.set_tcgdx_id', '=', 'tcgdx_sets.id');
@@ -192,21 +203,29 @@ class CardSearchController extends Controller
             });
         }
         
-        // Search by name OR card_number OR tcgdex_id
-        // For JSON name field, extract English name for searching
+        // Search by:
+        // - Card name (English from JSON)
+        // - Card number (local_id like "1", "001") 
+        // - Full card ID (tcgdex_id like "base1-1")
+        // - Set code (tcgdex_sets.tcgdex_id like "base1", "swsh1")
+        // - Set name (English from JSON)
         $results->where(function($q) use ($escapedQuery) {
                 $q->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) LIKE ?', ["%{$escapedQuery}%"])
                   ->orWhere('tcgdx_cards.local_id', 'LIKE', "%{$escapedQuery}%")
-                  ->orWhere('tcgdx_cards.tcgdex_id', 'LIKE', "%{$escapedQuery}%");
+                  ->orWhere('tcgdx_cards.tcgdex_id', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('tcgdx_sets.tcgdex_id', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhereRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en")) LIKE ?', ["%{$escapedQuery}%"]);
             })
             ->orderByRaw(
                 'CASE 
                     WHEN tcgdx_cards.local_id = ? THEN 0
-                    WHEN JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) LIKE ? THEN 1 
-                    WHEN tcgdx_cards.local_id LIKE ? THEN 2
-                    ELSE 3 
+                    WHEN tcgdx_sets.tcgdex_id = ? THEN 1
+                    WHEN JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) LIKE ? THEN 2 
+                    WHEN tcgdx_cards.local_id LIKE ? THEN 3
+                    WHEN JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en")) LIKE ? THEN 4
+                    ELSE 5 
                 END',
-                [$escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%"]
+                [$escapedQuery, $escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%", "{$escapedQuery}%"]
             )
             ->orderBy('tcgdx_cards.id', 'DESC')
             ->limit($limit);
@@ -235,6 +254,7 @@ class CardSearchController extends Controller
                 'product_id' => null, // Not applicable for TCGDEX
                 'name' => $nameEn,
                 'card_number' => $card->card_number,
+                'set_code' => $card->set_code,
                 'set_name' => $setNameEn,
                 'image_url' => $card->image_url ? $card->image_url . '/low.webp' : null,
             ];
