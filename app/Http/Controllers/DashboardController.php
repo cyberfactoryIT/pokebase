@@ -254,13 +254,13 @@ class DashboardController extends Controller
                 ->distinct()
                 ->pluck('tcgdx_cards.set_tcgdx_id');
             
-            $userExpansions = \App\Models\Tcgdx\TcgdxSet::whereIn('id', $userSetIds)
+            $userExpansions = TcgdxSet::whereIn('id', $userSetIds)
                 ->orderBy('release_date', 'desc')
                 ->limit(10)
                 ->get();
             
             // Featured expansions for carousel
-            $featuredExpansions = \App\Models\Tcgdx\TcgdxSet::orderBy('release_date', 'desc')
+            $featuredExpansions = TcgdxSet::orderBy('release_date', 'desc')
                 ->limit(6)
                 ->get();
         } else {

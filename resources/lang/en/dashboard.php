@@ -62,6 +62,7 @@ return [
     
     // Set Completion
     'set_completion' => 'Set Completion',
+    'missing_cards' => 'Missing Cards',
     'view_all_sets' => 'View all >>',
     'missing_cards_to_complete' => 'Missing Cards to Complete Set',
     'select_expansion' => 'Select an expansion',
@@ -69,6 +70,7 @@ return [
     'loading' => 'Loading',
     'select_expansion_to_view_missing' => 'Select an expansion to view missing cards',
     'select_set_to_view_missing' => 'Select a set to view missing cards',
+    'no_missing_cards' => 'No missing cards',
     'completion_progress' => 'Completion Progress',
     'owned' => 'owned',
     'total_cards' => 'total cards',

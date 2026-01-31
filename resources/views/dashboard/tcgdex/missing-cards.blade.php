@@ -38,13 +38,23 @@
     <!-- Missing Cards Results -->
     <div id="missingCardsResults" class="hidden mt-6">
         <div class="flex items-center justify-between mb-4">
-            <p class="text-gray-400">
-                <span id="missingCount" class="text-white font-semibold">0</span> {{ __('dashboard.cards_missing') }}
-            </p>
+            <div>
+                <p class="text-gray-400">
+                    <span id="missingCount" class="text-white font-semibold">0</span> {{ __('dashboard.missing_cards') }}
+                    <span id="missingValue" class="text-purple-400 font-semibold ml-2"></span>
+                </p>
+                <p class="text-gray-400 text-sm mt-1">
+                    <span class="text-gray-500">{{ __('dashboard.completion_progress') }}:</span>
+                    <span id="completionPercentage" class="text-white font-medium">0%</span>
+                </p>
+            </div>
         </div>
         
-        <div id="missingCardsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <!-- Cards will be loaded here via JavaScript -->
+        <!-- Horizontal Scrollable Card List -->
+        <div class="relative">
+            <div id="missingCardsGrid" class="flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-hide">
+                <!-- Cards will be loaded here via JavaScript -->
+            </div>
         </div>
     </div>
     
@@ -91,20 +101,49 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingState.classList.add('hidden');
             
             if (data.missing && data.missing.length > 0) {
-                missingCount.textContent = data.missing.length;
+                const missingCountEl = document.getElementById('missingCount');
+                const missingValueEl = document.getElementById('missingValue');
+                const completionPercentage = document.getElementById('completionPercentage');
+                
+                missingCountEl.textContent = data.missing.length;
+                
+                // Display total missing value
+                if (missingValueEl && data.total_missing_value_eur !== undefined) {
+                    const userCurrency = '{{ auth()->user()->preferred_currency ?? "DKK" }}';
+                    const exchangeRate = parseFloat('{{ config("app.exchange_rates.EUR_to_" . (auth()->user()->preferred_currency ?? "DKK")) ?? 7.45 }}');
+                    const valueInUserCurrency = data.total_missing_value_eur * exchangeRate;
+                    
+                    missingValueEl.textContent = `(${valueInUserCurrency.toFixed(2)} ${userCurrency})`;
+                }
+                
+                if (completionPercentage && data.completion_percentage !== undefined) {
+                    completionPercentage.textContent = data.completion_percentage + '%';
+                }
+                
                 missingCardsGrid.innerHTML = data.missing.map(card => {
-                    const cardName = typeof card.name === 'object' ? (card.name.en || card.tcgdex_id) : card.name;
+                    // Handle JSON name field
+                    let cardName = 'Unknown';
+                    if (card.name) {
+                        if (typeof card.name === 'object' && card.name.en) {
+                            cardName = card.name.en;
+                        } else if (typeof card.name === 'string') {
+                            cardName = card.name;
+                        }
+                    }
+                    
                     return `
                         <a href="/pokemon/cards/${card.tcgdex_id}" 
-                           class="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-lg overflow-hidden transition-all">
+                           class="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-lg overflow-hidden transition-all flex-shrink-0 w-40">
                             <div class="aspect-[2/3] bg-gradient-to-br from-gray-800 to-gray-900">
-                                <img src="${card.image_small_url}/high.webp" 
+                                <img src="${card.image_small_url}/low.webp" 
                                      alt="${cardName}" 
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                     loading="lazy">
+                                     loading="lazy"
+                                     onerror="this.src='/images/card-placeholder.png'">
                             </div>
                             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2">
                                 <p class="text-white text-xs font-medium truncate">${cardName}</p>
+                                <p class="text-gray-400 text-xs">#${card.local_id}</p>
                             </div>
                         </a>
                     `;

@@ -117,8 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const html = results.map((card, index) => {
-            // Generate the card detail URL using the route pattern
-            const cardUrl = `/tcg/cards/${card.product_id}`;
+            // Generate the card detail URL based on backend
+            let cardUrl;
+            if (card.backend === 'tcgdex') {
+                // TCGDEX: use tcgdex_id for the route
+                cardUrl = `/pokemon/cards/${card.tcgdex_id}`;
+            } else {
+                // TCGCSV: use product_id for the route
+                cardUrl = `/tcg/cards/${card.product_id}`;
+            }
             
             return `
                 <a href="${cardUrl}" 

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\TcgcsvGroup;
 use App\Models\TcgcsvProduct;
+use App\Models\Tcgdx\TcgdxSet;
+use App\Models\Tcgdx\TcgdxCard;
 use App\Models\UserCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -187,6 +189,90 @@ class ExpansionController extends Controller
         } catch (\Exception $e) {
             Log::error('Error loading popular sets: ' . $e->getMessage());
             return response()->json(['sets' => [], 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get missing cards for a TCGDEX set
+     * 
+     * GET /api/pokemon/sets/{tcgdexId}/missing
+     * 
+     * @param string $tcgdexId The set's tcgdex_id (e.g., 'base1', 'sv01')
+     * @return JsonResponse
+     */
+    public function getMissingCardsTcgdex(string $tcgdexId): JsonResponse
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            $userId = Auth::id();
+
+            // Find the set by tcgdex_id
+            $set = TcgdxSet::where('tcgdex_id', $tcgdexId)->first();
+            
+            if (!$set) {
+                return response()->json(['error' => 'Set not found'], 404);
+            }
+
+            // Get all cards in this set
+            $allCards = TcgdxCard::where('set_tcgdx_id', $set->id)
+                ->orderBy('local_id', 'ASC')
+                ->get();
+
+            $totalCount = $allCards->count();
+
+            // Get cards user already owns
+            $ownedCardIds = UserCollection::where('user_id', $userId)
+                ->whereIn('tcgdex_card_id', $allCards->pluck('id'))
+                ->pluck('tcgdex_card_id')
+                ->toArray();
+
+            $ownedCount = count($ownedCardIds);
+
+            // Filter missing cards and calculate total value
+            $totalMissingValue = 0;
+            $missingCards = $allCards->filter(function ($card) use ($ownedCardIds) {
+                return !in_array($card->id, $ownedCardIds);
+            })->map(function ($card) use (&$totalMissingValue) {
+                $cardName = is_array($card->name) ? ($card->name['en'] ?? $card->tcgdex_id) : $card->name;
+                
+                // Add card price to total (price_eur is stored in EUR)
+                $priceEur = $card->price_eur ?? 0;
+                $totalMissingValue += $priceEur;
+                
+                return [
+                    'tcgdex_id' => $card->tcgdex_id,
+                    'name' => $card->name,
+                    'local_id' => $card->local_id,
+                    'image_small_url' => $card->image_small_url,
+                    'price_eur' => $priceEur,
+                ];
+            })->values();
+
+            $completionPercentage = $totalCount > 0 
+                ? round(($ownedCount / $totalCount) * 100, 2) 
+                : 0;
+
+            return response()->json([
+                'set_id' => $tcgdexId,
+                'set_name' => $set->name,
+                'missing' => $missingCards,
+                'owned_count' => $ownedCount,
+                'total_count' => $totalCount,
+                'completion_percentage' => $completionPercentage,
+                'total_missing_value_eur' => round($totalMissingValue, 2),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Get missing TCGDEX cards error', [
+                'set_id' => $tcgdexId,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json(['error' => 'An error occurred'], 500);
         }
     }
 }

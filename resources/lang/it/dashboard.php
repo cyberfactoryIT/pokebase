@@ -62,6 +62,7 @@ return [
     
     // Set Completion
     'set_completion' => 'Completamento Set',
+    'missing_cards' => 'Carte Mancanti',
     'view_all_sets' => 'Vedi tutti >>',
     'missing_cards_to_complete' => 'Carte Mancanti per Completare Set',
     'select_expansion' => 'Seleziona un\'espansione',
@@ -69,6 +70,7 @@ return [
     'loading' => 'Caricamento',
     'select_expansion_to_view_missing' => 'Seleziona un\'espansione per vedere le carte mancanti',
     'select_set_to_view_missing' => 'Seleziona un set per vedere le carte mancanti',
+    'no_missing_cards' => 'Nessuna carta mancante',
     'completion_progress' => 'Progresso Completamento',
     'owned' => 'possedute',
     'total_cards' => 'carte totali',

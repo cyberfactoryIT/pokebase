@@ -20,7 +20,7 @@
                     <!-- Expansion Logo -->
                     <div class="aspect-video bg-gradient-to-br from-white/5 to-white/0 flex items-center justify-center p-4">
                         @if($expansion->logo_url)
-                            <img src="{{ $expansion->logo_url }}" 
+                            <img src="{{ $expansion->logo_url }}.webp" 
                                  alt="{{ is_array($expansion->name) ? ($expansion->name['en'] ?? $expansion->tcgdex_id) : $expansion->name }}" 
                                  class="w-full h-full object-contain group-hover/card:scale-105 transition-transform duration-300">
                         @else
@@ -74,14 +74,70 @@ document.addEventListener('DOMContentLoaded', function() {
     const carousel = document.getElementById('expansion-carousel');
     const prevBtn = document.getElementById('carousel-prev');
     const nextBtn = document.getElementById('carousel-next');
+    let autoScrollInterval;
+    let isUserInteracting = false;
     
     if (carousel && prevBtn && nextBtn) {
-        prevBtn.addEventListener('click', () => {
-            carousel.scrollBy({ left: -200, behavior: 'smooth' });
+        // Clone items for infinite scroll
+        const items = carousel.querySelectorAll('a');
+        items.forEach(item => {
+            const clone = item.cloneNode(true);
+            carousel.appendChild(clone);
         });
         
-        nextBtn.addEventListener('click', () => {
-            carousel.scrollBy({ left: 200, behavior: 'smooth' });
+        // Auto scroll function
+        function autoScroll() {
+            if (!isUserInteracting) {
+                const scrollAmount = carousel.scrollLeft + 1;
+                const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                
+                if (scrollAmount >= maxScroll) {
+                    // Reset to beginning for infinite effect
+                    carousel.scrollLeft = 0;
+                } else {
+                    carousel.scrollLeft = scrollAmount;
+                }
+            }
+        }
+        
+        // Start auto scroll
+        autoScrollInterval = setInterval(autoScroll, 20);
+        
+        // Pause on hover
+        carousel.addEventListener('mouseenter', function() {
+            isUserInteracting = true;
+        });
+        
+        carousel.addEventListener('mouseleave', function() {
+            isUserInteracting = false;
+        });
+        
+        // Manual navigation
+        prevBtn.addEventListener('click', function() {
+            isUserInteracting = true;
+            carousel.scrollBy({ left: -400, behavior: 'smooth' });
+            setTimeout(() => { isUserInteracting = false; }, 1000);
+        });
+        
+        nextBtn.addEventListener('click', function() {
+            isUserInteracting = true;
+            carousel.scrollBy({ left: 400, behavior: 'smooth' });
+            setTimeout(() => { isUserInteracting = false; }, 1000);
+        });
+        
+        // Hide/show arrows based on scroll position
+        carousel.addEventListener('scroll', function() {
+            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+            prevBtn.style.display = carousel.scrollLeft > 0 ? 'block' : 'none';
+            nextBtn.style.display = carousel.scrollLeft < maxScroll - 10 ? 'block' : 'none';
+        });
+        
+        // Initial check
+        carousel.dispatchEvent(new Event('scroll'));
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            clearInterval(autoScrollInterval);
         });
     }
 });

@@ -153,6 +153,7 @@ class CardSearchController extends Controller
         // Format response
         $formatted = $cards->map(function ($card) {
             return [
+                'backend' => 'tcgcsv',
                 'product_id' => $card->product_id,
                 'name' => $card->name,
                 'card_number' => $card->card_number,
@@ -251,7 +252,9 @@ class CardSearchController extends Controller
             $setNameEn = is_array($setName) ? ($setName['en'] ?? $setName['fr'] ?? $setName['de'] ?? null) : $setName;
             
             return [
+                'backend' => 'tcgdex',
                 'tcgdex_card_id' => $card->tcgdex_card_id,
+                'tcgdex_id' => $card->tcgdex_id,
                 'product_id' => null, // Not applicable for TCGDEX
                 'name' => $nameEn,
                 'card_number' => $card->card_number,

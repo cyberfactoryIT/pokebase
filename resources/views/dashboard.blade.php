@@ -27,7 +27,7 @@
                 </a>
 
                 @if($expansionsCount > 0)
-                <a href="{{ route('tcg.expansions.index') }}" class="flex items-center gap-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-2 py-1.5 transition group" title="{{ __('dashboard.browse_expansions') }}">
+                <a href="{{ $catalogBackend === 'tcgdex' ? route('pokemon.sets') : route('tcg.expansions.index') }}" class="flex items-center gap-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-2 py-1.5 transition group" title="{{ __('dashboard.browse_expansions') }}">
                     <img src="/images/logos/logo_pokemon.png" alt="Pokemon" class="w-4 h-4 object-contain">
                     <span class="text-white text-xs font-medium">{{ $expansionsCount }}</span>
                 </a>

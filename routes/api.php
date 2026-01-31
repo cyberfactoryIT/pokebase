@@ -26,6 +26,14 @@ Route::middleware(['web', 'auth'])->get('/expansions/{id}/missing-cards', [Expan
     ->name('api.expansions.missing-cards');
 
 /**
+ * Get missing cards for TCGDEX set (requires authentication)
+ * GET /api/pokemon/sets/{tcgdexId}/missing
+ * Returns cards not in user's collection for a specific TCGDEX set
+ */
+Route::middleware(['web', 'auth'])->get('/pokemon/sets/{tcgdexId}/missing', [ExpansionController::class, 'getMissingCardsTcgdex'])
+    ->name('api.pokemon.sets.missing');
+
+/**
  * Get user's popular sets (most complete sets)
  * GET /api/user/popular-sets
  * Returns user's sets ordered by completion percentage

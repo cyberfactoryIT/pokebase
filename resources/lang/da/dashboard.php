@@ -62,6 +62,7 @@ return [
     
     // Set Completion
     'set_completion' => 'Sæt Fuldførelse',
+    'missing_cards' => 'Manglende Kort',
     'view_all_sets' => 'Se alle >>',
     'missing_cards_to_complete' => 'Manglende Kort til Fuldførelse',
     'select_expansion' => 'Vælg en udvidelse',
@@ -69,6 +70,7 @@ return [
     'loading' => 'Indlæser',
     'select_expansion_to_view_missing' => 'Vælg en udvidelse for at se manglende kort',
     'select_set_to_view_missing' => 'Vælg et sæt for at se manglende kort',
+    'no_missing_cards' => 'Ingen manglende kort',
     'completion_progress' => 'Fuldførelsesgrad',
     'owned' => 'ejet',
     'total_cards' => 'kort i alt',
