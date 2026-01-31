@@ -99,6 +99,7 @@ Route::middleware('auth')->group(function () {
     // Deck Management
     Route::resource('decks', \App\Http\Controllers\DeckController::class);
     Route::post('decks/{deck}/cards', [\App\Http\Controllers\DeckController::class, 'addCard'])->name('decks.cards.add');
+    Route::post('decks/{deck}/cards/tcgdex', [\App\Http\Controllers\DeckController::class, 'addCardTcgdex'])->name('decks.cards.add.tcgdex');
     Route::delete('decks/{deck}/cards/{deckCard}', [\App\Http\Controllers\DeckController::class, 'removeCard'])->name('decks.cards.remove');
     Route::patch('decks/{deck}/cards/{deckCard}/quantity', [\App\Http\Controllers\DeckController::class, 'updateCardQuantity'])->name('decks.cards.updateQuantity');
     
@@ -109,6 +110,7 @@ Route::middleware('auth')->group(function () {
     // User Collection
     Route::get('collection', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collection.index');
     Route::post('collection/add', [\App\Http\Controllers\CollectionController::class, 'add'])->name('collection.add');
+    Route::post('collection/add/tcgdex', [\App\Http\Controllers\CollectionController::class, 'addTcgdex'])->name('collection.add.tcgdex');
     Route::post('collection/quick-add', [\App\Http\Controllers\CollectionController::class, 'quickAdd'])->name('collection.quick-add');
     Route::delete('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'remove'])->name('collection.remove');
     Route::patch('collection/{collection}', [\App\Http\Controllers\CollectionController::class, 'update'])->name('collection.update');
@@ -272,6 +274,16 @@ Route::prefix('pokemon')->group(function () {
     Route::get('/sets', [\App\Http\Controllers\Pokemon\CatalogController::class, 'sets'])->name('pokemon.sets');
     Route::get('/sets/{setId}', [\App\Http\Controllers\Pokemon\CatalogController::class, 'setCards'])->name('pokemon.set.cards');
     Route::get('/cards/{cardId}', [\App\Http\Controllers\Pokemon\CatalogController::class, 'card'])->name('pokemon.card');
+    
+    // Card interactions for TCGDEX cards (authenticated)
+    Route::middleware('auth')->group(function () {
+        Route::post('/cards/{cardId}/like', [\App\Http\Controllers\TcgItemInteractionController::class, 'toggleLikeTcgdex'])
+            ->name('pokemon.cards.like');
+        Route::post('/cards/{cardId}/wishlist', [\App\Http\Controllers\TcgItemInteractionController::class, 'toggleWishlistTcgdex'])
+            ->name('pokemon.cards.wishlist');
+        Route::post('/cards/{cardId}/watch', [\App\Http\Controllers\TcgItemInteractionController::class, 'toggleWatchTcgdex'])
+            ->name('pokemon.cards.watch');
+    });
     
     // Deck Valuation Flow
     Route::get('/deck-valuation', [\App\Http\Controllers\Pokemon\DeckValuationFlowController::class, 'step1Show'])->name('pokemon.deck-valuation.step1');

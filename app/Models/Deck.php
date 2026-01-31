@@ -53,6 +53,12 @@ class Deck extends Model
      */
     public function totalCards(): int
     {
+        // Use loaded relationship if available (respects eager loading filters)
+        if ($this->relationLoaded('deckCards')) {
+            return $this->deckCards->sum('quantity');
+        }
+        
+        // Otherwise query directly
         return $this->deckCards()->sum('quantity');
     }
 

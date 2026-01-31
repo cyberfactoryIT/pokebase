@@ -3,19 +3,22 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Catalog Backend
+    | Catalog Backend (DEPRECATED)
     |--------------------------------------------------------------------------
     |
-    | This value determines which backend to use for the Pokemon catalog.
+    | ⚠️ DEPRECATED: This config is no longer used.
+    | The catalog backend is now configured per-game in the 'games' table.
     | 
-    | Supported: "tcgcsv", "tcgdex"
+    | Each game has a 'catalog_backend' column:
+    | - Pokemon: 'tcgdex'
+    | - Yu-Gi-Oh: 'tcgcsv'
+    | - Magic: 'tcgcsv'
+    | - etc.
     |
-    | IMPORTANT: TCGDEX is ONLY available for Pokemon (game_id = 1).
-    | For all other games (Magic, YuGiOh, etc.), TCGCSV will be used regardless
-    | of this setting.
+    | To change a game's backend, update the 'games' table directly.
     |
     */
-    'backend' => env('CATALOG_BACKEND', 'tcgcsv'),
+    'backend' => env('CATALOG_BACKEND', 'tcgcsv'), // DEPRECATED - not used anymore
 
     /*
     |--------------------------------------------------------------------------
@@ -29,13 +32,14 @@ return [
     
     /*
     |--------------------------------------------------------------------------
-    | Supported Games for TCGDEX
+    | Supported Games for TCGDEX (DEPRECATED)
     |--------------------------------------------------------------------------
     |
-    | Game IDs that support TCGDEX backend
+    | ⚠️ DEPRECATED: This config is no longer used.
+    | The backend is now defined per-game in the database.
     |
     */
     'tcgdex_supported_games' => [
-        1, // Pokemon
+        1, // Pokemon (DEPRECATED - check games.catalog_backend instead)
     ],
 ];

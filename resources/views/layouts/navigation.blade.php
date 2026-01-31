@@ -167,7 +167,18 @@
                             <h3 class="text-white font-semibold text-sm">My Decks</h3>
                         </div>
                         @php
-                            $userDecks = Auth::user()->decks()->latest()->take(10)->get();
+                            $catalogBackend = catalog_backend();
+                            $userDecks = Auth::user()->decks()
+                                ->with(['deckCards' => function($query) use ($catalogBackend) {
+                                    if ($catalogBackend === 'tcgdex') {
+                                        $query->whereNotNull('tcgdex_card_id');
+                                    } else {
+                                        $query->whereNotNull('product_id');
+                                    }
+                                }])
+                                ->latest()
+                                ->take(10)
+                                ->get();
                         @endphp
                         @if($userDecks->isEmpty())
                             <div class="px-4 py-6 text-center">

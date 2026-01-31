@@ -13,6 +13,7 @@ class UserCollection extends Model
     protected $fillable = [
         'user_id',
         'product_id',
+        'tcgdex_card_id',
         'language',
         'quantity',
         'condition',
@@ -47,6 +48,14 @@ class UserCollection extends Model
     public function card(): BelongsTo
     {
         return $this->belongsTo(TcgcsvProduct::class, 'product_id', 'product_id');
+    }
+
+    /**
+     * Get the card from TCGDEX cards
+     */
+    public function tcgdexCard(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Tcgdx\TcgdxCard::class, 'tcgdex_card_id');
     }
 
     /**

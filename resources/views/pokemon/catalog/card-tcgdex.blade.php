@@ -285,44 +285,119 @@
                     <div class="mt-6 pt-6 border-t border-white/10">
                         <!-- Like, Wishlist, Watch Row -->
                         <div class="grid grid-cols-3 gap-3 mb-3">
-                            <button class="flex items-center justify-center gap-2 px-4 py-3 bg-slate-600/50 hover:bg-slate-600/70 border border-slate-500/30 text-white font-medium rounded-lg transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button 
+                                onclick="toggleLike('{{ $card->tcgdex_id }}', this)" 
+                                class="flex items-center justify-center gap-2 px-4 py-3 {{ $isLiked ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-600/50 hover:bg-slate-600/70' }} border border-slate-500/30 text-white font-medium rounded-lg transition"
+                            >
+                                <svg class="w-5 h-5" fill="{{ $isLiked ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                                 </svg>
-                                <span class="text-sm">{{ __('catalog.like') }}</span>
+                                <span class="text-sm">{{ $isLiked ? __('catalog.unlike') : __('catalog.like') }}</span>
                             </button>
                             
-                            <button class="flex items-center justify-center gap-2 px-4 py-3 bg-slate-600/50 hover:bg-slate-600/70 border border-slate-500/30 text-white font-medium rounded-lg transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button 
+                                onclick="toggleWishlist('{{ $card->tcgdex_id }}', this)" 
+                                class="flex items-center justify-center gap-2 px-4 py-3 {{ $isWishlisted ? 'bg-purple-600 hover:bg-purple-700' : 'bg-slate-600/50 hover:bg-slate-600/70' }} border border-slate-500/30 text-white font-medium rounded-lg transition"
+                            >
+                                <svg class="w-5 h-5" fill="{{ $isWishlisted ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                                 </svg>
-                                <span class="text-sm">{{ __('catalog.wishlist') }}</span>
+                                <span class="text-sm">{{ $isWishlisted ? __('catalog.in_wishlist') : __('catalog.wishlist') }}</span>
                             </button>
                             
-                            <button class="flex items-center justify-center gap-2 px-4 py-3 bg-slate-600/50 hover:bg-slate-600/70 border border-slate-500/30 text-white font-medium rounded-lg transition">
+                            <button 
+                                onclick="toggleWatch('{{ $card->tcgdex_id }}', this)" 
+                                class="flex items-center justify-center gap-2 px-4 py-3 {{ $isWatched ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-slate-600/50 hover:bg-slate-600/70' }} border border-slate-500/30 text-white font-medium rounded-lg transition"
+                            >
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
-                                <span class="text-sm">{{ __('catalog.watch') }}</span>
+                                <span class="text-sm">{{ $isWatched ? __('catalog.watching') : __('catalog.watch') }}</span>
                             </button>
                         </div>
                         
                         <!-- Add to Collection and Deck -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                            <button class="flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                <span>{{ __('catalog.add_to_collection') }}</span>
-                            </button>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" x-data="{ showDeckModal: false }">
+                            <form method="POST" action="{{ route('collection.add.tcgdex') }}" class="flex-1">
+                                @csrf
+                                <input type="hidden" name="tcgdex_card_id" value="{{ $card->id }}">
+                                <button type="submit" class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    <span>{{ __('catalog.add_to_collection') }}</span>
+                                </button>
+                            </form>
                             
-                            <button class="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+                            <button type="button" @click="showDeckModal = true" class="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
                                 <span>{{ __('catalog.add_to_deck') }}</span>
                             </button>
+
+                            <!-- Deck Selection Modal -->
+                            <div x-show="showDeckModal" 
+                                 x-cloak
+                                 @click.away="showDeckModal = false"
+                                 class="fixed inset-0 z-50 overflow-y-auto" 
+                                 style="display: none;">
+                                <div class="flex items-center justify-center min-h-screen px-4">
+                                    <div class="fixed inset-0 bg-black/75 transition-opacity" @click="showDeckModal = false"></div>
+                                    
+                                    <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-md w-full p-6">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h3 class="text-xl font-bold text-white">{{ __('tcg/cards/show.modal_deck_title') }}</h3>
+                                            <button @click="showDeckModal = false" class="text-gray-400 hover:text-white">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        @php
+                                            $userDecks = Auth::check() ? Auth::user()->decks : collect();
+                                        @endphp
+
+                                        @if($userDecks->isEmpty())
+                                            <p class="text-gray-400 mb-4">{{ __('tcg/cards/show.no_decks_yet') }}</p>
+                                            @if(Auth::check() && Auth::user()->canCreateAnotherDeck())
+                                                <a href="{{ route('decks.create') }}" class="block w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-center">
+                                                    {{ __('tcg/cards/show.create_first_deck') }}
+                                                </a>
+                                            @else
+                                                <a href="{{ route('profile.subscription') }}" class="block w-full px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-lg transition text-center font-semibold">
+                                                    {{ __('decks/index.upgrade') }}
+                                                </a>
+                                            @endif
+                                        @else
+                                            <div class="space-y-2 max-h-96 overflow-y-auto">
+                                                @foreach($userDecks as $deck)
+                                                    <form method="POST" action="{{ route('decks.cards.add.tcgdex', $deck) }}">
+                                                        @csrf
+                                                        <input type="hidden" name="tcgdex_card_id" value="{{ $card->id }}">
+                                                        <input type="hidden" name="quantity" value="1">
+                                                        <button type="submit" class="w-full text-left px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg transition group">
+                                                            <div class="flex items-center justify-between">
+                                                                <div>
+                                                                    <div class="font-semibold text-white group-hover:text-blue-400">{{ $deck->name }}</div>
+                                                                    @if($deck->format)
+                                                                        <div class="text-sm text-gray-400">{{ ucfirst($deck->format) }}</div>
+                                                                    @endif
+                                                                </div>
+                                                                <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                                </svg>
+                                                            </div>
+                                                        </button>
+                                                    </form>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     @endauth
@@ -853,5 +928,120 @@
     })();
     </script>
 @endif
+
+<script>
+// Interaction functions for TCGDEX cards
+async function toggleLike(cardId, button) {
+    try {
+        const response = await fetch(`/pokemon/cards/${cardId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            const svg = button.querySelector('svg');
+            const span = button.querySelector('span');
+            if (data.status === 'liked') {
+                button.classList.remove('bg-slate-600/50', 'hover:bg-slate-600/70');
+                button.classList.add('bg-red-600', 'hover:bg-red-700');
+                svg.setAttribute('fill', 'currentColor');
+                span.textContent = '{{ __('catalog.unlike') }}';
+            } else {
+                button.classList.remove('bg-red-600', 'hover:bg-red-700');
+                button.classList.add('bg-slate-600/50', 'hover:bg-slate-600/70');
+                svg.setAttribute('fill', 'none');
+                span.textContent = '{{ __('catalog.like') }}';
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling like:', error);
+    }
+}
+
+async function toggleWishlist(cardId, button) {
+    try {
+        const response = await fetch(`/pokemon/cards/${cardId}/wishlist`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            const svg = button.querySelector('svg');
+            const span = button.querySelector('span');
+            if (data.status === 'added') {
+                button.classList.remove('bg-slate-600/50', 'hover:bg-slate-600/70');
+                button.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                svg.setAttribute('fill', 'currentColor');
+                span.textContent = '{{ __('catalog.in_wishlist') }}';
+            } else {
+                button.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                button.classList.add('bg-slate-600/50', 'hover:bg-slate-600/70');
+                svg.setAttribute('fill', 'none');
+                span.textContent = '{{ __('catalog.wishlist') }}';
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling wishlist:', error);
+    }
+}
+
+async function toggleWatch(cardId, button) {
+    try {
+        const response = await fetch(`/pokemon/cards/${cardId}/watch`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status) {
+            const svg = button.querySelector('svg');
+            const span = button.querySelector('span');
+            if (data.status === 'watched') {
+                button.classList.remove('bg-slate-600/50', 'hover:bg-slate-600/70');
+                button.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
+                span.textContent = '{{ __('catalog.watching') }}';
+            } else {
+                button.classList.remove('bg-yellow-600', 'hover:bg-yellow-700');
+                button.classList.add('bg-slate-600/50', 'hover:bg-slate-600/70');
+                span.textContent = '{{ __('catalog.watch') }}';
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling watch:', error);
+    }
+}
+</script>
 
 @endsection

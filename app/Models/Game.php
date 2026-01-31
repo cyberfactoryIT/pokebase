@@ -10,6 +10,7 @@ class Game extends Model
     protected $fillable = [
         'name',
         'code',
+        'catalog_backend',
         'tcgcsv_category_id',
         'is_active',
     ];

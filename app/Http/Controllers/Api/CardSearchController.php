@@ -43,82 +43,28 @@ class CardSearchController extends Controller
             $limit = $request->getLimit();
             $collectionOnly = filter_var($request->input('collection_only', false), FILTER_VALIDATE_BOOLEAN);
 
-            // Escape LIKE wildcards to prevent injection
-            $escapedQuery = $this->escapeLikeWildcards($query);
+            // Get catalog backend from explicit parameter, or use helper to determine from context
+            $catalogBackend = $request->input('backend');
             
-            // Build search query with prefix/contains ranking
-            $results = TcgcsvProduct::query()
-                ->select([
-                    'tcgcsv_products.product_id',
-                    'tcgcsv_products.name',
-                    'tcgcsv_products.card_number',
-                    'tcgcsv_products.group_id',
-                    'tcgcsv_groups.name as group_name',
-                    'tcgcsv_groups.published_on as group_published_on',
-                    'tcgcsv_products.image_url',
-                ])
-                ->leftJoin('tcgcsv_groups', 'tcgcsv_products.group_id', '=', 'tcgcsv_groups.group_id');
-            
-            // Filter by collection if requested
-            if ($collectionOnly && Auth::check()) {
-                $userId = Auth::id();
-                Log::info('Collection filter active', [
-                    'user_id' => $userId,
-                    'collection_only' => $collectionOnly,
-                    'is_authenticated' => Auth::check()
-                ]);
-                $results->whereIn('tcgcsv_products.product_id', function($query) use ($userId) {
-                    $query->select('product_id')
-                        ->from('user_collection')
-                        ->where('user_id', $userId);
-                });
-            } else {
-                Log::info('Collection filter NOT active', [
-                    'collection_only' => $collectionOnly,
-                    'is_authenticated' => Auth::check()
-                ]);
+            if (!$catalogBackend) {
+                // Fall back to helper (handles session, user default, and route context)
+                $catalogBackend = catalog_backend();
             }
-            
-            // Search by name OR card_number
-            $results->where(function($q) use ($escapedQuery) {
-                    $q->where('tcgcsv_products.name', 'LIKE', "%{$escapedQuery}%")
-                      ->orWhere('tcgcsv_products.card_number', 'LIKE', "%{$escapedQuery}%");
-                })
-                ->orderByRaw(
-                    'CASE 
-                        WHEN tcgcsv_products.card_number = ? THEN 0
-                        WHEN tcgcsv_products.name LIKE ? THEN 1 
-                        WHEN tcgcsv_products.card_number LIKE ? THEN 2
-                        ELSE 3 
-                    END',
-                    [$escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%"]
-                )
-                ->orderByRaw('tcgcsv_groups.published_on IS NULL')
-                ->orderBy('tcgcsv_groups.published_on', 'DESC')
-                ->orderBy('tcgcsv_products.card_number', 'ASC')
-                ->orderBy('tcgcsv_products.id', 'ASC')
-                ->limit($limit);
-            
-            // Execute query
-            $cards = $results->get();
 
-            // Format response
-            $formatted = $cards->map(function ($card) {
-                return [
-                    'product_id' => $card->product_id,
-                    'name' => $card->name,
-                    'card_number' => $card->card_number,
-                    'group_id' => $card->group_id,
-                    'set_name' => $card->group_name, // Add set_name alias
-                    'group_name' => $card->group_name,
-                    'group_published_on' => $card->group_published_on 
-                        ? (new \DateTime($card->group_published_on))->format('Y-m-d')
-                        : null,
-                    'image_url' => $card->image_url,
-                ];
-            });
+            // Get current game ID for filtering (used only in TCGCSV search)
+            $gameId = session('current_game_id');
+            if (!$gameId && Auth::check()) {
+                $gameId = Auth::user()->default_game_id;
+            }
 
-            return response()->json($formatted);
+            // Search based on catalog backend
+            if ($catalogBackend === 'tcgdex') {
+                // Search in TCGDEX tables
+                return $this->searchTcgdex($query, $limit, $collectionOnly);
+            } else {
+                // Search in TCGCSV tables
+                return $this->searchTcgcsv($query, $limit, $collectionOnly, $gameId);
+            }
 
         } catch (\Exception $e) {
             // Log unexpected errors with context
@@ -133,6 +79,167 @@ class CardSearchController extends Controller
                 'error' => 'An unexpected error occurred while searching cards',
             ], 500);
         }
+    }
+
+    /**
+     * Search in TCGCSV database
+     */
+    private function searchTcgcsv(string $query, int $limit, bool $collectionOnly, ?int $gameId): JsonResponse
+    {
+        // Escape LIKE wildcards to prevent injection
+        $escapedQuery = $this->escapeLikeWildcards($query);
+        
+        // Build search query with prefix/contains ranking
+        $results = TcgcsvProduct::query()
+            ->select([
+                'tcgcsv_products.product_id',
+                'tcgcsv_products.name',
+                'tcgcsv_products.card_number',
+                'tcgcsv_products.group_id',
+                'tcgcsv_groups.name as group_name',
+                'tcgcsv_groups.published_on as group_published_on',
+                'tcgcsv_products.image_url',
+            ])
+            ->leftJoin('tcgcsv_groups', 'tcgcsv_products.group_id', '=', 'tcgcsv_groups.group_id');
+        
+        // Filter by game if set
+        if ($gameId) {
+            $results->where('tcgcsv_products.game_id', $gameId);
+        }
+        
+        // Filter by collection if requested
+        if ($collectionOnly && Auth::check()) {
+            $userId = Auth::id();
+            $results->whereIn('tcgcsv_products.product_id', function($query) use ($userId) {
+                $query->select('product_id')
+                    ->from('user_collection')
+                    ->where('user_id', $userId)
+                    ->whereNotNull('product_id'); // Only TCGCSV cards
+            });
+        }
+        
+        // Search by name OR card_number
+        $results->where(function($q) use ($escapedQuery) {
+                $q->where('tcgcsv_products.name', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('tcgcsv_products.card_number', 'LIKE', "%{$escapedQuery}%");
+            })
+            ->orderByRaw(
+                'CASE 
+                    WHEN tcgcsv_products.card_number = ? THEN 0
+                    WHEN tcgcsv_products.name LIKE ? THEN 1 
+                    WHEN tcgcsv_products.card_number LIKE ? THEN 2
+                    ELSE 3 
+                END',
+                [$escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%"]
+            )
+            ->orderByRaw('tcgcsv_groups.published_on IS NULL')
+            ->orderBy('tcgcsv_groups.published_on', 'DESC')
+            ->orderBy('tcgcsv_products.card_number', 'ASC')
+            ->orderBy('tcgcsv_products.id', 'ASC')
+            ->limit($limit);
+            
+        // Execute query
+        $cards = $results->get();
+
+        // Format response
+        $formatted = $cards->map(function ($card) {
+            return [
+                'product_id' => $card->product_id,
+                'name' => $card->name,
+                'card_number' => $card->card_number,
+                'group_id' => $card->group_id,
+                'set_name' => $card->group_name,
+                'group_name' => $card->group_name,
+                'group_published_on' => $card->group_published_on 
+                    ? (new \DateTime($card->group_published_on))->format('Y-m-d')
+                    : null,
+                'image_url' => $card->image_url,
+            ];
+        });
+
+        return response()->json($formatted);
+    }
+
+    /**
+     * Search in TCGDEX database
+     */
+    private function searchTcgdex(string $query, int $limit, bool $collectionOnly): JsonResponse
+    {
+        // Escape LIKE wildcards to prevent injection
+        $escapedQuery = $this->escapeLikeWildcards($query);
+        
+        // Build search query
+        $results = \App\Models\Tcgdx\TcgdxCard::query()
+            ->select([
+                'tcgdx_cards.id as tcgdex_card_id',
+                'tcgdx_cards.tcgdex_id',
+                'tcgdx_cards.name',
+                'tcgdx_cards.local_id as card_number',
+                'tcgdx_cards.set_tcgdx_id',
+                'tcgdx_sets.name as set_name',
+                'tcgdx_cards.image_small_url as image_url',
+            ])
+            ->leftJoin('tcgdx_sets', 'tcgdx_cards.set_tcgdx_id', '=', 'tcgdx_sets.id');
+        
+        // Filter by collection if requested
+        if ($collectionOnly && Auth::check()) {
+            $userId = Auth::id();
+            $results->whereIn('tcgdx_cards.id', function($query) use ($userId) {
+                $query->select('tcgdex_card_id')
+                    ->from('user_collection')
+                    ->where('user_id', $userId)
+                    ->whereNotNull('tcgdex_card_id'); // Only TCGDEX cards
+            });
+        }
+        
+        // Search by name OR card_number OR tcgdex_id
+        $results->where(function($q) use ($escapedQuery) {
+                $q->where('tcgdx_cards.name', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('tcgdx_cards.local_id', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('tcgdx_cards.tcgdex_id', 'LIKE', "%{$escapedQuery}%");
+            })
+            ->orderByRaw(
+                'CASE 
+                    WHEN tcgdx_cards.local_id = ? THEN 0
+                    WHEN tcgdx_cards.name LIKE ? THEN 1 
+                    WHEN tcgdx_cards.local_id LIKE ? THEN 2
+                    ELSE 3 
+                END',
+                [$escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%"]
+            )
+            ->orderBy('tcgdx_cards.id', 'DESC')
+            ->limit($limit);
+            
+        // Execute query
+        $cards = $results->get();
+
+        // Format response (compatible with frontend expectations)
+        $formatted = $cards->map(function ($card) {
+            // Extract English name from JSON field
+            $name = $card->name;
+            if (is_string($name)) {
+                $name = json_decode($name, true);
+            }
+            $nameEn = is_array($name) ? ($name['en'] ?? $name['fr'] ?? $name['de'] ?? 'Unknown') : $name;
+            
+            // Extract set name from JSON if needed
+            $setName = $card->set_name;
+            if (is_string($setName) && str_starts_with($setName, '{')) {
+                $setName = json_decode($setName, true);
+            }
+            $setNameEn = is_array($setName) ? ($setName['en'] ?? $setName['fr'] ?? $setName['de'] ?? null) : $setName;
+            
+            return [
+                'tcgdex_card_id' => $card->tcgdex_card_id,
+                'product_id' => null, // Not applicable for TCGDEX
+                'name' => $nameEn,
+                'card_number' => $card->card_number,
+                'set_name' => $setNameEn,
+                'image_url' => $card->image_url ? $card->image_url . '/low.webp' : null,
+            ];
+        });
+
+        return response()->json($formatted);
     }
 
     /**

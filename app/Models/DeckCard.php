@@ -10,6 +10,7 @@ class DeckCard extends Model
     protected $fillable = [
         'deck_id',
         'product_id',
+        'tcgdex_card_id',
         'quantity',
     ];
 
@@ -31,5 +32,13 @@ class DeckCard extends Model
     public function card(): BelongsTo
     {
         return $this->belongsTo(TcgcsvProduct::class, 'product_id', 'product_id');
+    }
+
+    /**
+     * Get the card from TCGDEX cards
+     */
+    public function tcgdexCard(): BelongsTo
+    {
+        return $this->belongsTo(TcgdxCard::class, 'tcgdex_card_id');
     }
 }

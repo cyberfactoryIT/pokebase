@@ -6,44 +6,36 @@
 
 if (!function_exists('catalog_backend')) {
     /**
-     * Get current catalog backend (only TCGDEX for Pokemon, TCGCSV for everything else)
+     * Get current catalog backend based on the game
+     * Each game has its own catalog backend configured in the database
      */
     function catalog_backend(): string
     {
-        $backend = config('catalog.backend', 'tcgcsv');
+        // Try to get from current game (authenticated user context)
+        $currentGame = request()->attributes->get('currentGame');
         
-        // TCGDEX is ONLY available for specific games
-        if ($backend === 'tcgdex') {
-            // Check if we're in a Pokemon route (public or authenticated)
-            if (request()->is('pokemon/*')) {
-                return 'tcgdex'; // Allow TCGDEX for Pokemon routes
-            }
-            
-            $currentGame = request()->attributes->get('currentGame');
-            
-            // If we have a game set, check if it's in supported list
-            if ($currentGame) {
-                $supportedGames = config('catalog.tcgdex_supported_games', [1]);
-                
-                // If game not in supported list, fallback to TCGCSV
-                if (!in_array($currentGame->id, $supportedGames)) {
-                    return 'tcgcsv';
-                }
-                
-                return 'tcgdex';
-            }
-            
-            // Fallback to TCGCSV for non-Pokemon routes without game
-            return 'tcgcsv';
+        if ($currentGame && $currentGame->catalog_backend) {
+            return $currentGame->catalog_backend;
         }
         
-        return $backend;
+        // For public Pokemon routes (when user is not authenticated)
+        if (request()->is('pokemon/*')) {
+            // Get Pokemon game from database
+            $pokemonGame = \App\Models\Game::where('code', 'pokemon')->first();
+            if ($pokemonGame && $pokemonGame->catalog_backend) {
+                return $pokemonGame->catalog_backend;
+            }
+            return 'tcgdex'; // Fallback for Pokemon
+        }
+        
+        // Default fallback
+        return 'tcgcsv';
     }
 }
 
 if (!function_exists('is_tcgdex_catalog')) {
     /**
-     * Check if TCGDEX catalog is active (only for Pokemon)
+     * Check if TCGDEX catalog is active
      */
     function is_tcgdex_catalog(): bool
     {

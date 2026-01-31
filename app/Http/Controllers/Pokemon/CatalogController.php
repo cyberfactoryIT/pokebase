@@ -27,8 +27,8 @@ class CatalogController extends Controller
             }
         }
         
-        // Pokemon routes ALWAYS use TCGDEX when configured
-        if (config('catalog.backend') === 'tcgdex') {
+        // Use the catalog backend configured for this game
+        if ($currentGame->catalog_backend === 'tcgdex') {
             $sets = TcgdxSet::where('game_id', $currentGame->id)
                 ->orderByDesc('release_date')
                 ->paginate(24);
@@ -67,8 +67,8 @@ class CatalogController extends Controller
             }
         }
         
-        // Pokemon routes ALWAYS use TCGDEX when configured
-        if (config('catalog.backend') === 'tcgdex') {
+        // Use the catalog backend configured for this game
+        if ($currentGame->catalog_backend === 'tcgdex') {
             // Find set by tcgdex_id
             $set = TcgdxSet::where('tcgdex_id', $setId)
                 ->where('game_id', $currentGame->id)
@@ -78,11 +78,46 @@ class CatalogController extends Controller
                 ->orderBy('local_id')
                 ->paginate(50);
             
+            // Get user interactions if authenticated
+            $userInteractions = null;
+            if (\Auth::check()) {
+                $user = \Auth::user();
+                $cardIds = $cards->pluck('id')->toArray();
+                
+                // Get all liked cards in one query
+                $likedIds = \DB::table('user_likes')
+                    ->where('user_id', $user->id)
+                    ->whereIn('tcgdex_card_id', $cardIds)
+                    ->pluck('tcgdex_card_id')
+                    ->toArray();
+                
+                // Get all wishlist cards in one query
+                $wishlistIds = \DB::table('user_wishlist_items')
+                    ->where('user_id', $user->id)
+                    ->whereIn('tcgdex_card_id', $cardIds)
+                    ->pluck('tcgdex_card_id')
+                    ->toArray();
+                
+                // Get all watched cards in one query
+                $watchIds = \DB::table('user_watch_items')
+                    ->where('user_id', $user->id)
+                    ->whereIn('tcgdex_card_id', $cardIds)
+                    ->pluck('tcgdex_card_id')
+                    ->toArray();
+                
+                $userInteractions = [
+                    'liked' => $likedIds,
+                    'wishlist' => $wishlistIds,
+                    'watched' => $watchIds,
+                ];
+            }
+            
             return view('pokemon.catalog.set-cards-tcgdex', [
                 'set' => $set,
                 'cards' => $cards,
                 'currentGame' => $currentGame,
                 'backend' => 'tcgdex',
+                'userInteractions' => $userInteractions,
             ]);
         }
         
@@ -119,8 +154,8 @@ class CatalogController extends Controller
             }
         }
         
-        // Pokemon routes ALWAYS use TCGDEX when configured
-        if (config('catalog.backend') === 'tcgdex') {
+        // Use the catalog backend configured for this game
+        if ($currentGame->catalog_backend === 'tcgdex') {
             $card = TcgdxCard::where('tcgdex_id', $cardId)
                 ->whereHas('set', function($q) use ($currentGame) {
                     $q->where('game_id', $currentGame->id);
@@ -141,12 +176,38 @@ class CatalogController extends Controller
                 }
             }
             
+            // Check user interactions state (if authenticated)
+            $isLiked = false;
+            $isWishlisted = false;
+            $isWatched = false;
+            
+            if (\Auth::check()) {
+                $userId = \Auth::id();
+                $isLiked = \DB::table('user_likes')
+                    ->where('user_id', $userId)
+                    ->where('tcgdex_card_id', $card->id)
+                    ->exists();
+                    
+                $isWishlisted = \DB::table('user_wishlist_items')
+                    ->where('user_id', $userId)
+                    ->where('tcgdex_card_id', $card->id)
+                    ->exists();
+                    
+                $isWatched = \DB::table('user_watch_items')
+                    ->where('user_id', $userId)
+                    ->where('tcgdex_card_id', $card->id)
+                    ->exists();
+            }
+            
             return view('pokemon.catalog.card-tcgdex', [
                 'card' => $card,
                 'currentGame' => $currentGame,
                 'backend' => 'tcgdex',
                 'priceHistory' => $priceHistory,
                 'cardmarketUrl' => $cardmarketUrl,
+                'isLiked' => $isLiked,
+                'isWishlisted' => $isWishlisted,
+                'isWatched' => $isWatched,
             ]);
         }
         

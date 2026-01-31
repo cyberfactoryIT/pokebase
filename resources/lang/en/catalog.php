@@ -43,8 +43,11 @@ return [
 
     // Actions
     'like' => 'Like',
+    'unlike' => 'Unlike',
     'wishlist' => 'Wishlist',
+    'in_wishlist' => 'In Wishlist',
     'watch' => 'Watch',
+    'watching' => 'Watching',
     'add_to_collection' => 'Add to Collection',
     'add_to_deck' => 'Add to Deck',
 

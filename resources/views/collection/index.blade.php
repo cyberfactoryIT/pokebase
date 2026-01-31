@@ -68,6 +68,18 @@
 
         <!-- Quick Add Card -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
+            @if(request('rarity'))
+            <div class="mb-4 flex items-center gap-2">
+                <span class="inline-flex items-center px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm">
+                    Filtro: {{ request('rarity') }}
+                    <a href="{{ route('collection.index') }}" class="ml-2 hover:text-white">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </a>
+                </span>
+            </div>
+            @endif
             <h2 class="text-lg font-semibold text-white mb-4">{{ __('collection/index.quick_add_card') }}</h2>
             <div class="relative" x-data="{ searchOpen: false }" @click.away="searchOpen = false">
                 <input 
@@ -106,7 +118,9 @@
                 <div class="space-y-1">
                     @foreach($topStats['rarity_distribution']->take(3) as $rarity)
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">{{ $rarity->rarity ?: 'Unknown' }}</span>
+                        <a href="{{ route('collection.index', ['rarity' => $rarity->rarity]) }}" class="text-gray-400 hover:text-white hover:underline transition cursor-pointer">
+                            {{ $rarity->rarity ?: 'Unknown' }}
+                        </a>
                         <span class="text-white font-medium">{{ $rarity->total_quantity }}</span>
                     </div>
                     @endforeach
@@ -379,15 +393,31 @@
         <!-- Collection Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach($collection as $item)
+            @php
+                // Determine which card relation to use
+                $card = $item->card ?? $item->tcgdexCard;
+                $isTcgdex = !is_null($item->tcgdex_card_id);
+                
+                // Get card details
+                if ($isTcgdex) {
+                    $cardName = is_array($card->name) ? ($card->name['en'] ?? 'Unknown') : (is_string($card->name) ? (json_decode($card->name, true)['en'] ?? $card->name) : 'Unknown');
+                    $displayImage = $card->image_large_url ?? $card->image_small_url;
+                    if ($displayImage && !str_ends_with($displayImage, '.webp')) {
+                        $displayImage .= '/high.webp';
+                    }
+                    $cardUrl = route('pokemon.card', [$card->tcgdex_id]);
+                } else {
+                    $cardName = $card->name;
+                    $displayImage = $card->hd_image_url ?? $card->image_url;
+                    $cardUrl = route('tcg.cards.show', $item->product_id);
+                }
+            @endphp
             <div class="bg-[#161615] border border-white/15 rounded-lg overflow-hidden hover:border-white/30 transition group">
-                <a href="{{ route('tcg.cards.show', $item->product_id) }}" class="block">
+                <a href="{{ $cardUrl }}" class="block">
                     <div class="aspect-[245/342] bg-black/50 relative">
-                        @php
-                            $displayImage = $item->card->hd_image_url ?? $item->card->image_url;
-                        @endphp
                         @if($displayImage)
-                        <img src="{{ $displayImage }}" alt="{{ $item->card->name }}" class="w-full h-full object-cover" onerror="this.src='{{ $item->card->image_url }}'">
-                        @if($item->card->hd_image_url)
+                        <img src="{{ $displayImage }}" alt="{{ $cardName }}" class="w-full h-full object-cover" @if(!$isTcgdex && $card->image_url) onerror="this.src='{{ $card->image_url }}'" @endif>
+                        @if(!$isTcgdex && $card->hd_image_url)
                             <div class="absolute top-2 right-2">
                                 <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-blue-500/80 text-white rounded">
                                     HD
@@ -404,7 +434,7 @@
                     </div>
                 </a>
                 <div class="p-3">
-                    <h4 class="text-white text-sm font-semibold truncate">{{ $item->card->name }}</h4>
+                    <h4 class="text-white text-sm font-semibold truncate">{{ $cardName }}</h4>
                     <div class="flex items-center justify-between mt-2">
                         <span class="text-gray-400 text-xs">{{ __('collection/index.qty_label') }}: {{ $item->quantity }}</span>
                         @if($item->is_foil)
@@ -500,11 +530,13 @@
                             <div class="space-y-3">
                                 @forelse($topStats['rarity_distribution'] as $rarity)
                                 <div class="flex items-center justify-between">
-                                    <span class="text-gray-300">{{ $rarity->rarity ?: 'Unknown' }}</span>
+                                    <a href="{{ route('collection.index', ['rarity' => $rarity->rarity]) }}" class="text-gray-300 hover:text-white hover:underline transition cursor-pointer font-medium">
+                                        {{ $rarity->rarity ?: 'Unknown' }}
+                                    </a>
                                     <div class="flex items-center gap-3">
                                         <div class="w-32 bg-gray-700 rounded-full h-2">
                                             @php
-                                                $percentage = ($rarity->total_quantity / $stats['total_cards']) * 100;
+                                                $percentage = $stats['total_cards'] > 0 ? ($rarity->total_quantity / $stats['total_cards']) * 100 : 0;
                                             @endphp
                                             <div class="bg-purple-500 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
                                         </div>
@@ -689,6 +721,7 @@
             <form id="quickAddForm" method="POST" action="{{ route('collection.add') }}">
                 @csrf
                 <input type="hidden" name="product_id" id="quickAddProductId">
+                <input type="hidden" name="tcgdex_card_id" id="quickAddTcgdexCardId">
                 
                 <div class="space-y-4">
                     <div>
@@ -775,7 +808,8 @@ async function searchCards(query) {
         
         const resultsHTML = data.map(card => `
             <div class="px-4 py-3 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0 flex items-center gap-3 search-card-result"
-                 data-product-id="${card.product_id}"
+                 data-product-id="${card.product_id || ''}"
+                 data-tcgdex-card-id="${card.tcgdex_card_id || ''}"
                  data-card-name="${escapeHtml(card.name)}">
                 <div class="flex-shrink-0 w-12 h-16 bg-black/50 rounded overflow-hidden">
                     ${card.image_url ? `<img src="${card.image_url}" alt="${escapeHtml(card.name)}" class="w-full h-full object-cover">` : ''}
@@ -796,9 +830,10 @@ async function searchCards(query) {
         // Add click event listeners to search results
         document.querySelectorAll('.search-card-result').forEach(element => {
             element.addEventListener('click', function() {
-                const productId = parseInt(this.dataset.productId);
+                const productId = this.dataset.productId ? parseInt(this.dataset.productId) : null;
+                const tcgdexCardId = this.dataset.tcgdexCardId ? parseInt(this.dataset.tcgdexCardId) : null;
                 const cardName = this.dataset.cardName;
-                openQuickAddModal(productId, cardName);
+                openQuickAddModal(productId, tcgdexCardId, cardName);
             });
         });
     } catch (error) {
@@ -806,8 +841,18 @@ async function searchCards(query) {
     }
 }
 
-function openQuickAddModal(productId, cardName) {
-    document.getElementById('quickAddProductId').value = productId;
+function openQuickAddModal(productId, tcgdexCardId, cardName) {
+    // Set appropriate field and form action
+    if (tcgdexCardId) {
+        document.getElementById('quickAddTcgdexCardId').value = tcgdexCardId;
+        document.getElementById('quickAddProductId').value = '';
+        document.getElementById('quickAddForm').action = '{{ route('collection.add.tcgdex') }}';
+    } else {
+        document.getElementById('quickAddProductId').value = productId;
+        document.getElementById('quickAddTcgdexCardId').value = '';
+        document.getElementById('quickAddForm').action = '{{ route('collection.add') }}';
+    }
+    
     document.getElementById('modalCardName').textContent = cardName;
     document.getElementById('quickAddModal').classList.remove('hidden');
     collectionSearchDropdown.classList.add('hidden');

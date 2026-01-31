@@ -22,6 +22,7 @@ class CardSearchRequest extends FormRequest
         return [
             'q' => ['required', 'string', 'min:2', 'max:80'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'backend' => ['nullable', 'string', 'in:tcgcsv,tcgdex'],
         ];
     }
 

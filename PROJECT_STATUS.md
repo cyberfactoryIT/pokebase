@@ -1,6 +1,6 @@
 # 📊 Basecard - Project Status
 
-*Last Updated: 29 January 2026*
+*Last Updated: 31 January 2026 - 15:00 CET*
 
 ---
 
@@ -53,28 +53,65 @@
 - ✅ Filtri per set, rarità, tipo
 - ✅ Gating dei prezzi (solo per Advanced/Premium o con Deck Evaluation attivo)
 
-### 3. Catalog System (NEW - Jan 2026)
-- ✅ **Dual Backend Support**: Sistema configurabile per switchare tra TCGCSV e TCGDEX
-- ✅ **Config Flag**: `CATALOG_BACKEND` in .env (valori: `tcgcsv` | `tcgdex`)
+### 3. Catalog System (Updated - Jan 31, 2026)
+- ✅ **Per-Game Backend Configuration**: Ogni gioco ha il proprio backend configurato nel database
+- ✅ **Database Column**: `games.catalog_backend` ('tcgcsv' | 'tcgdex')
+- ✅ **No More ENV Config**: Rimosso `CATALOG_BACKEND` da .env - ora è per gioco
+- ✅ **Auto-Detection**: Helper `catalog_backend()` legge dal game corrente
+- ✅ **Pokemon = TCGDEX**: Pokemon usa TCGDEX, altri giochi usano TCGCSV
 - ✅ **Helper Functions**: `is_tcgdex_catalog()`, `is_tcgcsv_catalog()`, `catalog_backend()`
 - ✅ **Unified Routes**: `/pokemon/*` nasconde il backend sottostante
 - ✅ **Backend-Agnostic Views**: Blade templates che si adattano al backend attivo
 - ✅ **TCGDEX Integration**: Lettura da tabelle staging `tcgdx_sets` e `tcgdx_cards`
 - ✅ **TCGDEX Asset URLs**: Logo e immagini con estensione `.webp` corretta
-- ⚠️ **Experimental**: TCGDEX è in fase di testing, TCGCSV rimane il backend di produzione
+- ✅ **User Interactions**: Like/Wishlist/Watch supportano sia TCGCSV che TCGDEX cards
+- ✅ **Dual Backend Tables**: `user_likes`, `user_wishlist_items`, `user_watch_items` con `product_id` + `tcgdex_card_id`
 
 #### Catalog Routes
-- `/pokemon/sets` - Lista set Pokemon
-- `/pokemon/sets/{setId}` - Dettaglio set con carte
-- `/pokemon/cards/{cardId}` - Dettaglio singola carta
+- `/pokemon/sets` - Lista set Pokemon (con like/wishlist/watch buttons)
+- `/pokemon/sets/{setId}` - Dettaglio set con carte e interaction buttons
+- `/pokemon/cards/{cardId}` - Dettaglio singola carta con full interactions
 - AJAX endpoints per ricerca e paginazione
 
-#### Catalog Features (Updated Jan 30, 2026)
+#### Catalog User Interactions (Updated - Jan 31, 2026)
+- ✅ **Like System**: Toggle like su carte (visibile per utenti autenticati)
+- ✅ **Wishlist**: Aggiungi carte alla wishlist personale
+- ✅ **Watch List**: Monitora carte specifiche per notifiche prezzi
+- ✅ **Interaction Routes**: POST `/pokemon/cards/{cardId}/like|wishlist|watch`
+- ✅ **Real-time UI Updates**: AJAX calls con aggiornamento immediato stato buttons
+- ✅ **Visual Feedback**: Colori dinamici (rosso=liked, viola=wishlist, giallo=watching)
+- ✅ **Dual Backend Support**: Database tables supportano sia TCGCSV che TCGDEX cards
+- ✅ **State Loading**: Caricamento ottimizzato degli stati per liste di carte
+
+#### Collection & Deck Management with TCGDEX (Updated - Jan 31, 2026)
+- ✅ **Dual-Backend Collection**: `user_collection` supporta sia `product_id` (TCGCSV) che `tcgdex_card_id` (TCGDEX)
+- ✅ **Dual-Backend Decks**: `deck_cards` supporta entrambi i backend
+- ✅ **TCGDEX Collection Routes**: POST `/collection/add/tcgdex` con `tcgdex_card_id`
+- ✅ **TCGDEX Deck Routes**: POST `/decks/{deck}/cards/tcgdex` con `tcgdex_card_id`
+- ✅ **Controller Methods**: `addTcgdex()` in CollectionController e `addCardTcgdex()` in DeckController
+- ✅ **Model Relationships**: UserCollection e DeckCard con `tcgdexCard()` relation (namespace: `App\Models\Tcgdx\TcgdxCard`)
+- ✅ **Frontend Integration**: Bottoni funzionanti in `card-tcgdex.blade.php` con modal deck selection
+- ✅ **Card Limits**: Rispetta i limiti per tier subscription anche per carte TCGDEX
+- ✅ **Database Migration**: Colonne `tcgdex_card_id` nullable con foreign keys e indexes
+- ✅ **Backend Filtering**: `/collection`, `/decks`, `/likes`, `/wishlist`, `/osservazione` mostrano solo carte coerenti con `catalog_backend` del gioco corrente
+- ✅ **Query Optimization**: WHERE product_id IS NOT NULL (TCGCSV) o WHERE tcgdex_card_id IS NOT NULL (TCGDEX)
+- ✅ **Collection Display**: Vista `/collection` supporta entrambi i backend con immagini e link corretti
+- ✅ **Statistics Support**: Tutte le statistiche (rarità, condition, sets) funzionano con TCGDEX
+- ✅ **Rarity Filtering**: Click su rarità filtra collezione per quella specifica rarità
+- ✅ **Remove Cards**: Eliminazione carte dalla collezione funzionante per entrambi i backend
+- ✅ **Search API**: `/api/search/cards` supporta parametro `backend` (tcgcsv|tcgdex)
+- ✅ **API Auto-Detection**: Helper `catalog_backend()` determina backend automaticamente
+- ✅ **TCGDEX JSON Fields**: Corretto parsing di `name` e `set.name` (JSON con localizzazioni)
+- ✅ **Image URLs**: TCGDEX immagini con suffisso `/low.webp` per thumbnails
+
+#### Catalog Features (Updated Jan 31, 2026)
 - ✅ **Cardmarket Buy Links**: Direct purchase links from card detail pages using RapidAPI mapping
 - ✅ **Full i18n for Catalog**: All TCGdex views fully localized (EN/DA)
 - ✅ **Translation System**: 70+ translation keys for catalog interface (`resources/lang/*/catalog.php`)
 - ✅ **No Hardcoded Text**: All UI strings use `__('catalog.key')` helper
 - ✅ **Artist Display**: Illustrator info shown on card badges (from TCGdex data)
+- ✅ **Price Gating**: Prezzi visibili solo per Advanced/Premium users nelle liste
+- ✅ **Grid Interaction Buttons**: Like/Wishlist/Watch buttons su hover nelle card grid
 
 ### 3. Deck Building System
 - ✅ Creazione deck con search dinamica carte
@@ -160,10 +197,13 @@
 - `cardmarket_prices` - Prezzi EU
 
 ### User Content
-- `user_collection` - Collezione utente (carte possedute)
+- `user_collection` - Collezione utente (carte possedute) - **Dual Backend: `product_id` + `tcgdex_card_id`**
 - `decks` - Mazzi creati (con `game_id`)
-- `deck_cards` - Carte nei mazzi
+- `deck_cards` - Carte nei mazzi - **Dual Backend: `product_id` + `tcgdex_card_id`**
 - `guest_decks` - Deck valuation per guest (lead gen)
+- `user_likes` - Like su carte - **Dual Backend: `product_id` + `tcgdex_card_id`**
+- `user_wishlist_items` - Wishlist - **Dual Backend: `product_id` + `tcgdex_card_id`**
+- `user_watch_items` - Watch list - **Dual Backend: `product_id` + `tcgdex_card_id`**
 
 ### Monetization
 - `pricing_plans` - Piani di abbonamento (Basic, Advanced, Premium)
@@ -196,9 +236,9 @@ STRIPE_KEY=pk_live_...
 BREVO_API_KEY=...
 CARDMARKET_APP_TOKEN=...
 RAPIDAPI_KEY=...
-CATALOG_BACKEND=tcgcsv (o tcgdex per testing)
-CATALOG_EXPERIMENTAL=false
 ```
+
+**NOTE**: `CATALOG_BACKEND` rimosso da .env - ora configurato per-game nel database (`games.catalog_backend`)
 
 ---
 
