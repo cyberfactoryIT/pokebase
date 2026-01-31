@@ -14,7 +14,7 @@
         <!-- Carousel Container -->
         <div id="expansion-carousel" class="flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-hide">
             @foreach($featuredExpansions as $expansion)
-                <a href="{{ route('pokemon.set', $expansion->tcgdex_id) }}" 
+                <a href="{{ route('pokemon.set.cards', $expansion->tcgdex_id) }}" 
                    class="flex-shrink-0 w-48 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg overflow-hidden transition group/card">
                     
                     <!-- Expansion Logo -->
