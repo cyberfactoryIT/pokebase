@@ -74,49 +74,31 @@ class RefreshPriceCache extends Command
         
         $whereClause = !empty($whereConditions) ? 'AND ' . implode(' AND ', $whereConditions) : '';
         
-        // Update TCGDEX items
+        // Update TCGDEX items - use EUR price
         $tcgdexSql = "
             UPDATE user_collection uc
             JOIN tcgdx_cards tc ON uc.tcgdex_card_id = tc.id
-            JOIN users u ON uc.user_id = u.id
             SET 
-                uc.cached_price = CASE 
-                    WHEN u.preferred_currency = 'USD' THEN tc.price_usd
-                    ELSE COALESCE(tc.price_eur, tc.price_usd)
-                END,
-                uc.cached_price_currency = CASE 
-                    WHEN u.preferred_currency = 'USD' AND tc.price_usd IS NOT NULL THEN 'USD'
-                    WHEN tc.price_eur IS NOT NULL THEN 'EUR'
-                    WHEN tc.price_usd IS NOT NULL THEN 'USD'
-                    ELSE COALESCE(u.preferred_currency, 'USD')
-                END,
+                uc.cached_price = tc.price_eur,
+                uc.cached_price_currency = 'EUR',
                 uc.cached_price_updated_at = ?
             WHERE uc.tcgdex_card_id IS NOT NULL
-            AND (tc.price_usd IS NOT NULL OR tc.price_eur IS NOT NULL)
+            AND tc.price_eur IS NOT NULL
             {$whereClause}
         ";
         
         $updated += DB::update($tcgdexSql, array_merge([$now], $bindings));
         
-        // Update TCGCSV items  
+        // Update TCGCSV items - use Cardmarket EUR price
         $tcgcsvSql = "
             UPDATE user_collection uc
             JOIN tcgcsv_products tp ON uc.product_id = tp.product_id
-            JOIN users u ON uc.user_id = u.id
             SET 
-                uc.cached_price = CASE 
-                    WHEN u.preferred_currency = 'USD' THEN tp.price_usd
-                    ELSE COALESCE(tp.cardmarket_price_eur, tp.price_usd)
-                END,
-                uc.cached_price_currency = CASE 
-                    WHEN u.preferred_currency = 'USD' AND tp.price_usd IS NOT NULL THEN 'USD'
-                    WHEN tp.cardmarket_price_eur IS NOT NULL THEN 'EUR'
-                    WHEN tp.price_usd IS NOT NULL THEN 'USD'
-                    ELSE COALESCE(u.preferred_currency, 'USD')
-                END,
+                uc.cached_price = tp.cardmarket_price_eur,
+                uc.cached_price_currency = 'EUR',
                 uc.cached_price_updated_at = ?
             WHERE uc.product_id IS NOT NULL
-            AND (tp.price_usd IS NOT NULL OR tp.cardmarket_price_eur IS NOT NULL)
+            AND tp.cardmarket_price_eur IS NOT NULL
             {$whereClause}
         ";
         
@@ -149,49 +131,33 @@ class RefreshPriceCache extends Command
         
         $whereClause = !empty($whereConditions) ? 'AND ' . implode(' AND ', $whereConditions) : '';
         
-        // Update TCGDEX deck cards
+        // Update TCGDEX deck cards - use EUR price
         $tcgdexSql = "
             UPDATE deck_cards dc
             JOIN decks d ON dc.deck_id = d.id
             JOIN tcgdx_cards tc ON dc.tcgdex_card_id = tc.id
-            JOIN users u ON d.user_id = u.id
             SET 
-                dc.cached_price = CASE 
-                    WHEN u.preferred_currency = 'USD' THEN tc.price_usd
-                    ELSE COALESCE(tc.price_eur, tc.price_usd)
-                END,
-                dc.cached_price_currency = CASE 
-                    WHEN u.preferred_currency = 'USD' AND tc.price_usd IS NOT NULL THEN 'USD'
-                    WHEN tc.price_eur IS NOT NULL THEN 'EUR'
-                    WHEN tc.price_usd IS NOT NULL THEN 'USD'
-                    ELSE COALESCE(u.preferred_currency, 'USD')
-                END,
+                dc.cached_price = tc.price_eur,
+                dc.cached_price_currency = 'EUR',
                 dc.cached_price_updated_at = ?
             WHERE dc.tcgdex_card_id IS NOT NULL
-            AND (tc.price_usd IS NOT NULL OR tc.price_eur IS NOT NULL)
+            AND tc.price_eur IS NOT NULL
             {$whereClause}
         ";
         
         $updated += DB::update($tcgdexSql, array_merge([$now], $bindings));
         
-        // Update TCGCSV deck cards
+        // Update TCGCSV deck cards - use Cardmarket EUR price
         $tcgcsvSql = "
             UPDATE deck_cards dc
             JOIN decks d ON dc.deck_id = d.id
             JOIN tcgcsv_products tp ON dc.product_id = tp.product_id
-            JOIN users u ON d.user_id = u.id
             SET 
-                dc.cached_price = CASE 
-                    WHEN COALESCE(u.preferred_currency, 'USD') = 'USD' THEN tp.price_usd
-                    ELSE tp.cardmarket_price_eur
-                END,
-                dc.cached_price_currency = COALESCE(u.preferred_currency, 'USD'),
+                dc.cached_price = tp.cardmarket_price_eur,
+                dc.cached_price_currency = 'EUR',
                 dc.cached_price_updated_at = ?
             WHERE dc.product_id IS NOT NULL
-            AND (
-                (COALESCE(u.preferred_currency, 'USD') = 'USD' AND tp.price_usd IS NOT NULL) OR
-                (COALESCE(u.preferred_currency, 'USD') = 'EUR' AND tp.cardmarket_price_eur IS NOT NULL)
-            )
+            AND tp.cardmarket_price_eur IS NOT NULL
             {$whereClause}
         ";
         
