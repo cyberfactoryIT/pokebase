@@ -72,6 +72,11 @@ class TcgdxImportService
             $cardsTotal = 0;
             $failedSets = [];
 
+            // Phase 1: Import all sets first (without cards)
+            if ($output) {
+                $output("📦 Phase 1: Importing sets...\n\n");
+            }
+
             foreach ($sets as $index => $setData) {
                 $setId = $setData['id'] ?? null;
                 
@@ -86,8 +91,47 @@ class TcgdxImportService
                 }
 
                 try {
-                    $result = $this->importSet($setId, $output);
-                    $setsImported++;
+                    // Fetch and save set only
+                    $setDataFull = $this->client->getSet($setId);
+                    if ($setDataFull) {
+                        $normalizedSet = $this->client->normalizeSet($setDataFull);
+                        TcgdxSet::updateOrCreate(
+                            ['tcgdex_id' => $normalizedSet['tcgdex_id']],
+                            $normalizedSet
+                        );
+                        $setsImported++;
+                        if ($output) {
+                            $output("  ✅ Set imported\n\n");
+                        }
+                    }
+                } catch (Throwable $e) {
+                    $setsFailed++;
+                    $failedSets[] = [
+                        'set_id' => $setId,
+                        'error' => $e->getMessage(),
+                    ];
+                    if ($output) {
+                        $output("  ❌ Failed: {$e->getMessage()}\n\n");
+                    }
+                }
+            }
+
+            // Phase 2: Import cards for all sets
+            if ($output) {
+                $output("\n🎴 Phase 2: Importing cards...\n\n");
+            }
+
+            $allSets = TcgdxSet::all();
+            foreach ($allSets as $index => $set) {
+                $progress = $index + 1;
+                $total = $allSets->count();
+                
+                if ($output) {
+                    $output("[$progress/$total] Importing cards for set: {$set->tcgdex_id}...\n");
+                }
+
+                try {
+                    $result = $this->importCardsForSet($set, $output);
                     $cardsTotal += $result['cards_imported'] ?? 0;
                     
                     if ($output) {
@@ -103,19 +147,8 @@ class TcgdxImportService
                         ]);
                     }
                 } catch (Throwable $e) {
-                    $setsFailed++;
-                    $failedSets[] = [
-                        'set_id' => $setId,
-                        'error' => $e->getMessage(),
-                    ];
-                    
-                    // Ensure any pending transaction is closed
-                    if (DB::transactionLevel() > 0) {
-                        DB::rollBack();
-                    }
-                    
                     if ($output) {
-                        $output("  ❌ Failed: {$e->getMessage()}\n\n");
+                        $output("  ❌ Failed importing cards: {$e->getMessage()}\n\n");
                     }
                 }
             }
@@ -171,38 +204,28 @@ class TcgdxImportService
      */
     public function importSet(string $setId, ?callable $output = null): array
     {
-        DB::beginTransaction();
+        // Fetch set data
+        $setData = $this->client->getSet($setId);
         
-        try {
-            // Fetch set data
-            $setData = $this->client->getSet($setId);
-            
-            if (!$setData) {
-                throw new \Exception("Set not found: {$setId}");
-            }
-
-            // Normalize and upsert set
-            $normalizedSet = $this->client->normalizeSet($setData);
-            
-            $set = TcgdxSet::updateOrCreate(
-                ['tcgdex_id' => $normalizedSet['tcgdex_id']],
-                $normalizedSet
-            );
-
-            // Import cards for this set (pass set object instead of setId string)
-            $result = $this->importCardsForSet($set, $output);
-
-            DB::commit();
-            
-            return [
-                'set_id' => $set->id,
-                'cards_imported' => $result['cards_imported'],
-            ];
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
+        if (!$setData) {
+            throw new \Exception("Set not found: {$setId}");
         }
+
+        // Normalize and upsert set
+        $normalizedSet = $this->client->normalizeSet($setData);
+        
+        $set = TcgdxSet::updateOrCreate(
+            ['tcgdex_id' => $normalizedSet['tcgdex_id']],
+            $normalizedSet
+        );
+
+        // Import cards for this set
+        $result = $this->importCardsForSet($set, $output);
+        
+        return [
+            'set_id' => $set->id,
+            'cards_imported' => $result['cards_imported'],
+        ];
     }
 
     /**
