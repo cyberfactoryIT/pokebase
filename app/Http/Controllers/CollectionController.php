@@ -559,84 +559,132 @@ class CollectionController extends Controller
     
     /**
      * Calculate total collection value in USD and EUR
+     * Uses cached prices for performance, falls back to real-time queries if cache is null
      */
     private function calculateCollectionValue($userId, $currentGame, $catalogBackend): array
     {
-        $query = UserCollection::where('user_id', $userId)
+        $user = \App\Models\User::find($userId);
+        $preferredCurrency = $user->preferred_currency ?? 'USD';
+        
+        // Try cached prices first (fast query)
+        $cachedQuery = UserCollection::where('user_id', $userId)
+            ->whereNotNull('cached_price');
+            
+        if ($currentGame) {
+            $cachedQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+        }
+        
+        if ($catalogBackend === 'tcgdex') {
+            $cachedQuery->whereNotNull('tcgdex_card_id');
+        } else {
+            $cachedQuery->whereNotNull('product_id');
+        }
+        
+        $cachedItems = $cachedQuery->get();
+        
+        // Calculate from cached prices
+        $totalValueUsd = 0;
+        $totalValueEur = 0;
+        $cardsWithCachedPrices = $cachedItems->count();
+        
+        foreach ($cachedItems as $item) {
+            if ($item->cached_price_currency === 'USD') {
+                $totalValueUsd += $item->cached_price * $item->quantity;
+                // Convert to EUR (approximate)
+                $totalValueEur += ($item->cached_price / 1.10) * $item->quantity;
+            } else {
+                $totalValueEur += $item->cached_price * $item->quantity;
+                // Convert to USD (approximate)
+                $totalValueUsd += ($item->cached_price * 1.10) * $item->quantity;
+            }
+        }
+        
+        // Fallback: Get items without cached prices and calculate real-time
+        $uncachedQuery = UserCollection::where('user_id', $userId)
+            ->whereNull('cached_price')
             ->with([
                 'card.prices' => function($q) {
                     $q->latest('snapshot_at')->limit(1);
                 },
                 'card.rapidapiCard',
-                'card.cardmarketProduct.latestPriceQuote'
+                'card.cardmarketProduct.latestPriceQuote',
+                'tcgdexCard'
             ]);
             
         if ($currentGame) {
-            $query->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+            $uncachedQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
         }
         
-        // Filter by catalog backend
         if ($catalogBackend === 'tcgdex') {
-            $query->whereNotNull('tcgdex_card_id');
+            $uncachedQuery->whereNotNull('tcgdex_card_id');
         } else {
-            $query->whereNotNull('product_id');
+            $uncachedQuery->whereNotNull('product_id');
         }
         
-        $collectionItems = $query->get();
+        $uncachedItems = $uncachedQuery->get();
         
-        $totalValueUsd = 0;
-        $totalValueEur = 0;
-        $cardsWithPricesUsd = 0;
-        $cardsWithPricesEur = 0;
-        
-        foreach ($collectionItems as $item) {
-            // USD price from TCGPlayer
-            $latestPrice = $item->card->prices->first();
-            $marketPriceUsd = $latestPrice?->market_price ?? 0;
-            
-            if ($marketPriceUsd > 0) {
-                $cardsWithPricesUsd++;
-                $totalValueUsd += $marketPriceUsd * $item->quantity;
-            }
-            
-            // EUR price - Priority system
-            $marketPriceEur = 0;
-            
-            // Priority 1: Cardmarket price quotes (latest trend)
-            $cardmarketProduct = $item->card->cardmarketProduct;
-            if ($cardmarketProduct) {
-                $latestQuote = $cardmarketProduct->latestPriceQuote;
-                if ($latestQuote && $latestQuote->trend > 0) {
-                    $marketPriceEur = $latestQuote->trend;
-                } elseif ($latestQuote && $latestQuote->avg > 0) {
-                    $marketPriceEur = $latestQuote->avg;
+        foreach ($uncachedItems as $item) {
+            // TCGDEX pricing
+            if ($item->tcgdex_card_id && $item->tcgdexCard) {
+                $pricing = $item->tcgdexCard->raw['pricing'] ?? null;
+                if ($pricing && isset($pricing['cardmarket']['averageSellPrice'])) {
+                    $priceEur = $pricing['cardmarket']['averageSellPrice'];
+                    $totalValueEur += $priceEur * $item->quantity;
+                    $totalValueUsd += ($priceEur * 1.10) * $item->quantity;
                 }
+                continue;
             }
             
-            // Priority 2: Cardmarket EUR from tcgcsv_products
-            if ($marketPriceEur === 0 && $item->card->cardmarket_price_eur && $item->card->cardmarket_price_eur > 0) {
-                $marketPriceEur = $item->card->cardmarket_price_eur;
-            }
-            
-            // Priority 3: RapidAPI Cardmarket data
-            if ($marketPriceEur === 0) {
-                $rapidapiCard = $item->card->rapidapiCard;
-                if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                    $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+            // TCGCSV pricing
+            if ($item->product_id && $item->card) {
+                // USD price from TCGPlayer
+                $latestPrice = $item->card->prices->first();
+                $marketPriceUsd = $latestPrice?->market_price ?? 0;
+                
+                if ($marketPriceUsd > 0) {
+                    $totalValueUsd += $marketPriceUsd * $item->quantity;
                 }
-            }
-            
-            if ($marketPriceEur > 0) {
-                $cardsWithPricesEur++;
-                $totalValueEur += $marketPriceEur * $item->quantity;
+                
+                // EUR price - Priority system
+                $marketPriceEur = 0;
+                
+                // Priority 1: Cardmarket price quotes
+                $cardmarketProduct = $item->card->cardmarketProduct;
+                if ($cardmarketProduct) {
+                    $latestQuote = $cardmarketProduct->latestPriceQuote;
+                    if ($latestQuote && $latestQuote->trend > 0) {
+                        $marketPriceEur = $latestQuote->trend;
+                    } elseif ($latestQuote && $latestQuote->avg > 0) {
+                        $marketPriceEur = $latestQuote->avg;
+                    }
+                }
+                
+                // Priority 2: Cardmarket EUR from tcgcsv_products
+                if ($marketPriceEur === 0 && $item->card->cardmarket_price_eur && $item->card->cardmarket_price_eur > 0) {
+                    $marketPriceEur = $item->card->cardmarket_price_eur;
+                }
+                
+                // Priority 3: RapidAPI Cardmarket data
+                if ($marketPriceEur === 0) {
+                    $rapidapiCard = $item->card->rapidapiCard;
+                    if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
+                        $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
+                    }
+                }
+                
+                if ($marketPriceEur > 0) {
+                    $totalValueEur += $marketPriceEur * $item->quantity;
+                }
             }
         }
         
         return [
             'total_value_usd' => round($totalValueUsd, 2),
             'total_value_eur' => round($totalValueEur, 2),
-            'cards_with_prices_usd' => $cardsWithPricesUsd,
-            'cards_with_prices_eur' => $cardsWithPricesEur,
+            'cards_with_prices_usd' => $cardsWithCachedPrices + $uncachedItems->count(),
+            'cards_with_prices_eur' => $cardsWithCachedPrices + $uncachedItems->count(),
+            'cached_items' => $cardsWithCachedPrices,
+            'uncached_items' => $uncachedItems->count(),
         ];
     }
 

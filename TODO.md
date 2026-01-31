@@ -52,14 +52,15 @@ WHERE user_id = ?
 ```
 
 ### Implementazione Steps
-- [ ] Migration: aggiungere colonne cached_price a user_collection e deck_cards
-- [ ] Command: `app/Console/Commands/RefreshPriceCache.php`
-- [ ] Logic: Dual backend support (TCGCSV product_id + TCGDEX tcgdex_card_id)
-- [ ] Fallback: Se cached_price NULL, fallback a query real-time (backward compatibility)
-- [ ] Update Controllers: CollectionController, DeckController per usare cached prices
-- [ ] Schedule: Registrare command in Kernel.php
+- [x] Migration: aggiungere colonne cached_price a user_collection e deck_cards
+- [x] Command: `app/Console/Commands/RefreshPriceCache.php`
+- [x] Logic: Dual backend support (TCGCSV product_id + TCGDEX tcgdex_card_id)
+- [x] Fallback: Se cached_price NULL, fallback a query real-time (backward compatibility)
+- [x] Update Controllers: CollectionController per usare cached prices
+- [x] Schedule: Registrare command in Kernel.php (twice daily at 6 AM and 6 PM)
 - [ ] Monitoring: Log update count e failure rate
 - [ ] Testing: Verificare performance improvement su dataset reale
+- [ ] Update DeckController: Aggiungere cached price support per deck valuation
 
 ### Vantaggi
 - ✅ Performance: Query 10-100x più veloci
