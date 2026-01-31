@@ -172,9 +172,15 @@ class TcgdxClient
      */
     public function normalizeCard(array $cardData, int $setDbId): array
     {
+        // Extract USD price from TCGPlayer midPrice (lowest, excluding 1st edition)
+        $priceUsd = $this->extractUsdPrice($cardData);
+        
+        // Extract EUR price from Cardmarket
+        $priceEur = $this->extractEurPrice($cardData);
+        
         return [
             'tcgdex_id' => $cardData['id'] ?? null,
-            'set_tcgdx_id' => $setDbId,
+            'set_tcgdex_id' => $setDbId,
             'local_id' => $cardData['localId'] ?? null,
             'number' => $cardData['number'] ?? $cardData['localId'] ?? null,
             'name' => $this->extractName($cardData),
@@ -187,8 +193,92 @@ class TcgdxClient
             'supertype' => $cardData['category'] ?? null,
             'hp' => isset($cardData['hp']) ? (int) $cardData['hp'] : null,
             'evolves_from' => $cardData['evolveFrom'] ?? null,
+            'price_usd' => $priceUsd,
+            'price_eur' => $priceEur,
             'raw' => $cardData,
         ];
+    }
+    
+    /**
+     * Extract USD price from TCGPlayer midPrice (lowest non-1st edition variant)
+     * 
+     * @param array $cardData
+     * @return float|null
+     */
+    protected function extractUsdPrice(array $cardData): ?float
+    {
+        $tcgplayer = $cardData['pricing']['tcgplayer'] ?? null;
+        
+        if (!$tcgplayer) {
+            return null;
+        }
+        
+        $prices = [];
+        
+        // Collect all midPrice values, excluding 1st edition variants
+        foreach ($tcgplayer as $key => $variant) {
+            if (!is_array($variant)) {
+                continue;
+            }
+            
+            // Skip 1st edition variants
+            if (stripos($key, '1st') !== false || stripos($key, 'first') !== false) {
+                continue;
+            }
+            
+            if (isset($variant['midPrice']) && is_numeric($variant['midPrice'])) {
+                $prices[] = (float) $variant['midPrice'];
+            }
+        }
+        
+        // Return the lowest price
+        return !empty($prices) ? min($prices) : null;
+    }
+    
+    /**
+     * Extract EUR price from Cardmarket
+     * Priority: cardmarket_prices.trend > JSON trend > JSON avg1
+     * 
+     * @param array $cardData
+     * @return float|null
+     */
+    protected function extractEurPrice(array $cardData): ?float
+    {
+        $cardmarket = $cardData['pricing']['cardmarket'] ?? null;
+        
+        if (!$cardmarket) {
+            return null;
+        }
+        
+        $idProduct = $cardmarket['idProduct'] ?? null;
+        
+        // Priority 1: Check cardmarket_prices table for latest trend price (if table exists)
+        if ($idProduct) {
+            try {
+                $cardmarketPrice = \DB::table('cardmarket_prices')
+                    ->where('id_product', $idProduct)
+                    ->orderBy('updated_at', 'desc')
+                    ->first();
+                
+                if ($cardmarketPrice && isset($cardmarketPrice->trend)) {
+                    return (float) $cardmarketPrice->trend;
+                }
+            } catch (\Exception $e) {
+                // Table might not exist, continue to fallback
+            }
+        }
+        
+        // Priority 2: Use trend from JSON
+        if (isset($cardmarket['trend']) && is_numeric($cardmarket['trend'])) {
+            return (float) $cardmarket['trend'];
+        }
+        
+        // Priority 3: Use avg1 from JSON
+        if (isset($cardmarket['avg1']) && is_numeric($cardmarket['avg1'])) {
+            return (float) $cardmarket['avg1'];
+        }
+        
+        return null;
     }
 
     /**

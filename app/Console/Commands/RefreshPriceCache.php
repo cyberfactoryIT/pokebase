@@ -207,30 +207,52 @@ class RefreshPriceCache extends Command
      */
     private function getTcgdexPrice($card, string $currency): ?array
     {
-        // TCGDEX stores Cardmarket pricing in raw field
-        $pricing = $card->raw['pricing'] ?? null;
+        // Use pre-calculated price columns (populated during import)
+        $priceUsd = $card->price_usd;
+        $priceEur = $card->price_eur;
         
-        if (!$pricing) {
-            return null;
+        // If both null, try fallback to raw field
+        if ($priceUsd === null && $priceEur === null) {
+            // Legacy fallback for cards without price columns
+            $pricing = $card->raw['pricing'] ?? null;
+            
+            if ($pricing && isset($pricing['cardmarket']['averageSellPrice'])) {
+                $priceEur = $pricing['cardmarket']['averageSellPrice'];
+            }
         }
         
-        // Try Cardmarket first (EUR)
-        $cardmarket = $pricing['cardmarket'] ?? null;
-        if ($cardmarket && isset($cardmarket['averageSellPrice'])) {
-            $priceEur = $cardmarket['averageSellPrice'];
+        // Return price in requested currency
+        if ($currency === 'USD') {
+            if ($priceUsd !== null) {
+                return [
+                    'amount' => round($priceUsd, 2),
+                    'currency' => 'USD',
+                ];
+            }
             
-            if ($currency === 'USD') {
-                // Convert EUR to USD (approximate rate: 1 EUR = 1.10 USD)
+            // Convert EUR to USD if USD not available
+            if ($priceEur !== null) {
                 return [
                     'amount' => round($priceEur * 1.10, 2),
                     'currency' => 'USD',
                 ];
             }
+        } else {
+            // EUR requested
+            if ($priceEur !== null) {
+                return [
+                    'amount' => round($priceEur, 2),
+                    'currency' => 'EUR',
+                ];
+            }
             
-            return [
-                'amount' => $priceEur,
-                'currency' => 'EUR',
-            ];
+            // Convert USD to EUR if EUR not available
+            if ($priceUsd !== null) {
+                return [
+                    'amount' => round($priceUsd / 1.10, 2),
+                    'currency' => 'EUR',
+                ];
+            }
         }
         
         return null;
