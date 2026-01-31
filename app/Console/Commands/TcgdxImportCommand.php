@@ -26,7 +26,7 @@ class TcgdxImportCommand extends Command
         $this->info('🎴 TCGdex Import');
         $this->newLine();
 
-        // Fresh mode: truncate tables
+        // Fresh mode: DELETE FROMs
         if ($this->option('fresh')) {
             $this->warn('⚠️  Fresh mode: truncating tables...');
             

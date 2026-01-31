@@ -189,8 +189,8 @@ class TcgdxImportService
                 $normalizedSet
             );
 
-            // Import cards for this set
-            $result = $this->importCardsForSet($setId, $output);
+            // Import cards for this set (pass set object instead of setId string)
+            $result = $this->importCardsForSet($set, $output);
 
             DB::commit();
             
@@ -208,21 +208,14 @@ class TcgdxImportService
     /**
      * Import cards for a specific set
      * 
-     * @param string $setId
+     * @param TcgdxSet $set The set model instance
      * @param callable|null $output
      * @return array Stats
      */
-    public function importCardsForSet(string $setId, ?callable $output = null): array
+    public function importCardsForSet(TcgdxSet $set, ?callable $output = null): array
     {
-        // Find the set in our DB
-        $set = TcgdxSet::where('tcgdex_id', $setId)->first();
-        
-        if (!$set) {
-            throw new \Exception("Set not found in database: {$setId}");
-        }
-
         // Fetch card summaries from set endpoint
-        $cardSummaries = $this->client->listCardsBySet($setId);
+        $cardSummaries = $this->client->listCardsBySet($set->tcgdex_id);
         $cardsImported = 0;
 
         foreach ($cardSummaries as $cardSummary) {
