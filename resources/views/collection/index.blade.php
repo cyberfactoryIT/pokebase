@@ -68,18 +68,6 @@
 
         <!-- Quick Add Card -->
         <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
-            @if(request('rarity'))
-            <div class="mb-4 flex items-center gap-2">
-                <span class="inline-flex items-center px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm">
-                    Filtro: {{ request('rarity') }}
-                    <a href="{{ route('collection.index') }}" class="ml-2 hover:text-white">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </a>
-                </span>
-            </div>
-            @endif
             <h2 class="text-lg font-semibold text-white mb-4">{{ __('collection/index.quick_add_card') }}</h2>
             <div class="relative" x-data="{ searchOpen: false }" @click.away="searchOpen = false">
                 <input 
@@ -377,6 +365,243 @@
 
             <!-- Cards Tab -->
             <div x-show="activeTab === 'cards'" class="mt-6">
+                <!-- Filters -->
+                <div class="bg-[#161615] border border-white/15 rounded-xl shadow-xl mb-6 p-6">
+                    <form method="GET" action="{{ route('collection.index') }}" id="collectionFilters" class="space-y-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-white">Filters</h2>
+                            @if(request()->has(['sort', 'set', 'rarity', 'min_price', 'max_price']))
+                                <a href="{{ route('collection.index') }}" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Clear all filters
+                                </a>
+                            @endif
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Filter by Letter -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Filter by First Letter</label>
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach(range('A', 'Z') as $letter)
+                                        @if(in_array($letter, $availableLetters))
+                                            <label class="cursor-pointer">
+                                                <input type="checkbox" name="letter" value="{{ $letter }}" 
+                                                       {{ request('letter') == $letter ? 'checked' : '' }}
+                                                       onchange="this.form.submit()" class="hidden peer">
+                                                <span class="inline-block px-2.5 py-1 border border-white/20 rounded
+                                                       peer-checked:bg-blue-500 peer-checked:border-blue-500
+                                                       hover:border-blue-400 transition text-sm font-medium">
+                                                    {{ $letter }}
+                                                </span>
+                                            </label>
+                                        @else
+                                            <span class="inline-block px-2.5 py-1 border border-white/10 rounded text-gray-600 text-sm font-medium opacity-40 cursor-not-allowed">
+                                                {{ $letter }}
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Other Filters Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <!-- Sort Order -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">Sort by</label>
+                                    <select name="sort" onchange="this.form.submit()" class="w-full px-4 py-2 bg-black/50 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="newest" {{ request('sort', 'newest') === 'newest' ? 'selected' : '' }}>Newest First</option>
+                                        <option value="a-z" {{ request('sort') === 'a-z' ? 'selected' : '' }}>A → Z</option>
+                                        <option value="z-a" {{ request('sort') === 'z-a' ? 'selected' : '' }}>Z → A</option>
+                                        @can('seePrices')
+                                        <option value="price-asc" {{ request('sort') === 'price-asc' ? 'selected' : '' }}>Price: Low → High</option>
+                                        <option value="price-desc" {{ request('sort') === 'price-desc' ? 'selected' : '' }}>Price: High → Low</option>
+                                        @endcan
+                                    </select>
+                                </div>
+
+                                <!-- Filter by Set -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Set</label>
+                                <select name="set" onchange="this.form.submit()" class="w-full px-4 py-2 bg-black/50 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">All Sets ({{ count($availableSets) }})</option>
+                                    @foreach($availableSets as $set)
+                                        <option value="{{ $set['id'] ?? $set['name'] }}" {{ request('set') == ($set['id'] ?? $set['name']) ? 'selected' : '' }}>
+                                            {{ $set['name'] }} ({{ $set['card_count'] }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Filter by Rarity -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Rarity</label>
+                                <select name="rarity" onchange="this.form.submit()" class="w-full px-4 py-2 bg-black/50 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">All Rarities ({{ count($availableRarities) }})</option>
+                                    @foreach($availableRarities as $rarity)
+                                        <option value="{{ $rarity['rarity'] }}" {{ request('rarity') == $rarity['rarity'] ? 'selected' : '' }}>
+                                            {{ $rarity['rarity'] ?: 'Unknown' }} ({{ $rarity['card_count'] }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Filter by Price Range (Premium only) -->
+                            @can('seePrices')
+                            <div x-data="{
+                                min: {{ request('min_price', $priceRange['min']) }},
+                                max: {{ request('max_price', $priceRange['max']) }},
+                                rangeMin: {{ $priceRange['min'] }},
+                                rangeMax: {{ $priceRange['max'] }},
+                                currency: '{{ auth()->user()->preferred_currency ?? 'EUR' }}',
+                                getSymbol() {
+                                    const symbols = {
+                                        'EUR': '€', 'USD': '$', 'GBP': '£', 'JPY': '¥',
+                                        'CAD': 'CA$', 'AUD': 'A$', 'CHF': 'CHF',
+                                        'SEK': 'kr', 'NOK': 'kr', 'DKK': 'kr'
+                                    };
+                                    return symbols[this.currency] || this.currency;
+                                },
+                                formatPrice(val) {
+                                    const formatted = parseFloat(val).toFixed(2);
+                                    const sym = this.getSymbol();
+                                    if (['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'].includes(this.currency)) {
+                                        return sym + formatted;
+                                    }
+                                    return formatted + ' ' + sym;
+                                }
+                            }">
+                                <input type="hidden" name="min_price" :value="min > rangeMin ? min : ''">
+                                <input type="hidden" name="max_price" :value="max < rangeMax ? max : ''">
+                                
+                                <label class="block text-sm font-medium text-gray-400 mb-2">
+                                    Price Range
+                                    <span class="text-white ml-2" x-text="formatPrice(min) + ' - ' + formatPrice(max)"></span>
+                                </label>
+                                
+                                <div class="relative pt-1">
+                                    <!-- Track background -->
+                                    <div class="h-2 bg-white/10 rounded-full relative">
+                                        <!-- Active range highlight -->
+                                        <div class="absolute h-2 bg-blue-500 rounded-full" 
+                                             :style="'left: ' + ((min - rangeMin) / (rangeMax - rangeMin) * 100) + '%; width: ' + ((max - min) / (rangeMax - rangeMin) * 100) + '%'">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Min slider -->
+                                    <input 
+                                        type="range" 
+                                        :min="rangeMin" 
+                                        :max="rangeMax" 
+                                        step="0.01"
+                                        x-model="min"
+                                        @input="if(parseFloat(min) > parseFloat(max)) min = max"
+                                        class="absolute w-full h-2 -mt-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white"
+                                    >
+                                    
+                                    <!-- Max slider -->
+                                    <input 
+                                        type="range" 
+                                        :min="rangeMin" 
+                                        :max="rangeMax" 
+                                        step="0.01"
+                                        x-model="max"
+                                        @input="if(parseFloat(max) < parseFloat(min)) max = min"
+                                        class="absolute w-full h-2 -mt-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white"
+                                    >
+                                </div>
+                                
+                                <div class="flex justify-between text-xs text-gray-500 mt-2">
+                                    <span x-text="formatPrice(rangeMin)"></span>
+                                    <span x-text="formatPrice(rangeMax)"></span>
+                                </div>
+                                
+                                <button 
+                                    type="submit" 
+                                    class="mt-3 w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition"
+                                    x-show="min > rangeMin || max < rangeMax"
+                                >
+                                    Apply Price Filter
+                                </button>
+                            </div>
+                            @endcan
+                        </div>
+
+                        <!-- Active Filters Display -->
+                        @if(request()->has(['sort', 'letter', 'set', 'rarity', 'min_price', 'max_price']))
+                        <div class="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+                            @if(request('sort') && request('sort') !== 'newest')
+                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-300 rounded-lg text-sm">
+                                    Sort: 
+                                    @if(request('sort') === 'a-z') A → Z
+                                    @elseif(request('sort') === 'z-a') Z → A
+                                    @elseif(request('sort') === 'price-asc') Price ↑
+                                    @elseif(request('sort') === 'price-desc') Price ↓
+                                    @endif
+                                    <a href="{{ route('collection.index', array_filter(request()->except(['sort', 'page']))) }}" class="hover:text-white">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </a>
+                                </span>
+                            @endif
+                            @if(request('letter'))
+                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg text-sm">
+                                    Letter: {{ request('letter') }}
+                                    <a href="{{ route('collection.index', array_filter(request()->except(['letter', 'page']))) }}" class="hover:text-white">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </a>
+                                </span>
+                            @endif
+                            @if(request('set'))
+                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-sm">
+                                    Set: {{ collect($availableSets)->firstWhere('id', request('set'))['name'] ?? collect($availableSets)->firstWhere('name', request('set'))['name'] ?? request('set') }}
+                                    <a href="{{ route('collection.index', array_filter(request()->except(['set', 'page']))) }}" class="hover:text-white">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </a>
+                                </span>
+                            @endif
+                            @if(request('rarity'))
+                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-lg text-sm">
+                                    Rarity: {{ request('rarity') }}
+                                    <a href="{{ route('collection.index', array_filter(request()->except(['rarity', 'page']))) }}" class="hover:text-white">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </a>
+                                </span>
+                            @endif
+                            @if(request('min_price') || request('max_price'))
+                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-500/20 text-green-300 rounded-lg text-sm">
+                                    Price: 
+                                    @if(request('min_price') && request('max_price'))
+                                        {{ number_format(request('min_price'), 2) }} - {{ number_format(request('max_price'), 2) }}
+                                    @elseif(request('min_price'))
+                                        ≥ {{ number_format(request('min_price'), 2) }}
+                                    @else
+                                        ≤ {{ number_format(request('max_price'), 2) }}
+                                    @endif
+                                    <a href="{{ route('collection.index', array_filter(request()->except(['min_price', 'max_price', 'page']))) }}" class="hover:text-white">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </a>
+                                </span>
+                            @endif
+                        </div>
+                        @endif
+                    </form>
+                </div>
+
+        <!-- Spacing between filters and cards -->
+        <div class="h-6"></div>
+
         @if($collection->isEmpty())
         <!-- Empty State -->
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-12 text-center">

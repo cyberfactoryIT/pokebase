@@ -23,7 +23,14 @@ class CollectionController extends Controller
         $userId = Auth::id();
         $currentGame = $request->attributes->get('currentGame');
         $catalogBackend = catalog_backend();
+        
+        // Get filter parameters
         $rarityFilter = $request->input('rarity');
+        $setFilter = $request->input('set');
+        $letterFilter = $request->input('letter'); // A, B, C, etc.
+        $minPrice = $request->input('min_price');
+        $maxPrice = $request->input('max_price');
+        $sortOrder = $request->input('sort', 'newest'); // newest, a-z, z-a, price-asc, price-desc
         
         $query = UserCollection::where('user_id', $userId);
         
@@ -32,10 +39,48 @@ class CollectionController extends Controller
             $query->with(['tcgdexCard', 'photos'])
                   ->whereNotNull('tcgdex_card_id');
             
+            // Apply letter filter for TCGDEX
+            if ($letterFilter) {
+                $query->whereHas('tcgdexCard', function($q) use ($letterFilter) {
+                    $q->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(name, "$.en")) LIKE ?', [$letterFilter . '%']);
+                });
+            }
+            
             // Apply rarity filter for TCGDEX
             if ($rarityFilter) {
                 $query->whereHas('tcgdexCard', function($q) use ($rarityFilter) {
                     $q->where('rarity', $rarityFilter);
+                });
+            }
+            
+            // Apply set filter for TCGDEX
+            if ($setFilter) {
+                $query->whereHas('tcgdexCard.set', function($q) use ($setFilter) {
+                    $q->where('tcgdx_sets.id', $setFilter);
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $query->with(['cmapiCard', 'photos'])
+                  ->whereNotNull('cmapi_card_id');
+            
+            // Apply letter filter for CMAPI
+            if ($letterFilter) {
+                $query->whereHas('cmapiCard', function($q) use ($letterFilter) {
+                    $q->where('name', 'LIKE', $letterFilter . '%');
+                });
+            }
+            
+            // Apply rarity filter for CMAPI
+            if ($rarityFilter) {
+                $query->whereHas('cmapiCard', function($q) use ($rarityFilter) {
+                    $q->where('rarity', $rarityFilter);
+                });
+            }
+            
+            // Apply set filter for CMAPI
+            if ($setFilter) {
+                $query->whereHas('cmapiCard', function($q) use ($setFilter) {
+                    $q->where('set_name', $setFilter);
                 });
             }
         } else {
@@ -49,16 +94,161 @@ class CollectionController extends Controller
                 });
             }
             
+            // Apply letter filter for TCGCSV
+            if ($letterFilter) {
+                $query->whereHas('card', function($q) use ($letterFilter) {
+                    $q->where('name', 'LIKE', $letterFilter . '%');
+                });
+            }
+            
             // Apply rarity filter for TCGCSV
             if ($rarityFilter) {
                 $query->whereHas('card', function($q) use ($rarityFilter) {
                     $q->where('rarity', $rarityFilter);
                 });
             }
+            
+            // Apply set filter for TCGCSV
+            if ($setFilter) {
+                $query->whereHas('card.group', function($q) use ($setFilter) {
+                    $q->where('name', $setFilter);
+                });
+            }
         }
         
-        $collection = $query->orderBy('created_at', 'desc')
-            ->paginate(24);
+        // Apply price range filter (Premium only)
+        if (($minPrice !== null || $maxPrice !== null) && Gate::allows('seePrices')) {
+            // Convert user's input from preferred currency to EUR for comparison
+            $user = Auth::user();
+            $preferredCurrency = $user->preferred_currency ?? 'EUR';
+            
+            // We need to filter in PHP since cached_price_currency varies per row
+            // Get all collection IDs that match the price range (filtered by backend)
+            $priceFilterQuery = UserCollection::where('user_id', $userId)
+                ->whereNotNull('cached_price')
+                ->where('cached_price', '>', 0)
+                ->select('id', 'cached_price', 'cached_price_currency');
+            
+            // Apply backend filter to price query
+            if ($catalogBackend === 'tcgdex') {
+                $priceFilterQuery->whereNotNull('tcgdex_card_id');
+            } elseif ($catalogBackend === 'cmapi') {
+                $priceFilterQuery->whereNotNull('cmapi_card_id');
+            } else {
+                $priceFilterQuery->whereNotNull('product_id');
+                if ($currentGame) {
+                    $priceFilterQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+                }
+            }
+            
+            $priceItems = $priceFilterQuery->get();
+            
+            $validIds = $priceItems->filter(function($item) use ($minPrice, $maxPrice, $preferredCurrency) {
+                $currency = $item->cached_price_currency ?? 'EUR';
+                // Convert cached price to user's preferred currency
+                $priceInPreferred = \App\Services\CurrencyService::convert($item->cached_price, $currency, $preferredCurrency);
+                
+                $matchesMin = $minPrice === null || $priceInPreferred >= $minPrice;
+                $matchesMax = $maxPrice === null || $priceInPreferred <= $maxPrice;
+                
+                return $matchesMin && $matchesMax;
+            })->pluck('id')->toArray();
+            
+            if (!empty($validIds)) {
+                $query->whereIn('user_collection.id', $validIds);
+            } else {
+                // No items match the price filter, return empty result
+                $query->whereRaw('1 = 0');
+            }
+        }
+        
+        // Apply sorting
+        if ($sortOrder === 'a-z') {
+            // Sort alphabetically A-Z by card name
+            if ($catalogBackend === 'tcgdex') {
+                $query->join('tcgdx_cards', 'user_collection.tcgdex_card_id', '=', 'tcgdx_cards.id')
+                      ->orderByRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) ASC')
+                      ->select('user_collection.*');
+            } elseif ($catalogBackend === 'cmapi') {
+                $query->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                      ->orderBy('cmapi_cards.name', 'ASC')
+                      ->select('user_collection.*');
+            } else {
+                $query->join('tcgcsv_products', 'user_collection.product_id', '=', 'tcgcsv_products.id')
+                      ->orderBy('tcgcsv_products.name', 'ASC')
+                      ->select('user_collection.*');
+            }
+        } elseif ($sortOrder === 'z-a') {
+            // Sort alphabetically Z-A by card name
+            if ($catalogBackend === 'tcgdex') {
+                $query->join('tcgdx_cards', 'user_collection.tcgdex_card_id', '=', 'tcgdx_cards.id')
+                      ->orderByRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) DESC')
+                      ->select('user_collection.*');
+            } elseif ($catalogBackend === 'cmapi') {
+                $query->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                      ->orderBy('cmapi_cards.name', 'DESC')
+                      ->select('user_collection.*');
+            } else {
+                $query->join('tcgcsv_products', 'user_collection.product_id', '=', 'tcgcsv_products.id')
+                      ->orderBy('tcgcsv_products.name', 'DESC')
+                      ->select('user_collection.*');
+            }
+        } elseif ($sortOrder === 'price-asc') {
+            // Sort by price low to high
+            $query->orderBy('cached_price', 'ASC');
+        } elseif ($sortOrder === 'price-desc') {
+            // Sort by price high to low
+            $query->orderBy('cached_price', 'DESC');
+        } else {
+            // Default: newest first
+            $query->orderBy('created_at', 'desc');
+        }
+        
+        $collection = $query->paginate(24)->appends($request->except('page'));
+
+        // Get available letters, sets and rarities for filters
+        $availableLetters = $this->getAvailableLetters($userId, $currentGame, $catalogBackend);
+        $availableSets = $this->getAvailableSets($userId, $currentGame, $catalogBackend);
+        $availableRarities = $this->getAvailableRarities($userId, $currentGame, $catalogBackend);
+        
+        // Get price range for slider (Premium only)
+        $priceRange = ['min' => 0, 'max' => 100];
+        if (Gate::allows('seePrices')) {
+            $user = Auth::user();
+            $preferredCurrency = $user->preferred_currency ?? 'EUR';
+            
+            // Get all prices with their currencies to convert them properly
+            $priceQuery = UserCollection::where('user_id', $userId)
+                ->whereNotNull('cached_price')
+                ->where('cached_price', '>', 0)
+                ->select('cached_price', 'cached_price_currency');
+            
+            if ($catalogBackend === 'tcgdex') {
+                $priceQuery->whereNotNull('tcgdex_card_id');
+            } elseif ($catalogBackend === 'cmapi') {
+                $priceQuery->whereNotNull('cmapi_card_id');
+            } else {
+                $priceQuery->whereNotNull('product_id');
+                if ($currentGame) {
+                    $priceQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+                }
+            }
+            
+            $prices = $priceQuery->get();
+            
+            if ($prices->isNotEmpty()) {
+                // Convert all prices to user's preferred currency
+                $convertedPrices = $prices->map(function($item) use ($preferredCurrency) {
+                    $currency = $item->cached_price_currency ?? 'EUR';
+                    return \App\Services\CurrencyService::convert($item->cached_price, $currency, $preferredCurrency);
+                });
+                
+                $priceRange = [
+                    'min' => $convertedPrices->min(),
+                    'max' => $convertedPrices->max(),
+                ];
+            }
+        }
 
         // Basic stats (filtered by game)
         $stats = [
@@ -83,7 +273,137 @@ class CollectionController extends Controller
         // Calculate collection value (with rarity filter applied)
         $valuation = $this->calculateCollectionValue($userId, $currentGame, $catalogBackend, $rarityFilter);
 
-        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation', 'rarityInsight', 'conditionInsight', 'setsInsight', 'focusSet'));
+        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation', 'rarityInsight', 'conditionInsight', 'setsInsight', 'focusSet', 'availableLetters', 'availableSets', 'availableRarities', 'priceRange'));
+    }
+    
+    /**
+     * Get available first letters in user's collection
+     */
+    private function getAvailableLetters($userId, $currentGame, $catalogBackend): array
+    {
+        if ($catalogBackend === 'tcgdex') {
+            $letters = UserCollection::where('user_id', $userId)
+                ->whereNotNull('tcgdex_card_id')
+                ->join('tcgdx_cards', 'user_collection.tcgdex_card_id', '=', 'tcgdx_cards.id')
+                ->selectRaw('UPPER(LEFT(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")), 1)) as letter, COUNT(*) as count')
+                ->groupBy('letter')
+                ->orderBy('letter', 'asc')
+                ->get()
+                ->pluck('letter')
+                ->toArray();
+        } elseif ($catalogBackend === 'cmapi') {
+            $letters = UserCollection::where('user_id', $userId)
+                ->whereNotNull('cmapi_card_id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->selectRaw('UPPER(LEFT(cmapi_cards.name, 1)) as letter, COUNT(*) as count')
+                ->groupBy('letter')
+                ->orderBy('letter', 'asc')
+                ->get()
+                ->pluck('letter')
+                ->toArray();
+        } else {
+            $query = UserCollection::where('user_id', $userId)
+                ->whereNotNull('product_id')
+                ->join('tcgcsv_products', 'user_collection.product_id', '=', 'tcgcsv_products.id')
+                ->selectRaw('UPPER(LEFT(tcgcsv_products.name, 1)) as letter, COUNT(*) as count')
+                ->groupBy('letter')
+                ->orderBy('letter', 'asc');
+            
+            if ($currentGame) {
+                $query->where('tcgcsv_products.game_id', $currentGame->id);
+            }
+            
+            $letters = $query->get()->pluck('letter')->toArray();
+        }
+        
+        // Filter to only A-Z letters (remove numbers and special chars)
+        return array_values(array_filter($letters, function($letter) {
+            return preg_match('/^[A-Z]$/', $letter);
+        }));
+    }
+    
+    /**
+     * Get available sets in user's collection
+     */
+    private function getAvailableSets($userId, $currentGame, $catalogBackend): array
+    {
+        if ($catalogBackend === 'tcgdex') {
+            return UserCollection::where('user_id', $userId)
+                ->whereNotNull('tcgdex_card_id')
+                ->join('tcgdx_cards', 'user_collection.tcgdex_card_id', '=', 'tcgdx_cards.id')
+                ->join('tcgdx_sets', 'tcgdx_cards.set_tcgdx_id', '=', 'tcgdx_sets.id')
+                ->selectRaw('tcgdx_sets.id, JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en")) as name, COUNT(*) as card_count')
+                ->groupBy('tcgdx_sets.id', 'name')
+                ->orderBy('name', 'asc')
+                ->get()
+                ->toArray();
+        } elseif ($catalogBackend === 'cmapi') {
+            return UserCollection::where('user_id', $userId)
+                ->whereNotNull('cmapi_card_id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->selectRaw('cmapi_cards.set_name as name, COUNT(*) as card_count')
+                ->whereNotNull('cmapi_cards.set_name')
+                ->groupBy('cmapi_cards.set_name')
+                ->orderBy('cmapi_cards.set_name', 'asc')
+                ->get()
+                ->toArray();
+        } else {
+            $query = UserCollection::where('user_id', $userId)
+                ->whereNotNull('product_id')
+                ->join('tcgcsv_products', 'user_collection.product_id', '=', 'tcgcsv_products.id')
+                ->join('tcgcsv_groups', 'tcgcsv_products.group_id', '=', 'tcgcsv_groups.id')
+                ->selectRaw('tcgcsv_groups.name, COUNT(*) as card_count')
+                ->groupBy('tcgcsv_groups.name')
+                ->orderBy('tcgcsv_groups.name', 'asc');
+            
+            if ($currentGame) {
+                $query->where('tcgcsv_products.game_id', $currentGame->id);
+            }
+            
+            return $query->get()->toArray();
+        }
+    }
+    
+    /**
+     * Get available rarities in user's collection
+     */
+    private function getAvailableRarities($userId, $currentGame, $catalogBackend): array
+    {
+        if ($catalogBackend === 'tcgdex') {
+            return UserCollection::where('user_id', $userId)
+                ->whereNotNull('tcgdex_card_id')
+                ->join('tcgdx_cards', 'user_collection.tcgdex_card_id', '=', 'tcgdx_cards.id')
+                ->selectRaw('tcgdx_cards.rarity, COUNT(*) as card_count')
+                ->whereNotNull('tcgdx_cards.rarity')
+                ->groupBy('tcgdx_cards.rarity')
+                ->orderBy('tcgdx_cards.rarity', 'asc')
+                ->get()
+                ->toArray();
+        } elseif ($catalogBackend === 'cmapi') {
+            return UserCollection::where('user_id', $userId)
+                ->whereNotNull('cmapi_card_id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->selectRaw('cmapi_cards.rarity, COUNT(*) as card_count')
+                ->whereNotNull('cmapi_cards.rarity')
+                ->groupBy('cmapi_cards.rarity')
+                ->orderBy('cmapi_cards.rarity', 'asc')
+                ->get()
+                ->toArray();
+        } else {
+            $query = UserCollection::where('user_id', $userId)
+                ->whereNotNull('product_id')
+                ->join('tcgcsv_products', 'user_collection.product_id', '=', 'tcgcsv_products.id')
+                ->selectRaw('tcgcsv_products.rarity, COUNT(*) as card_count')
+                ->whereNotNull('tcgcsv_products.rarity')
+                ->groupBy('tcgcsv_products.rarity')
+                ->orderBy('tcgcsv_products.rarity', 'asc');
+            
+            if ($currentGame) {
+                $query->where('tcgcsv_products.game_id', $currentGame->id);
+            }
+            
+            return $query->get()->toArray();
+        }
     }
     
     private function getUserCardCount($userId, $currentGame, $catalogBackend)
