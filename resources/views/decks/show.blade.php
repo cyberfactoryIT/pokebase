@@ -268,8 +268,10 @@
                     </div>
                     <div class="flex flex-col items-end gap-3">
                         <div class="bg-green-500/20 p-3 rounded-lg">
-                            <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 2C7.24 2 5 3.34 5 5s2.24 3 5 3 5-1.34 5-3-2.24-3-5-3zm0 8c-2.76 0-5-1.34-5-3v2c0 1.66 2.24 3 5 3s5-1.34 5-3V7c0 1.66-2.24 3-5 3zm0 4c-2.76 0-5-1.34-5-3v2c0 1.66 2.24 3 5 3s5-1.34 5-3v-2c0 1.66-2.24 3-5 3zm0 4c-2.76 0-5-1.34-5-3v2c0 1.66 2.24 3 5 3s5-1.34 5-3v-2c0 1.66-2.24 3-5 3z"/>
+                            <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                                <circle cx="8" cy="8" r="4" opacity="0.6"/>
+                                <circle cx="12" cy="12" r="4" opacity="0.8"/>
+                                <circle cx="16" cy="16" r="4"/>
                             </svg>
                         </div>
                         <!-- Currency Toggle -->

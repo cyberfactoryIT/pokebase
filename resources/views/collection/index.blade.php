@@ -253,8 +253,10 @@
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-4">
                     <div class="bg-blue-500/20 p-3 rounded-lg">
-                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <svg class="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="8" cy="8" r="4" opacity="0.6"/>
+                            <circle cx="12" cy="12" r="4" opacity="0.8"/>
+                            <circle cx="16" cy="16" r="4"/>
                         </svg>
                     </div>
                     <div>
