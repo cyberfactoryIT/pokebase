@@ -121,7 +121,13 @@ Route::middleware('auth')->group(function () {
     
     // Real card photo uploads (Premium only)
     Route::post('collection/{collection}/photos', [\App\Http\Controllers\CollectionController::class, 'uploadPhoto'])->name('collection.photos.upload');
+    Route::get('collection/photos/{photo}', [\App\Http\Controllers\CollectionController::class, 'servePhoto'])->name('collection.photos.serve');
     Route::delete('collection/photos/{photo}', [\App\Http\Controllers\CollectionController::class, 'deletePhoto'])->name('collection.photos.delete');
+
+    // Deck card photo uploads (Premium only)
+    Route::post('decks/cards/{deckCard}/photos', [\App\Http\Controllers\DeckController::class, 'uploadPhoto'])->name('decks.cards.photos.upload');
+    Route::get('decks/photos/{photo}', [\App\Http\Controllers\DeckController::class, 'servePhoto'])->name('decks.photos.serve');
+    Route::delete('decks/photos/{photo}', [\App\Http\Controllers\DeckController::class, 'deletePhoto'])->name('decks.photos.delete');
 
     // Billing
     Route::get('/billing', [\App\Http\Controllers\BillingController::class,'index'])->name('billing.index');
@@ -286,7 +292,9 @@ Route::prefix('{game}')->whereIn('game', ['lorcana', 'onepiece'])->group(functio
 Route::prefix('pokemon')->group(function () {
     // Catalog routes (TCGDEX/TCGCSV backend switching)
     Route::get('/sets', [\App\Http\Controllers\Pokemon\CatalogController::class, 'sets'])->name('pokemon.sets');
+    Route::get('/sets/search', [\App\Http\Controllers\Pokemon\CatalogController::class, 'setsSearch'])->name('pokemon.sets.search');
     Route::get('/sets/{setId}', [\App\Http\Controllers\Pokemon\CatalogController::class, 'setCards'])->name('pokemon.set.cards');
+    Route::get('/sets/{setId}/cards/search', [\App\Http\Controllers\Pokemon\CatalogController::class, 'setCardsSearch'])->name('pokemon.set.cards.search');
     Route::get('/cards/{cardId}', [\App\Http\Controllers\Pokemon\CatalogController::class, 'card'])->name('pokemon.card');
     
     // Card interactions for TCGDEX cards (authenticated)

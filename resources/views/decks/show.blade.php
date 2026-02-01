@@ -436,200 +436,48 @@
                 </a>
             </div>
             @else
-            <!-- Card Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                @foreach($deck->deckCards as $deckCard)
-                @php
-                    $card = $deckCard->card;
-                    $inCollection = $card ? auth()->user()->collection()->where('product_id', $card->product_id)->exists() : false;
-                    $displayImage = $card->hd_image_url ?? $card->image_url;
-                @endphp
-                @if($card)
-                <div class="deck-card-item bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition overflow-hidden group relative" 
-                     data-rarity="{{ $card->rarity }}"
-                     data-card-price="{{ $card->prices->first()->market_price ?? 0 }}"
-                     data-quantity="{{ $deckCard->quantity }}"
-                     data-product-id="{{ $card->product_id }}">
-                    <!-- Quantity Badge -->
-                    <div class="absolute top-2 left-2 z-10 bg-blue-600/90 text-white px-2 py-1 rounded text-sm font-semibold">
-                        x{{ $deckCard->quantity }}
-                    </div>
-                    
-                    <!-- Not in Collection Badge -->
-                    @if(!$inCollection)
-                    <div class="absolute top-2 right-2 z-10">
-                        <form method="POST" action="{{ route('collection.add') }}" class="inline" onsubmit="event.preventDefault(); quickAddCardToCollection({{ $card->product_id }}, '{{ addslashes($card->name) }}', this);">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $card->product_id }}">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" 
-                                class="p-1.5 bg-orange-600/90 hover:bg-orange-600 rounded text-white transition"
-                                title="{{ __('decks/show.not_in_collection') }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                            </button>
-                        </form>
-                    </div>
-                    @endif
-                    
-                    <!-- Card Image -->
-                    <div class="aspect-[245/342] bg-black/50 overflow-hidden cursor-pointer" onclick="window.location.href='/tcg/cards/{{ $card->product_id }}'">
-                        @if($displayImage)
-                        <img src="{{ $displayImage }}" alt="{{ $card->name }}" class="w-full h-full object-cover group-hover:scale-105 transition">
-                        @else
-                        <div class="w-full h-full flex items-center justify-center">
-                            <svg class="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                        @endif
-                    </div>
-                    
-                    <!-- Card Info -->
-                    <div class="p-3">
-                        <h4 class="text-white font-semibold text-sm truncate group-hover:text-blue-400 transition cursor-pointer" onclick="window.location.href='/tcg/cards/{{ $card->product_id }}'">
-                            {{ $card->name }}
-                        </h4>
-                        <p class="text-gray-400 text-xs truncate mt-1">
-                            {{ $card->group->name ?? 'Unknown Set' }}
-                            @if($card->card_number)
-                            · #{{ $card->card_number }}
-                            @endif
-                        </p>
-                        
-                        @can('seePrices')
-                        <!-- Price Display with Currency Toggle -->
-                        @php
-                            $tcgPrice = $card->prices->first();
-                            $marketPriceUsd = $tcgPrice?->market_price ?? 0;
-                            
-                            // EUR price - Priority system (same as Collection and DeckController)
-                            $marketPriceEur = 0;
-                            
-                            // Priority 1: Cardmarket price quotes (latest trend)
-                            $cardmarketProduct = $card->cardmarketProduct;
-                            if ($cardmarketProduct) {
-                                $latestQuote = $cardmarketProduct->latestPriceQuote;
-                                if ($latestQuote && $latestQuote->trend > 0) {
-                                    $marketPriceEur = $latestQuote->trend;
-                                } elseif ($latestQuote && $latestQuote->avg > 0) {
-                                    $marketPriceEur = $latestQuote->avg;
-                                }
-                            }
-                            
-                            // Priority 2: Cardmarket EUR from tcgcsv_products
-                            if ($marketPriceEur === 0 && $card->cardmarket_price_eur && $card->cardmarket_price_eur > 0) {
-                                $marketPriceEur = $card->cardmarket_price_eur;
-                            }
-                            
-                            // Priority 3: RapidAPI Cardmarket data
-                            if ($marketPriceEur === 0) {
-                                $rapidapiCard = $card->rapidapiCard;
-                                if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                                    $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
-                                }
-                            }
-                            
-                            // Convert to preferred currency if set
-                            if ($preferredCurrency) {
-                                $convertedPriceEur = $marketPriceEur > 0 ? \App\Services\CurrencyService::convert($marketPriceEur, 'EUR', $preferredCurrency) : 0;
-                                $convertedPriceUsd = $marketPriceUsd > 0 ? \App\Services\CurrencyService::convert($marketPriceUsd, 'USD', $preferredCurrency) : 0;
-                            }
-                        @endphp
-                        
-                        <div class="mt-2" x-data="{ currency: localStorage.getItem('deckCurrency') || '{{ $defaultCurrency }}' }">
-                            <!-- EUR Price -->
-                            <div x-show="currency === 'EUR'">
-                                @if($marketPriceEur > 0)
-                                    @if($preferredCurrency)
-                                        <p class="text-green-400 text-xs font-semibold">
-                                            @php
-                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
-                                                $totalConverted = $convertedPriceEur * $deckCard->quantity;
-                                                $formatted = number_format($totalConverted, 2);
-                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
-                                                    echo "{$symbol}{$formatted}";
-                                                } else {
-                                                    echo "{$formatted} {$symbol}";
-                                                }
-                                            @endphp
-                                        </p>
-                                        <p class="text-gray-500 text-xs">(€{{ number_format($marketPriceEur * $deckCard->quantity, 2) }})</p>
-                                    @else
-                                        <p class="text-green-400 text-xs font-semibold">€{{ number_format($marketPriceEur * $deckCard->quantity, 2) }}</p>
-                                    @endif
-                                @else
-                                    <p class="text-gray-500 text-xs">No EUR price</p>
-                                @endif
-                            </div>
-                            
-                            <!-- USD Price -->
-                            <div x-show="currency === 'USD'">
-                                @if($marketPriceUsd > 0)
-                                    @if($preferredCurrency)
-                                        <p class="text-green-400 text-xs font-semibold">
-                                            @php
-                                                $symbol = \App\Services\CurrencyService::getSymbol($preferredCurrency);
-                                                $totalConverted = $convertedPriceUsd * $deckCard->quantity;
-                                                $formatted = number_format($totalConverted, 2);
-                                                if (in_array($preferredCurrency, ['EUR', 'USD', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'])) {
-                                                    echo "{$symbol}{$formatted}";
-                                                } else {
-                                                    echo "{$formatted} {$symbol}";
-                                                }
-                                            @endphp
-                                        </p>
-                                        <p class="text-gray-500 text-xs">(${{ number_format($marketPriceUsd * $deckCard->quantity, 2) }})</p>
-                                    @else
-                                        <p class="text-green-400 text-xs font-semibold">${{ number_format($marketPriceUsd * $deckCard->quantity, 2) }}</p>
-                                    @endif
-                                @else
-                                    <p class="text-gray-500 text-xs">No USD price</p>
-                                @endif
-                            </div>
-                        </div>
-                        @else
-                        <div class="mt-2">
-                            <p class="text-gray-500 text-xs">🔒 {{ __('prices.hidden.title') }}</p>
-                        </div>
-                        @endcan
-                        
-                        <!-- Actions -->
-                        <div class="flex gap-2 mt-3">
-                            <!-- Update Quantity -->
-                            <form method="POST" action="{{ route('decks.cards.updateQuantity', [$deck, $deckCard]) }}" class="flex-1 flex items-center gap-1">
-                                @csrf
-                                @method('PATCH')
-                                <input 
-                                    type="number" 
-                                    name="quantity" 
-                                    value="{{ $deckCard->quantity }}" 
-                                    min="1" 
-                                    max="4"
-                                    class="w-12 px-2 py-1 bg-black/50 border border-white/20 rounded text-white text-center text-xs"
-                                    onchange="this.form.submit()"
-                                >
-                                <button type="submit" class="hidden">Update</button>
-                            </form>
-                            
-                            <!-- Remove Button -->
-                            <form method="POST" action="{{ route('decks.cards.remove', [$deck, $deckCard]) }}" onsubmit="return confirm('{{ __('decks/show.remove_confirm') }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="p-1.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded transition">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                @endif
-                @endforeach
-            </div>
+            <!-- Card Grids by Backend -->
+            @include('decks.partials.card-grid-tcgcsv', ['deck' => $deck, 'preferredCurrency' => $preferredCurrency, 'defaultCurrency' => $defaultCurrency])
+            @include('decks.partials.card-grid-tcgdex', ['deck' => $deck])
+            @include('decks.partials.card-grid-cmapi', ['deck' => $deck])
             @endif
+        </div>
+    </div>
+</div>
+
+@php
+// Prepare photo data for JavaScript
+$deckPhotoData = [];
+foreach ($deck->deckCards as $deckCard) {
+    if ($deckCard->photos->count() > 0) {
+        $deckPhotoData[$deckCard->id] = $deckCard->photos->map(function($photo) {
+            return [
+                'id' => $photo->id,
+                'path' => route('decks.photos.serve', $photo),
+                'uploaded_at' => $photo->created_at->format('M d, Y'),
+            ];
+        })->toArray();
+    }
+}
+@endphp
+
+<!-- Photo Gallery Modal -->
+<div id="deckPhotoModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/90 transition-opacity" onclick="closeDeckPhotoModal()"></div>
+        <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-4xl w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-white">Card Photos</h3>
+                <button onclick="closeDeckPhotoModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="deckPhotoGalleryContent" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Photos will be loaded here -->
+            </div>
         </div>
     </div>
 </div>
@@ -646,6 +494,7 @@ let catalogSearchDebounceTimer = null;
 let currentDeckSearchRequest = 0;
 let currentCatalogSearchRequest = 0;
 let userCollectionProductIds = new Set();
+let userCollectionTcgdexIds = new Set();
 
 // Load user collection IDs for checking
 async function loadUserCollectionIds() {
@@ -664,8 +513,9 @@ async function loadUserCollectionIds() {
         }
         
         const data = await response.json();
-        userCollectionProductIds = new Set(data);
-        console.log(`Loaded ${data.length} collection IDs`);
+        userCollectionProductIds = new Set(data.product_ids || data);
+        userCollectionTcgdexIds = new Set(data.tcgdex_card_ids || []);
+        console.log(`Loaded ${userCollectionProductIds.size} TCGCSV + ${userCollectionTcgdexIds.size} TCGDEX collection IDs`);
     } catch (error) {
         console.error('Error loading collection:', error);
     }
@@ -722,21 +572,25 @@ async function searchCollectionCards(query) {
             return;
         }
         
-        const resultsHTML = data.map(card => `
-            <div class="px-4 py-3 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0 flex items-center gap-3"
-                 onclick="addCardToDeck(${card.product_id}, '${escapeHtml(card.name)}')">
-                <div class="flex-shrink-0 w-12 h-16 bg-black/50 rounded overflow-hidden">
-                    ${card.image_url ? `<img src="${card.image_url}" alt="${escapeHtml(card.name)}" class="w-full h-full object-cover">` : ''}
+        const resultsHTML = data.map(card => {
+            const cardId = card.backend === 'tcgdex' ? card.tcgdex_card_id : card.product_id;
+            const cardIdParam = card.backend === 'tcgdex' ? `null, ${card.tcgdex_card_id}, '${escapeHtml(card.name)}'` : `${card.product_id}, null, '${escapeHtml(card.name)}'`;
+            return `
+                <div class="px-4 py-3 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0 flex items-center gap-3"
+                     onclick="addCardToDeck(${cardIdParam})">
+                    <div class="flex-shrink-0 w-12 h-16 bg-black/50 rounded overflow-hidden">
+                        ${card.image_url ? `<img src="${card.image_url}" alt="${escapeHtml(card.name)}" class="w-full h-full object-cover">` : ''}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-white font-medium truncate">${escapeHtml(card.name)}</div>
+                        <div class="text-gray-400 text-sm">${escapeHtml(card.set_name || '')} ${card.card_number ? '· #' + escapeHtml(card.card_number) + (card.set_total ? '/' + card.set_total : '') : ''}</div>
+                    </div>
+                    <svg class="w-5 h-5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-white font-medium truncate">${escapeHtml(card.name)}</div>
-                    <div class="text-gray-400 text-sm">${escapeHtml(card.set_name || '')} ${card.card_number ? '· #' + escapeHtml(card.card_number) : ''}</div>
-                </div>
-                <svg class="w-5 h-5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         deckSearchDropdown.innerHTML = resultsHTML;
         deckSearchDropdown.classList.remove('hidden');
@@ -763,7 +617,11 @@ async function searchCatalogCards(query) {
         }
         
         const resultsHTML = data.map(card => {
-            const inCollection = userCollectionProductIds.has(card.product_id);
+            const cardId = card.backend === 'tcgdex' ? card.tcgdex_card_id : card.product_id;
+            const cardIdParam = card.backend === 'tcgdex' ? `null, ${card.tcgdex_card_id}, '${escapeHtml(card.name)}'` : `${card.product_id}, null, '${escapeHtml(card.name)}'`;
+            const inCollection = card.backend === 'tcgdex' 
+                ? userCollectionTcgdexIds.has(card.tcgdex_card_id)
+                : userCollectionProductIds.has(card.product_id);
             return `
                 <div class="px-4 py-3 hover:bg-white/10 border-b border-white/10 last:border-b-0 flex items-center gap-3">
                     <div class="flex-shrink-0 w-12 h-16 bg-black/50 rounded overflow-hidden">
@@ -774,11 +632,11 @@ async function searchCatalogCards(query) {
                             <div class="text-white font-medium truncate">${escapeHtml(card.name)}</div>
                             ${!inCollection ? '<span class="text-orange-400 text-xs font-semibold whitespace-nowrap">(Not in Collection)</span>' : ''}
                         </div>
-                        <div class="text-gray-400 text-sm">${escapeHtml(card.set_name || '')} ${card.card_number ? '· #' + escapeHtml(card.card_number) : ''}</div>
+                        <div class="text-gray-400 text-sm">${escapeHtml(card.set_name || '')} ${card.card_number ? '· #' + escapeHtml(card.card_number) + (card.set_total ? '/' + card.set_total : '') : ''}</div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         ${!inCollection ? `
-                            <button onclick="event.stopPropagation(); quickAddToCollection(${card.product_id}, '${escapeHtml(card.name)}')" 
+                            <button onclick="event.stopPropagation(); quickAddToCollection(${cardIdParam})" 
                                     class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition flex items-center gap-1"
                                     title="Add to Collection">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -787,7 +645,7 @@ async function searchCatalogCards(query) {
                                 Collection
                             </button>
                         ` : ''}
-                        <button onclick="addCardToDeck(${card.product_id}, '${escapeHtml(card.name)}')"
+                        <button onclick="addCardToDeck(${cardIdParam})"
                                 class="px-2 py-1 ${inCollection ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-600 hover:bg-orange-700'} text-white text-xs rounded transition flex items-center gap-1"
                                 title="Add to Deck">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -807,11 +665,15 @@ async function searchCatalogCards(query) {
     }
 }
 
-async function quickAddToCollection(productId, cardName) {
+async function quickAddToCollection(productId, tcgdexCardId, cardName) {
     try {
         const formData = new FormData();
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-        formData.append('product_id', productId);
+        if (productId) {
+            formData.append('product_id', productId);
+        } else if (tcgdexCardId) {
+            formData.append('tcgdex_card_id', tcgdexCardId);
+        }
         formData.append('quantity', 1);
         
         const response = await fetch('{{ route("collection.add") }}', {
@@ -820,11 +682,12 @@ async function quickAddToCollection(productId, cardName) {
         });
         
         if (response.ok) {
-            // Add to local collection set
-            userCollectionProductIds.add(productId);
-            // Refresh both dropdowns to update UI
-            catalogSearchInput.dispatchEvent(new Event('input'));
-            alert(`${cardName} added to collection!`);
+            if (productId) {
+                userCollectionProductIds.add(productId);
+            } else if (tcgdexCardId) {
+                userCollectionTcgdexIds.add(tcgdexCardId);
+            }
+            location.reload(); // Reload to update the badge
         } else {
             alert('Failed to add card to collection');
         }
@@ -834,14 +697,25 @@ async function quickAddToCollection(productId, cardName) {
     }
 }
 
-async function addCardToDeck(productId, cardName) {
+async function addCardToDeck(productId, tcgdexCardId, cardName) {
     try {
         const formData = new FormData();
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-        formData.append('product_id', productId);
         formData.append('quantity', 1);
         
-        const response = await fetch(`/decks/${deckId}/cards`, {
+        let url;
+        if (tcgdexCardId) {
+            formData.append('tcgdex_card_id', tcgdexCardId);
+            url = `/decks/${deckId}/cards/tcgdex`;
+        } else if (productId) {
+            formData.append('product_id', productId);
+            url = `/decks/${deckId}/cards`;
+        } else {
+            alert('Invalid card data');
+            return;
+        }
+        
+        const response = await fetch(url, {
             method: 'POST',
             body: formData
         });
@@ -1016,5 +890,86 @@ document.getElementById('clear-rarity-filter')?.addEventListener('click', functi
     e.stopPropagation();
     clearRarityFilter();
 });
+
+// Photo modal functions for deck cards
+const deckPhotos = @json($deckPhotoData ?? []);
+
+function openDeckPhotoModal(deckCardId) {
+    const photos = deckPhotos[deckCardId] || [];
+    const gallery = document.getElementById('deckPhotoGalleryContent');
+    
+    if (photos.length === 0) {
+        gallery.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No photos available</p>';
+    } else {
+        gallery.innerHTML = photos.map((photo, index) => `
+            <div class="relative group">
+                <div class="aspect-[245/342] bg-black/50 rounded-lg border border-white/20 overflow-hidden cursor-pointer hover:border-blue-400 transition photo-thumbnail" data-photo-url="${photo.path}" data-index="${index}">
+                    <img src="${photo.path}" alt="Card photo" class="w-full h-full object-contain">
+                </div>
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
+                    <form method="POST" action="/decks/photos/${photo.id}" onsubmit="return confirm('Delete this photo?');" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="p-1 bg-red-600/80 hover:bg-red-600 rounded text-white text-xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">${photo.uploaded_at}</p>
+            </div>
+        `).join('');
+        
+        // Add click listeners to photo thumbnails
+        document.querySelectorAll('.photo-thumbnail').forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                const photoUrl = this.getAttribute('data-photo-url');
+                openDeckLightbox(photoUrl);
+            });
+        });
+    }
+    
+    document.getElementById('deckPhotoModal').classList.remove('hidden');
+}
+
+function closeDeckPhotoModal() {
+    document.getElementById('deckPhotoModal').classList.add('hidden');
+}
+
+function openDeckLightbox(imagePath) {
+    // Close photo modal first
+    document.getElementById('deckPhotoModal').classList.add('hidden');
+    
+    // Create lightbox dynamically and append to body
+    const lightbox = document.createElement('div');
+    lightbox.id = 'dynamicDeckLightbox';
+    lightbox.className = 'fixed inset-0 z-[99999] overflow-hidden';
+    lightbox.style.zIndex = '99999';
+    lightbox.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black/95 transition-opacity"></div>
+            <button class="close-deck-lightbox absolute top-4 right-4 text-white hover:text-gray-300 bg-black/50 rounded-full p-2" style="z-index: 100000;">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <img src="${imagePath}" alt="Card photo" class="relative max-w-full max-h-screen object-contain" style="z-index: 100000;">
+        </div>
+    `;
+    
+    // Click on background or button to close and reopen photo modal
+    const closeLightboxFn = function() {
+        const lb = document.getElementById('dynamicDeckLightbox');
+        if (lb) lb.remove();
+        // Reopen photo modal
+        document.getElementById('deckPhotoModal').classList.remove('hidden');
+    };
+    
+    lightbox.querySelector('.fixed.inset-0').addEventListener('click', closeLightboxFn);
+    lightbox.querySelector('.close-deck-lightbox').addEventListener('click', closeLightboxFn);
+    
+    document.body.appendChild(lightbox);
+}
 </script>
 @endsection

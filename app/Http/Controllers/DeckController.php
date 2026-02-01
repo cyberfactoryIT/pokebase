@@ -8,6 +8,8 @@ use App\Models\TcgcsvProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -100,6 +102,7 @@ class DeckController extends Controller
                     $query->whereNotNull('product_id');
                 }
             },
+            'deckCards.photos',
             'deckCards.card.group',
             'deckCards.card.prices' => function($query) {
                 $query->latest('snapshot_at')->limit(1);
@@ -213,10 +216,26 @@ class DeckController extends Controller
             $existingCard->increment('quantity', $quantityToAdd);
             $message = 'Card quantity updated in deck!';
         } else {
+            // Get card price from catalog
+            $card = TcgcsvProduct::find($validated['product_id']);
+            $price = null;
+            $currency = 'USD';
+            
+            if ($card) {
+                $latestPrice = $card->prices()->orderBy('updated_at', 'desc')->first();
+                if ($latestPrice && $latestPrice->market_price) {
+                    $price = $latestPrice->market_price;
+                    $currency = 'USD';
+                }
+            }
+            
             DeckCard::create([
                 'deck_id' => $deck->id,
                 'product_id' => $validated['product_id'],
                 'quantity' => $quantityToAdd,
+                'cached_price' => $price,
+                'cached_price_currency' => $currency,
+                'cached_price_updated_at' => $price ? now() : null,
             ]);
             $message = 'Card added to deck!';
         }
@@ -270,10 +289,28 @@ class DeckController extends Controller
             $existingCard->increment('quantity', $quantityToAdd);
             $message = 'Card quantity updated in deck!';
         } else {
+            // Get card price from catalog
+            $card = \App\Models\Tcgdx\TcgdxCard::find($validated['tcgdex_card_id']);
+            $price = null;
+            $currency = 'EUR';
+            
+            if ($card) {
+                if ($card->price_eur && $card->price_eur > 0) {
+                    $price = $card->price_eur;
+                    $currency = 'EUR';
+                } elseif ($card->price_usd && $card->price_usd > 0) {
+                    $price = $card->price_usd;
+                    $currency = 'USD';
+                }
+            }
+            
             DeckCard::create([
                 'deck_id' => $deck->id,
                 'tcgdex_card_id' => $validated['tcgdex_card_id'],
                 'quantity' => $quantityToAdd,
+                'cached_price' => $price,
+                'cached_price_currency' => $currency,
+                'cached_price_updated_at' => $price ? now() : null,
             ]);
             $message = 'Card added to deck!';
         }
@@ -327,10 +364,23 @@ class DeckController extends Controller
             $existingCard->increment('quantity', $quantityToAdd);
             $message = 'Card quantity updated in deck!';
         } else {
+            // Get card price from catalog
+            $card = \App\Models\Cmapi\CmapiCard::where('cmapi_id', $validated['cmapi_card_id'])->first();
+            $price = null;
+            $currency = 'EUR';
+            
+            if ($card && $card->price_eur && $card->price_eur > 0) {
+                $price = $card->price_eur;
+                $currency = 'EUR';
+            }
+            
             DeckCard::create([
                 'deck_id' => $deck->id,
                 'cmapi_card_id' => $validated['cmapi_card_id'],
                 'quantity' => $quantityToAdd,
+                'cached_price' => $price,
+                'cached_price_currency' => $currency,
+                'cached_price_updated_at' => $price ? now() : null,
             ]);
             $message = 'Card added to deck!';
         }
@@ -458,7 +508,19 @@ class DeckController extends Controller
     {
         // 1. Rarity distribution
         $rarityDistribution = $deck->deckCards
-            ->groupBy(fn($dc) => $dc->card->rarity ?? 'Unknown')
+            ->map(function($dc) {
+                $card = null;
+                if ($dc->product_id) {
+                    $card = $dc->card;
+                } elseif ($dc->tcgdex_card_id) {
+                    $card = $dc->tcgdexCard;
+                } elseif ($dc->cmapi_card_id) {
+                    $card = $dc->cmapiCard;
+                }
+                $dc->_card = $card;
+                return $dc;
+            })
+            ->groupBy(fn($dc) => $dc->_card->rarity ?? 'Unknown')
             ->map(fn($group) => [
                 'count' => $group->count(),
                 'total_quantity' => $group->sum('quantity')
@@ -467,59 +529,50 @@ class DeckController extends Controller
 
         // 2. Set distribution
         $setDistribution = $deck->deckCards
-            ->groupBy(fn($dc) => $dc->card->group->name ?? 'Unknown')
+            ->map(function($dc) {
+                $card = null;
+                $setName = 'Unknown';
+                
+                if ($dc->product_id) {
+                    $card = $dc->card;
+                    $setName = $card->group->name ?? 'Unknown';
+                } elseif ($dc->tcgdex_card_id) {
+                    $card = $dc->tcgdexCard;
+                    $setName = $card->set->name['en'] ?? $card->set->name ?? 'Unknown';
+                } elseif ($dc->cmapi_card_id) {
+                    $card = $dc->cmapiCard;
+                    $setName = $card->set_name ?? 'Unknown';
+                }
+                
+                $dc->_set_name = $setName;
+                return $dc;
+            })
+            ->groupBy(fn($dc) => $dc->_set_name)
             ->map(fn($group) => [
-                'set_name' => $group->first()->card->group->name ?? 'Unknown',
+                'set_name' => $group->first()->_set_name,
                 'count' => $group->count(),
                 'total_quantity' => $group->sum('quantity')
             ])
             ->sortByDesc('count')
             ->take(5);
 
-        // 3. Card values (USD from TCGPlayer, EUR from Cardmarket priority system)
+        // 3. Card values from cached prices
         $totalValueUsd = 0;
         $totalValueEur = 0;
         $cardsWithPricesUsd = 0;
         $cardsWithPricesEur = 0;
         
         foreach ($deck->deckCards as $deckCard) {
-            // USD price from TCGPlayer
-            $latestPrice = $deckCard->card->prices->first();
-            if ($latestPrice && $latestPrice->market_price > 0) {
-                $totalValueUsd += $latestPrice->market_price * $deckCard->quantity;
-                $cardsWithPricesUsd++;
-            }
-            
-            // EUR price - Priority system (same as Collection)
-            $marketPriceEur = 0;
-            
-            // Priority 1: Cardmarket price quotes (latest trend)
-            $cardmarketProduct = $deckCard->card->cardmarketProduct;
-            if ($cardmarketProduct) {
-                $latestQuote = $cardmarketProduct->latestPriceQuote;
-                if ($latestQuote && $latestQuote->trend > 0) {
-                    $marketPriceEur = $latestQuote->trend;
-                } elseif ($latestQuote && $latestQuote->avg > 0) {
-                    $marketPriceEur = $latestQuote->avg;
+            if ($deckCard->cached_price && $deckCard->cached_price > 0) {
+                $priceValue = $deckCard->cached_price * $deckCard->quantity;
+                
+                if ($deckCard->cached_price_currency === 'EUR') {
+                    $totalValueEur += $priceValue;
+                    $cardsWithPricesEur++;
+                } elseif ($deckCard->cached_price_currency === 'USD') {
+                    $totalValueUsd += $priceValue;
+                    $cardsWithPricesUsd++;
                 }
-            }
-            
-            // Priority 2: Cardmarket EUR from tcgcsv_products
-            if ($marketPriceEur === 0 && $deckCard->card->cardmarket_price_eur && $deckCard->card->cardmarket_price_eur > 0) {
-                $marketPriceEur = $deckCard->card->cardmarket_price_eur;
-            }
-            
-            // Priority 3: RapidAPI Cardmarket data
-            if ($marketPriceEur === 0) {
-                $rapidapiCard = $deckCard->card->rapidapiCard;
-                if ($rapidapiCard && isset($rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'])) {
-                    $marketPriceEur = (float) $rapidapiCard->raw_data['prices']['cardmarket']['lowest_near_mint'];
-                }
-            }
-            
-            if ($marketPriceEur > 0) {
-                $totalValueEur += $marketPriceEur * $deckCard->quantity;
-                $cardsWithPricesEur++;
             }
         }
 
@@ -531,5 +584,77 @@ class DeckController extends Controller
             'cards_with_prices_usd' => $cardsWithPricesUsd,
             'cards_with_prices_eur' => $cardsWithPricesEur,
         ];
+    }
+
+    /**
+     * Upload a photo for a deck card (Premium only)
+     */
+    public function uploadPhoto(Request $request, DeckCard $deckCard)
+    {
+        // Authorization: must own the deck
+        if ($deckCard->deck->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Authorization: must be premium
+        if (!Gate::allows('uploadCardPhotos')) {
+            return back()->with('error', __('photos.upload.not_allowed.title'));
+        }
+
+        $validated = $request->validate([
+            'photo' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120', // 5MB max
+        ]);
+
+        $file = $request->file('photo');
+        
+        // Store in local storage (storage/app/private)
+        $path = $file->store('deck-card-photos/' . Auth::id(), 'local');
+        
+        // Create photo record
+        $photo = \App\Models\DeckCardPhoto::create([
+            'user_id' => Auth::id(),
+            'deck_card_id' => $deckCard->id,
+            'path' => $path,
+            'original_filename' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size_bytes' => $file->getSize(),
+        ]);
+
+        return back()->with('success', __('photos.upload.success'));
+    }
+
+    /**
+     * Serve a photo file (owner only)
+     */
+    public function servePhoto(\App\Models\DeckCardPhoto $photo)
+    {
+        // Authorization: must own the photo
+        if ($photo->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!$photo->path || !\Storage::disk('local')->exists($photo->path)) {
+            abort(404, 'Photo not found.');
+        }
+
+        return response()->file(
+            storage_path('app/private/' . $photo->path),
+            ['Content-Type' => $photo->mime_type ?? 'image/jpeg']
+        );
+    }
+
+    /**
+     * Delete a photo (owner only)
+     */
+    public function deletePhoto(\App\Models\DeckCardPhoto $photo)
+    {
+        // Authorization: must own the photo
+        if ($photo->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $photo->delete(); // Will also delete file via model event
+
+        return back()->with('success', __('photos.delete.success'));
     }
 }

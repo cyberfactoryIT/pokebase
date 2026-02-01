@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DeckCard extends Model
 {
@@ -13,6 +14,9 @@ class DeckCard extends Model
         'tcgdex_card_id',
         'cmapi_card_id',
         'quantity',
+        'cached_price',
+        'cached_price_currency',
+        'cached_price_updated_at',
     ];
 
     protected $casts = [
@@ -49,5 +53,13 @@ class DeckCard extends Model
     public function cmapiCard(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Cmapi\CmapiCard::class, 'cmapi_card_id', 'cmapi_id');
+    }
+
+    /**
+     * Get all photos for this deck card
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(DeckCardPhoto::class, 'deck_card_id');
     }
 }
