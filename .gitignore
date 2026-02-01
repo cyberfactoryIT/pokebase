@@ -25,10 +25,12 @@ Homestead.json
 
 /storage/pail
 /storage/app/poke*.*
+/storage/app/*
 .env.backup
 .env.production
 .phpactor.json
 auth.json
+composer.lock
 
 .DS_Store
 env
