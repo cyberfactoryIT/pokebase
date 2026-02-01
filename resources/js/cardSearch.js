@@ -94,12 +94,20 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Deduplicate results by product_id
+    // Deduplicate results by unique card identifier
     function deduplicateResults(results) {
         const seen = new Set();
         return results.filter(card => {
-            // Use product_id as primary key, fallback to composite key
-            const key = card.product_id || `${card.group_id}-${card.card_number}`;
+            // Use the appropriate unique identifier based on backend
+            let key;
+            if (card.backend === 'tcgdex') {
+                // For TCGDEX: use tcgdex_id (e.g., "base1-1") which is globally unique
+                key = card.tcgdex_id;
+            } else {
+                // For TCGCSV: use product_id (unique) or fallback to set+number
+                key = card.product_id || `${card.group_id}-${card.card_number}`;
+            }
+            
             if (seen.has(key)) return false;
             seen.add(key);
             return true;
@@ -155,6 +163,8 @@ document.addEventListener('DOMContentLoaded', function() {
         items.forEach((item, index) => {
             if (index === highlightedIndex) {
                 item.classList.add('bg-white/10');
+                // Scroll into view if needed
+                item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             } else {
                 item.classList.remove('bg-white/10');
             }

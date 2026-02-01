@@ -22,4 +22,7 @@ return [
     'added_to_collection' => 'added to collection!',
     'failed_add_collection' => 'Failed to add card to collection',
     'failed_add_deck' => 'Failed to add card to deck',
+    'price_unavailable' => 'Price unavailable',
+    'remove' => 'Remove',
+    'remove_confirm' => 'Are you sure you want to remove this card from the deck?',
 ];

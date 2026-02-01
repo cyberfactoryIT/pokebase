@@ -164,6 +164,7 @@ class CmapiClient
             'cardmarket_id' => $cardData['cardmarket_id'] ?? null,
             'hp' => $cardData['hp'] ?? null,
             'raw' => $cardData,
+            'prices' => $cardData['prices'] ?? null,
         ];
 
         // Add Lorcana-specific fields if present
@@ -215,8 +216,8 @@ class CmapiClient
         if (isset($cardData['prices'][$marketplace][$priceKey])) {
             $price = $cardData['prices'][$marketplace][$priceKey];
             // Prices are already in decimal format (EUR)
-            if ($price && is_numeric($price)) {
-                return round($price, 2);
+            if (is_numeric($price) && $price !== null) {
+                return round((float)$price, 2);
             }
         }
 

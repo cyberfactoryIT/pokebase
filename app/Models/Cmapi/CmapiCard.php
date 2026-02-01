@@ -35,10 +35,12 @@ class CmapiCard extends Model
         'cardmarket_id',
         'hp',
         'raw',
+        'prices',
     ];
 
     protected $casts = [
         'raw' => 'array',
+        'prices' => 'array',
         'price_eur' => 'decimal:2',
         'price_usd' => 'decimal:2',
         'ink_cost' => 'integer',

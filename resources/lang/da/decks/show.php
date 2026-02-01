@@ -22,4 +22,7 @@ return [
     'added_to_collection' => 'tilføjet til samling!',
     'failed_add_collection' => 'Kunne ikke tilføje kort til samling',
     'failed_add_deck' => 'Kunne ikke tilføje kort til deck',
+    'price_unavailable' => 'Pris ikke tilgængelig',
+    'remove' => 'Fjern',
+    'remove_confirm' => 'Er du sikker på, at du vil fjerne dette kort fra decket?',
 ];

@@ -273,4 +273,166 @@ class CatalogController extends Controller
             'trend_holo' => $trendHoloData,
         ];
     }
+
+    /**
+     * AJAX search endpoint for sets
+     */
+    public function setsSearch(Request $request)
+    {
+        $validated = $request->validate([
+            'query' => 'nullable|string|max:100',
+            'page' => 'integer|min:1',
+        ]);
+
+        $currentGame = $request->attributes->get('currentGame');
+        
+        // If no current game (user not logged in), default to Pokemon
+        if (!$currentGame) {
+            $currentGame = \App\Models\Game::where('code', 'pokemon')->first();
+            if (!$currentGame) {
+                abort(404, 'Pokemon game not found');
+            }
+        }
+
+        $query = TcgdxSet::where('game_id', $currentGame->id);
+
+        // Search filter
+        if (!empty($validated['query'])) {
+            $searchTerm = $validated['query'];
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereRaw('LOWER(JSON_EXTRACT(name, "$.en")) LIKE LOWER(?)', ["%{$searchTerm}%"])
+                  ->orWhere('tcgdex_id', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Order by release date descending
+        $query->orderByDesc('release_date');
+
+        // Paginate
+        $sets = $query->paginate(24);
+
+        // Map results
+        $data = $sets->map(function($set) {
+            return [
+                'tcgdex_id' => $set->tcgdex_id,
+                'name' => $set->getLocalizedName(),
+                'series' => $set->series,
+                'release_date' => $set->release_date ? $set->release_date->format('Y-m-d') : null,
+                'logo_url' => $set->logo_url,
+                'symbol_url' => $set->symbol_url,
+                'card_count_total' => $set->card_count_total,
+                'card_count_official' => $set->card_count_official,
+            ];
+        });
+
+        return response()->json([
+            'data' => $data,
+            'meta' => [
+                'current_page' => $sets->currentPage(),
+                'last_page' => $sets->lastPage(),
+                'per_page' => $sets->perPage(),
+                'total' => $sets->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * AJAX search endpoint for cards in a set
+     */
+    public function setCardsSearch(Request $request, string $setId)
+    {
+        $validated = $request->validate([
+            'query' => 'nullable|string|max:100',
+            'page' => 'integer|min:1',
+        ]);
+
+        $currentGame = $request->attributes->get('currentGame');
+        
+        if (!$currentGame) {
+            $currentGame = \App\Models\Game::where('code', 'pokemon')->first();
+            if (!$currentGame) {
+                abort(404, 'Pokemon game not found');
+            }
+        }
+
+        // Find set
+        $set = TcgdxSet::where('tcgdex_id', $setId)
+            ->where('game_id', $currentGame->id)
+            ->firstOrFail();
+
+        $query = TcgdxCard::where('set_tcgdx_id', $set->id);
+
+        // Search filter
+        if (!empty($validated['query'])) {
+            $searchTerm = $validated['query'];
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereRaw('LOWER(JSON_EXTRACT(name, "$.en")) LIKE LOWER(?)', ["%{$searchTerm}%"])
+                  ->orWhere('tcgdex_id', 'like', "%{$searchTerm}%")
+                  ->orWhere('local_id', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Order by local_id
+        $query->orderBy('local_id');
+
+        // Paginate
+        $cards = $query->paginate(50);
+
+        // Get user interactions if authenticated
+        $userInteractions = [
+            'liked' => [],
+            'wishlist' => [],
+            'watched' => [],
+        ];
+
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $cardIds = $cards->pluck('id')->toArray();
+            
+            $userInteractions['liked'] = \DB::table('user_likes')
+                ->where('user_id', $user->id)
+                ->whereIn('tcgdex_card_id', $cardIds)
+                ->pluck('tcgdex_card_id')
+                ->toArray();
+            
+            $userInteractions['wishlist'] = \DB::table('user_wishlist_items')
+                ->where('user_id', $user->id)
+                ->whereIn('tcgdex_card_id', $cardIds)
+                ->pluck('tcgdex_card_id')
+                ->toArray();
+            
+            $userInteractions['watched'] = \DB::table('user_watch_items')
+                ->where('user_id', $user->id)
+                ->whereIn('tcgdex_card_id', $cardIds)
+                ->pluck('tcgdex_card_id')
+                ->toArray();
+        }
+
+        // Map results
+        $data = $cards->map(function($card) use ($userInteractions) {
+            return [
+                'id' => $card->id,
+                'tcgdex_id' => $card->tcgdex_id,
+                'name' => $card->getLocalizedName(),
+                'local_id' => $card->local_id,
+                'number' => $card->number,
+                'rarity' => $card->rarity,
+                'price_eur' => $card->price_eur,
+                'image_small_url' => $card->image_small_url,
+                'is_liked' => in_array($card->id, $userInteractions['liked']),
+                'is_wishlisted' => in_array($card->id, $userInteractions['wishlist']),
+                'is_watched' => in_array($card->id, $userInteractions['watched']),
+            ];
+        });
+
+        return response()->json([
+            'data' => $data,
+            'meta' => [
+                'current_page' => $cards->currentPage(),
+                'last_page' => $cards->lastPage(),
+                'per_page' => $cards->perPage(),
+                'total' => $cards->total(),
+            ],
+        ]);
+    }
 }

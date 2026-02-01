@@ -95,6 +95,8 @@ class CardSearchController extends Controller
                 'tcgcsv_products.product_id',
                 'tcgcsv_products.name',
                 'tcgcsv_products.card_number',
+                DB::raw('SUBSTRING_INDEX(tcgcsv_products.card_number, "/", 1) as card_number_only'),
+                DB::raw('CAST(SUBSTRING_INDEX(tcgcsv_products.card_number, "/", -1) AS UNSIGNED) as set_total'),
                 'tcgcsv_products.group_id',
                 'tcgcsv_groups.name as group_name',
                 'tcgcsv_groups.abbreviation as group_code',
@@ -156,7 +158,8 @@ class CardSearchController extends Controller
                 'backend' => 'tcgcsv',
                 'product_id' => $card->product_id,
                 'name' => $card->name,
-                'card_number' => $card->card_number,
+                'card_number' => $card->card_number_only,
+                'set_total' => $card->set_total,
                 'group_id' => $card->group_id,
                 'group_code' => $card->group_code,
                 'set_name' => $card->group_name,
@@ -208,26 +211,29 @@ class CardSearchController extends Controller
         // Search by:
         // - Card name (English from JSON)
         // - Card number (local_id like "1", "001") 
+        // - Visible lookup key (visible_lookup_key like "BASE1 028/64")
         // - Full card ID (tcgdex_id like "base1-1")
         // - Set code (tcgdex_sets.tcgdex_id like "base1", "swsh1")
         // - Set name (English from JSON)
         $results->where(function($q) use ($escapedQuery) {
                 $q->whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en"))) LIKE LOWER(?)', ["%{$escapedQuery}%"])
                   ->orWhere('tcgdx_cards.local_id', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('tcgdx_cards.visible_lookup_key', 'LIKE', "%{$escapedQuery}%")
                   ->orWhere('tcgdx_cards.tcgdex_id', 'LIKE', "%{$escapedQuery}%")
                   ->orWhere('tcgdx_sets.tcgdex_id', 'LIKE', "%{$escapedQuery}%")
                   ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en"))) LIKE LOWER(?)', ["%{$escapedQuery}%"]);
             })
             ->orderByRaw(
                 'CASE 
-                    WHEN tcgdx_cards.local_id = ? THEN 0
-                    WHEN tcgdx_sets.tcgdex_id = ? THEN 1
-                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en"))) LIKE LOWER(?) THEN 2 
-                    WHEN tcgdx_cards.local_id LIKE ? THEN 3
-                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en"))) LIKE LOWER(?) THEN 4
-                    ELSE 5 
+                    WHEN tcgdx_cards.visible_lookup_key = ? THEN 0
+                    WHEN tcgdx_cards.local_id = ? THEN 1
+                    WHEN tcgdx_sets.tcgdex_id = ? THEN 2
+                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en"))) LIKE LOWER(?) THEN 3 
+                    WHEN tcgdx_cards.local_id LIKE ? THEN 4
+                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(tcgdx_sets.name, "$.en"))) LIKE LOWER(?) THEN 5
+                    ELSE 6 
                 END',
-                [$escapedQuery, $escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%", "{$escapedQuery}%"]
+                [$escapedQuery, $escapedQuery, $escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%", "{$escapedQuery}%"]
             )
             ->orderBy('tcgdx_cards.id', 'DESC')
             ->limit($limit);

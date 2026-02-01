@@ -20,6 +20,9 @@ class UserCollection extends Model
         'condition',
         'is_foil',
         'notes',
+        'cached_price',
+        'cached_price_currency',
+        'cached_price_updated_at',
     ];
 
     protected $casts = [

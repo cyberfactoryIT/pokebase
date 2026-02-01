@@ -164,62 +164,88 @@ class CardMarketPriceSyncService
                 continue; // Skip if product not in staging
             }
 
-            // Clear old prices for this product
-            if ($imported === 0) {
-                DB::table('staging_cmapi_prices')
-                    ->where('staging_product_id', $stagingProduct->id)
-                    ->delete();
-            }
+            // CardMarket S3 price structure (flat, no language/condition breakdown):
+            // {
+            //   "idProduct": 726997,
+            //   "avg": 294.51,      // Average price (cents)
+            //   "low": 799,         // Lowest price (cents)
+            //   "trend": 572.52,    // Trend price (cents)
+            //   "avg1": 290.00,     // 1-day average
+            //   "avg7": 285.00,     // 7-day average
+            //   "avg30": 280.00,    // 30-day average
+            //   "avg-foil": null,   // Foil prices (if applicable)
+            //   "low-foil": null,
+            //   "trend-foil": 0
+            // }
 
-            // Parse price data structure
-            // Format: {"1": {"NM": {"avg": 1.5, "lowPrice": 1.2, "trendPrice": 1.4}}}
-            // Where "1" is language ID (1=English, 2=French, 3=German, 4=Spanish, 5=Italian)
-            $languageMap = [
-                '1' => 'en',
-                '2' => 'fr', 
-                '3' => 'de',
-                '4' => 'es',
-                '5' => 'it',
+            $now = now();
+            
+            // Build comprehensive prices JSON structure
+            $prices = [
+                'regular' => [
+                    'low' => isset($priceData['low']) && is_numeric($priceData['low']) && $priceData['low'] > 0 
+                        ? round($priceData['low'] / 100, 2) : null,
+                    'avg' => isset($priceData['avg']) && is_numeric($priceData['avg']) && $priceData['avg'] > 0 
+                        ? round($priceData['avg'] / 100, 2) : null,
+                    'trend' => isset($priceData['trend']) && is_numeric($priceData['trend']) && $priceData['trend'] > 0 
+                        ? round($priceData['trend'] / 100, 2) : null,
+                    'avg1' => isset($priceData['avg1']) && is_numeric($priceData['avg1']) && $priceData['avg1'] > 0 
+                        ? round($priceData['avg1'] / 100, 2) : null,
+                    'avg7' => isset($priceData['avg7']) && is_numeric($priceData['avg7']) && $priceData['avg7'] > 0 
+                        ? round($priceData['avg7'] / 100, 2) : null,
+                    'avg30' => isset($priceData['avg30']) && is_numeric($priceData['avg30']) && $priceData['avg30'] > 0 
+                        ? round($priceData['avg30'] / 100, 2) : null,
+                ],
+                'foil' => [
+                    'low' => isset($priceData['low-foil']) && is_numeric($priceData['low-foil']) && $priceData['low-foil'] > 0 
+                        ? round($priceData['low-foil'] / 100, 2) : null,
+                    'avg' => isset($priceData['avg-foil']) && is_numeric($priceData['avg-foil']) && $priceData['avg-foil'] > 0 
+                        ? round($priceData['avg-foil'] / 100, 2) : null,
+                    'trend' => isset($priceData['trend-foil']) && is_numeric($priceData['trend-foil']) && $priceData['trend-foil'] > 0 
+                        ? round($priceData['trend-foil'] / 100, 2) : null,
+                    'avg1' => isset($priceData['avg1-foil']) && is_numeric($priceData['avg1-foil']) && $priceData['avg1-foil'] > 0 
+                        ? round($priceData['avg1-foil'] / 100, 2) : null,
+                    'avg7' => isset($priceData['avg7-foil']) && is_numeric($priceData['avg7-foil']) && $priceData['avg7-foil'] > 0 
+                        ? round($priceData['avg7-foil'] / 100, 2) : null,
+                    'avg30' => isset($priceData['avg30-foil']) && is_numeric($priceData['avg30-foil']) && $priceData['avg30-foil'] > 0 
+                        ? round($priceData['avg30-foil'] / 100, 2) : null,
+                ],
+            ];
+            
+            // Use trend as primary price_eur (fallback to avg, then low, then 0)
+            $priceEur = $prices['regular']['trend'] 
+                ?? $prices['regular']['avg'] 
+                ?? $prices['regular']['low'] 
+                ?? 0;
+            $priceTrendEur = $prices['regular']['trend'] ?? 0;
+            
+            // Create single record per product with all prices in JSON
+            $batch[] = [
+                'staging_product_id' => $stagingProduct->id,
+                'cardmarket_id' => $cardmarketId,
+                'language' => 'en',
+                'condition' => 'NM',
+                'price_eur' => $priceEur,
+                'prices' => json_encode($prices),
+                'price_trend_eur' => $priceTrendEur,
+                'available_items' => null,
+                'price_date' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
 
-            foreach ($priceData as $langId => $conditions) {
-                if (!is_array($conditions) || !isset($languageMap[$langId])) {
-                    continue;
-                }
+            $imported++;
 
-                $language = $languageMap[$langId];
-
-                foreach ($conditions as $condition => $prices) {
-                    if (!is_array($prices)) {
-                        continue;
-                    }
-
-                    $batch[] = [
-                        'staging_product_id' => $stagingProduct->id,
-                        'cardmarket_id' => $cardmarketId,
-                        'language' => $language,
-                        'condition' => $condition,
-                        'price_eur' => $prices['lowPrice'] ?? $prices['avg'] ?? null,
-                        'price_trend_eur' => $prices['trendPrice'] ?? null,
-                        'available_items' => null, // Not in price guide
-                        'price_date' => now(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-
-                    if (count($batch) >= $batchSize) {
-                        DB::table('staging_cmapi_prices')->insert($batch);
-                        $imported += count($batch);
-                        $batch = [];
-                    }
-                }
+            // Batch insert
+            if (count($batch) >= $batchSize) {
+                DB::table('staging_cmapi_prices')->insert($batch);
+                $batch = [];
             }
         }
 
         // Insert remaining
         if (count($batch) > 0) {
             DB::table('staging_cmapi_prices')->insert($batch);
-            $imported += count($batch);
         }
 
         return $imported;
@@ -243,21 +269,18 @@ class CardMarketPriceSyncService
         foreach ($stagingProducts as $product) {
             try {
                 DB::transaction(function () use ($product) {
-                    // Find matching card by cardmarket_id OR by set+number
+                    // Find matching card by cardmarket_id first
                     $card = CmapiCard::where('cardmarket_id', $product->cardmarket_id)->first();
                     
                     if (!$card) {
-                        // Try matching by set name + card number
-                        $card = CmapiCard::whereHas('set', function($q) use ($product) {
-                            $q->where('name', 'LIKE', '%' . $product->set_name . '%');
-                        })
-                        ->where('number', $product->number)
-                        ->where('game', $product->game)
-                        ->first();
+                        // CardMarket doesn't have proper set/number, try matching by name
+                        $card = CmapiCard::where('game', $product->game)
+                            ->where('name', $product->name)
+                            ->first();
                     }
                     
                     if (!$card) {
-                        throw new \Exception("Card not found for cardmarket_id: {$product->cardmarket_id}, set: {$product->set_name}, number: {$product->number}");
+                        throw new \Exception("Card not found for cardmarket_id: {$product->cardmarket_id}, name: {$product->name}");
                     }
 
                     // Update card's cardmarket_id if not set
@@ -265,49 +288,39 @@ class CardMarketPriceSyncService
                         $card->update(['cardmarket_id' => $product->cardmarket_id]);
                     }
 
-                    // Get staging prices
-                    $stagingPrices = DB::table('staging_cmapi_prices')
+                    // Get staging prices (now just one row with all prices in JSON)
+                    $stagingPrice = DB::table('staging_cmapi_prices')
                         ->where('staging_product_id', $product->id)
-                        ->get();
+                        ->first();
 
-                    if ($stagingPrices->isEmpty()) {
+                    if (!$stagingPrice || !$stagingPrice->price_eur) {
                         throw new \Exception("No prices found for product {$product->id}");
                     }
 
                     $today = now()->toDateString();
+                    $priceDate = $stagingPrice->price_date ?? $today;
 
-                    foreach ($stagingPrices as $price) {
-                        if (!$price->price_eur) {
-                            continue;
-                        }
+                    // Insert into price history (single row with all prices in JSON)
+                    DB::table('cmapi_price_history')->updateOrInsert(
+                        [
+                            'cmapi_card_id' => $card->id,
+                            'price_date' => $priceDate,
+                        ],
+                        [
+                            'cardmarket_id' => $product->cardmarket_id,
+                            'language' => $stagingPrice->language,
+                            'condition' => $stagingPrice->condition,
+                            'price_eur' => $stagingPrice->price_eur,
+                            'prices' => $stagingPrice->prices,
+                            'price_trend_eur' => $stagingPrice->price_trend_eur,
+                            'available_items' => $stagingPrice->available_items,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
 
-                        // Insert into price history (upsert for today)
-                        DB::table('cmapi_price_history')->updateOrInsert(
-                            [
-                                'cmapi_card_id' => $card->id,
-                                'language' => $price->language,
-                                'condition' => $price->condition,
-                                'price_date' => $today,
-                            ],
-                            [
-                                'cardmarket_id' => $product->cardmarket_id,
-                                'price_eur' => $price->price_eur,
-                                'price_trend_eur' => $price->price_trend_eur,
-                                'available_items' => $price->available_items,
-                                'updated_at' => now(),
-                                'created_at' => now(),
-                            ]
-                        );
-                    }
-
-                    // Update card with latest NM price in English (language=en)
-                    $defaultPrice = $stagingPrices->where('language', 'en')
-                        ->where('condition', 'NM')
-                        ->first();
-
-                    if ($defaultPrice && $defaultPrice->price_eur) {
-                        $card->update(['price_eur' => $defaultPrice->price_eur]);
-                    }
+                    // Update card with latest trend price
+                    $card->update(['price_eur' => $stagingPrice->price_eur]);
 
                     // Mark as validated
                     DB::table('staging_cmapi_products')

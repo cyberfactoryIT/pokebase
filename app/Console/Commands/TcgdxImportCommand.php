@@ -63,6 +63,16 @@ class TcgdxImportCommand extends Command
                 $this->info("✅ Set imported successfully!");
                 $this->line("   Cards: {$result['cards_imported']}");
                 
+                // Update lookup keys for this set's cards
+                $this->newLine();
+                $this->info('🔄 Updating lookup keys for this set...');
+                
+                // Find the set_tcgdx_id from the database
+                $set = TcgdxSet::where('tcgdex_id', $setId)->first();
+                if ($set) {
+                    $this->call('tcgdex:update-lookup-keys', ['--set_id' => $set->id]);
+                }
+                
                 return self::SUCCESS;
             } catch (\Throwable $e) {
                 $this->error("❌ Failed: {$e->getMessage()}");
@@ -83,6 +93,11 @@ class TcgdxImportCommand extends Command
                 $this->newLine();
                 $this->info('✅ Cards import completed!');
                 $this->line("   Total Cards: {$result['cards_total']}");
+                
+                // Update lookup keys for all cards
+                $this->newLine();
+                $this->info('🔄 Updating lookup keys...');
+                $this->call('tcgdex:update-lookup-keys');
                 
                 $pipelineRun->markSuccess([
                     'rows_created' => $result['cards_total'],
@@ -121,6 +136,11 @@ class TcgdxImportCommand extends Command
                     $this->line("  - {$failed['set_id']}: {$failed['error']}");
                 }
             }
+            
+            // Update lookup keys for all imported cards
+            $this->newLine();
+            $this->info('🔄 Updating lookup keys...');
+            $this->call('tcgdex:update-lookup-keys');
             
             // Mark pipeline run as success
             $pipelineRun->markSuccess([

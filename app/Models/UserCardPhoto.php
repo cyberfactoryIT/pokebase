@@ -68,8 +68,8 @@ class UserCardPhoto extends Model
         parent::boot();
 
         static::deleting(function ($photo) {
-            if (Storage::disk('private')->exists($photo->path)) {
-                Storage::disk('private')->delete($photo->path);
+            if ($photo->path && Storage::disk('local')->exists($photo->path)) {
+                Storage::disk('local')->delete($photo->path);
             }
         });
     }

@@ -298,10 +298,10 @@ class CmapiImportService
             $prices = $cardData['prices']['cardmarket'];
             
             // Default price (no language specified)
-            if (isset($prices['lowest_near_mint']) && $prices['lowest_near_mint']) {
+            if (isset($prices['lowest_near_mint']) && is_numeric($prices['lowest_near_mint']) && $prices['lowest_near_mint'] !== null) {
                 $snapshots[] = [
                     'cmapi_card_id' => $card->id,
-                    'price_eur' => round($prices['lowest_near_mint'] / 100, 2), // Convert cents to EUR
+                    'price_eur' => round((float)$prices['lowest_near_mint'], 2), // Already in EUR
                     'price_usd' => null,
                     'language' => null,
                     'condition' => 'NM',
@@ -315,10 +315,10 @@ class CmapiImportService
             foreach ($prices as $key => $value) {
                 if (preg_match('/lowest_near_mint_([A-Z]{2})/', $key, $matches)) {
                     $language = strtolower($matches[1]);
-                    if ($value && is_numeric($value)) {
+                    if (is_numeric($value) && $value !== null) {
                         $snapshots[] = [
                             'cmapi_card_id' => $card->id,
-                            'price_eur' => round($value / 100, 2), // Convert cents to EUR
+                            'price_eur' => round((float)$value, 2), // Already in EUR
                             'price_usd' => null,
                             'language' => $language,
                             'condition' => 'NM',
@@ -334,11 +334,11 @@ class CmapiImportService
         // Fallback: TCGPlayer USD price if CardMarket not available
         if (empty($snapshots) && isset($cardData['prices']['tcg_player']['market_price'])) {
             $usdPrice = $cardData['prices']['tcg_player']['market_price'];
-            if ($usdPrice && is_numeric($usdPrice)) {
+            if (is_numeric($usdPrice) && $usdPrice !== null) {
                 $snapshots[] = [
                     'cmapi_card_id' => $card->id,
                     'price_eur' => null,
-                    'price_usd' => round($usdPrice / 100, 2), // Convert cents to USD
+                    'price_usd' => round((float)$usdPrice, 2), // Already in USD
                     'language' => 'en', // TCGPlayer is US-based
                     'condition' => 'NM',
                     'recorded_at' => $now,

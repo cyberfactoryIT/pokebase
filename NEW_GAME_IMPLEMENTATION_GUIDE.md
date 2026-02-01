@@ -3,7 +3,8 @@
 **Reference Document for Adding MTG / YGO / Lorcana**
 
 *Created: January 31, 2026*  
-*Based on: Pokemon/TCGDEX implementation (Jan 28-31, 2026)*
+*Updated: February 1, 2026*  
+*Based on: Pokemon/TCGDEX implementation (Jan 28-31, 2026) + UX improvements (Feb 1, 2026)*
 
 ---
 
@@ -1634,7 +1635,146 @@ public function addCard{Backend}(Request $request, Deck $deck)
 
 ---
 
-### 5.4 Update Interaction Controllers
+### 5.4 Update Global Search (CardSearchController)
+
+**Reference**: `app/Http/Controllers/Api/CardSearchController.php`
+
+The global search in the header needs to support your new backend. This controller provides typeahead suggestions across all card backends.
+
+**⚠️ CRITICAL: Deduplication Strategy**
+
+Each backend uses a **different unique identifier** for cards:
+- **TCGDEX**: `tcgdex_id` (e.g., "base1-10") - includes set + card number
+- **TCGCSV**: `product_id` (integer) - global unique ID
+- **Your Backend**: Define appropriate unique key
+
+**Why this matters**: The frontend JavaScript (`resources/js/cardSearch.js`) deduplicates search results to avoid showing the same card twice. Using the wrong key will cause:
+- ❌ Missing results (cards with same number from different sets get deduplicated incorrectly)
+- ❌ Duplicate results (non-unique keys allow duplicates through)
+
+**Implementation Steps**:
+
+1. **Add search method in CardSearchController** for your backend:
+
+```php
+// app/Http/Controllers/Api/CardSearchController.php
+
+private function search{Backend}(string $query, int $limit, bool $collectionOnly): JsonResponse
+{
+    $escapedQuery = $this->escapeLikeWildcards($query);
+    
+    $results = {Backend}Card::query()
+        ->select([
+            '{backend}_cards.id as {backend}_card_id',
+            '{backend}_cards.{backend}_id', // Your unique identifier
+            '{backend}_cards.name',
+            '{backend}_cards.card_number',
+            '{backend}_sets.name as set_name',
+            // ... other fields
+        ])
+        ->leftJoin('{backend}_sets', '{backend}_cards.set_{backend}_id', '=', '{backend}_sets.id')
+        ->where(function($q) use ($escapedQuery) {
+            $q->where('{backend}_cards.name', 'LIKE', "%{$escapedQuery}%")
+              ->orWhere('{backend}_cards.card_number', 'LIKE', "%{$escapedQuery}%")
+              ->orWhere('{backend}_cards.{backend}_id', 'LIKE', "%{$escapedQuery}%");
+        })
+        ->orderBy('{backend}_cards.id', 'DESC')
+        ->limit($limit)
+        ->get();
+
+    // Format response - MUST include 'backend' field
+    $formatted = $results->map(function ($card) {
+        return [
+            'backend' => '{backend}',  // ⚠️ REQUIRED for frontend routing
+            '{backend}_card_id' => $card->{backend}_card_id,
+            '{backend}_id' => $card->{backend}_id, // ⚠️ Your unique identifier
+            'product_id' => null, // Not applicable
+            'name' => $card->name,
+            'card_number' => $card->card_number,
+            'set_name' => $card->set_name,
+            'set_code' => $card->set_code ?? null,
+            'set_total' => $card->set_total ?? null,
+            'image_url' => $card->image_url,
+        ];
+    });
+
+    return response()->json($formatted);
+}
+```
+
+2. **Update main index() method** to route to your backend:
+
+```php
+public function index(CardSearchRequest $request): JsonResponse
+{
+    $catalogBackend = $request->input('backend') ?: catalog_backend();
+    
+    if ($catalogBackend === '{backend}') {
+        return $this->search{Backend}($query, $limit, $collectionOnly);
+    }
+    // ... existing backends
+}
+```
+
+3. **Update frontend JavaScript** (`resources/js/cardSearch.js`):
+
+```javascript
+// Update deduplicateResults() function
+function deduplicateResults(results) {
+    const seen = new Set();
+    return results.filter(card => {
+        let key;
+        if (card.backend === 'tcgdex') {
+            key = card.tcgdex_id; // Unique across all sets
+        } else if (card.backend === '{backend}') {
+            key = card.{backend}_id; // ⚠️ Use YOUR unique identifier
+        } else {
+            key = card.product_id || `${card.group_id}-${card.card_number}`;
+        }
+        
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+// Update displayResults() to generate correct URLs
+if (card.backend === '{backend}') {
+    cardUrl = `/{game}/cards/${card.{backend}_id}`;
+}
+```
+
+4. **Rebuild assets after editing JavaScript**:
+
+```bash
+npm run build
+```
+
+**Common Mistakes to Avoid**:
+
+❌ **DON'T** use `card_number` as deduplication key (multiple sets have same numbers)
+❌ **DON'T** forget to set `backend` field in API response (breaks frontend routing)
+❌ **DON'T** use `product_id` for non-TCGCSV backends (it's null, causes incorrect deduplication)
+❌ **DON'T** forget to rebuild assets after editing JavaScript
+
+✅ **DO** use a globally unique identifier that includes set information
+✅ **DO** test search with card numbers that appear in multiple sets (e.g., "001/102")
+✅ **DO** verify all matching cards appear in results, not just the first one
+
+**Testing Checklist**:
+- [ ] Search for card name returns results from all sets
+- [ ] Search for card number (e.g., "010/102") returns ALL matching cards, not just first
+- [ ] Clicking result navigates to correct card detail page
+- [ ] No duplicate cards in search results
+- [ ] Search works for both authenticated and guest users
+
+**Reference Implementation**:
+- See commit fixing TCGDEX deduplication issue (Feb 2026)
+- Compare dashboard search vs header search to verify consistency
+
+---
+
+### 5.5 Update Interaction Controllers
 
 **Reference**: `app/Http/Controllers/Pokemon/CardInteractionController.php` or similar
 
@@ -1715,9 +1855,67 @@ resources/views/{game}/catalog/
 - `resources/views/pokemon/catalog/set-cards-tcgdex.blade.php`
 - `resources/views/pokemon/catalog/card-tcgdex.blade.php`
 
+**⚠️ IMPORTANT - Sets List View Pattern**:
+
+The sets list view **MUST** use:
+1. **AJAX-based loading** instead of server-side pagination
+2. **Search filter** with debounced input (300ms delay)
+3. **"Load More" button** instead of classic pagination links
+4. **Infinite scroll-like experience** (appending results, not replacing page)
+
+**Why?**: Better UX, faster perceived performance, no page reloads, mobile-friendly.
+
+**Implementation checklist for sets list**:
+- [ ] Add search input field with debounced event listener
+- [ ] Create AJAX endpoint in controller (e.g., `setsSearch()`)
+- [ ] Return JSON with `data` array and `meta` (current_page, last_page, total)
+- [ ] Render initial results via JavaScript on page load
+- [ ] Show/hide "Load More" button based on `currentPage < lastPage`
+- [ ] On "Load More" click: increment page, fetch, append results
+- [ ] Handle empty states (no results, no more pages)
+- [ ] Add loading spinner during AJAX requests
+
+**Required Route**:
+```php
+// Example for Pokemon
+Route::get('/{game}/sets/search', [CatalogController::class, 'setsSearch'])
+    ->name('{game}.sets.search');
+```
+
+**Controller Method Example**:
+```php
+public function setsSearch(Request $request)
+{
+    $validated = $request->validate([
+        'query' => 'nullable|string|max:100',
+        'page' => 'integer|min:1',
+    ]);
+
+    $query = {Backend}Set::where('game_id', $currentGame->id);
+
+    if (!empty($validated['query'])) {
+        $query->where('name', 'like', "%{$validated['query']}%");
+    }
+
+    $sets = $query->orderByDesc('release_date')->paginate(24);
+
+    return response()->json([
+        'data' => $sets->map(fn($set) => [/* mapped fields */]),
+        'meta' => [
+            'current_page' => $sets->currentPage(),
+            'last_page' => $sets->lastPage(),
+            'per_page' => $sets->perPage(),
+            'total' => $sets->total(),
+        ],
+    ]);
+}
+```
+
 **Checklist**:
 - [ ] Create views directory
-- [ ] Create sets list view
+- [ ] Create sets list view **with AJAX + Load More**
+- [ ] Create sets search endpoint in controller
+- [ ] Add route for sets search
 - [ ] Create set detail view
 - [ ] Create card detail view
 - [ ] Add interaction buttons
@@ -1787,9 +1985,317 @@ Similar to collection, update deck views to handle new backend.
 
 ---
 
+### 7.5 Create Backend-Specific Deck Partials (RECOMMENDED)
+
+**Reference**: `resources/views/decks/partials/card-grid-{tcgcsv,tcgdex,cmapi}.blade.php`
+
+**Why?**: Instead of filling `show.blade.php` with nested if/else statements, create separate partial views for each backend. This improves:
+- **Maintainability**: Each backend's logic is isolated
+- **Readability**: No more "zigzag" conditionals
+- **Scalability**: Easy to add new backends without touching existing code
+- **Testing**: Each partial can be tested independently
+
+**Pattern Applied in Feb 1, 2026 Refactoring**:
+- Reduced `show.blade.php` from 1134 to 858 lines (-276 lines)
+- Created 3 clean partials: TCGCSV (207 lines), TCGDEX (119 lines), CMAPI (111 lines)
+- Each partial contains complete logic: card display, prices, interactions, forms
+
+**Implementation Steps**:
+
+1. **Create Partial Directory**:
+```bash
+mkdir -p resources/views/decks/partials
+```
+
+2. **Create Backend-Specific Partial**:
+```blade
+{{-- resources/views/decks/partials/card-grid-{backend}.blade.php --}}
+
+{{-- Filter deck cards for this backend --}}
+@php
+    $backendCards = $deck->deckCards->filter(fn($dc) => $dc->{backend}_card_id !== null);
+@endphp
+
+@if($backendCards->count() > 0)
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    @foreach($backendCards as $deckCard)
+    @php
+        $card = $deckCard->{backend}Card;
+        if (!$card) continue;
+        
+        // Backend-specific logic here
+        $inCollection = auth()->user()->collection()
+            ->where('{backend}_card_id', $card->id)
+            ->exists();
+        
+        $displayImage = $card->image_url; // Adjust per backend
+        $cardName = $card->name;
+        $setName = $card->set_name;
+        // ... more backend-specific extraction
+    @endphp
+    
+    <div class="deck-card-item ...">
+        {{-- Quantity Badge --}}
+        <div class="absolute top-2 left-2 z-10 ...">
+            x{{ $deckCard->quantity }}
+        </div>
+        
+        {{-- Not in Collection Badge --}}
+        @if(!$inCollection)
+        <div class="absolute top-2 right-2 z-10">
+            <form method="POST" action="{{ route('collection.add') }}" ...>
+                @csrf
+                <input type="hidden" name="{backend}_card_id" value="{{ $card->id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" ...>+</button>
+            </form>
+        </div>
+        @endif
+        
+        {{-- Card Image --}}
+        <div class="aspect-[245/342] ...">
+            <img src="{{ $displayImage }}" alt="{{ $cardName }}" ...>
+        </div>
+        
+        {{-- Card Info --}}
+        <div class="p-3">
+            <h4>{{ $cardName }}</h4>
+            <p>{{ $setName }}</p>
+            
+            {{-- Prices (if available for this backend) --}}
+            @can('seePrices')
+                {{-- Backend-specific price logic --}}
+            @endcan
+            
+            {{-- Actions --}}
+            <div class="flex gap-2 mt-3">
+                {{-- Update Quantity --}}
+                <form method="POST" action="{{ route('decks.cards.updateQuantity', [$deck, $deckCard]) }}" ...>
+                    @csrf
+                    @method('PATCH')
+                    <input type="number" name="quantity" value="{{ $deckCard->quantity }}" ...>
+                </form>
+                
+                {{-- Remove Button --}}
+                <form method="POST" action="{{ route('decks.cards.remove', [$deck, $deckCard]) }}" ...>
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" ...>Remove</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
+</div>
+@endif
+```
+
+3. **Update Main Deck View**:
+```blade
+{{-- resources/views/decks/show.blade.php --}}
+
+@if($deck->deckCards->count() === 0)
+    {{-- Empty state --}}
+@else
+    {{-- Card Grids by Backend --}}
+    @include('decks.partials.card-grid-tcgcsv', ['deck' => $deck, 'preferredCurrency' => $preferredCurrency, 'defaultCurrency' => $defaultCurrency])
+    @include('decks.partials.card-grid-tcgdex', ['deck' => $deck])
+    @include('decks.partials.card-grid-cmapi', ['deck' => $deck])
+    @include('decks.partials.card-grid-{backend}', ['deck' => $deck]) {{-- Add your new backend --}}
+@endif
+```
+
+4. **Key Points**:
+- Each partial filters `$deck->deckCards` for its backend only
+- Use `@if($backendCards->count() > 0)` to avoid empty grids
+- Pass necessary variables via `@include` second parameter
+- Keep all backend-specific logic (prices, image URLs, name extraction) inside the partial
+- Forms use correct backend column name (`{backend}_card_id`)
+
+**Benefits Proven**:
+- 24% reduction in main view size (276 lines removed)
+- Zero if/else conditionals in main view
+- Each backend fully independent
+- Easy to add features to one backend without affecting others
+- Better IDE support and syntax highlighting
+
+**Checklist**:
+- [ ] Create `resources/views/decks/partials/` directory
+- [ ] Create `card-grid-{backend}.blade.php` partial
+- [ ] Implement backend-specific filtering and logic
+- [ ] Update main `show.blade.php` with `@include`
+- [ ] Test deck display with cards from your backend
+- [ ] Verify forms work (add to collection, update quantity, remove)
+- [ ] Check prices display correctly (if applicable)
+
+---
+
 ## 📁 Phase 8: Translations
 
 ### 8.1 Create Catalog Translations
+
+**Reference**: `resources/lang/en/catalog.php`
+
+Create translation files for each language:
+
+---
+
+### 8.2 Implement Keyboard Navigation for Search (RECOMMENDED)
+
+**Reference**: `resources/js/quickAddCard.js` (dashboard search)
+
+**Pattern**: Add arrow key navigation to typeahead search dropdowns for better UX.
+
+**Implementation**:
+
+```javascript
+let highlightedIndex = -1;
+
+// Arrow Down
+if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    highlightedIndex = Math.min(highlightedIndex + 1, results.length - 1);
+    updateHighlight();
+}
+
+// Arrow Up
+if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    highlightedIndex = Math.max(highlightedIndex - 1, -1);
+    updateHighlight();
+}
+
+// Enter
+if (e.key === 'Enter' && highlightedIndex >= 0) {
+    e.preventDefault();
+    selectResult(results[highlightedIndex]);
+}
+
+// Escape
+if (e.key === 'Escape') {
+    closeDropdown();
+    highlightedIndex = -1;
+}
+
+function updateHighlight() {
+    document.querySelectorAll('.search-result').forEach((el, idx) => {
+        el.classList.toggle('bg-white/20', idx === highlightedIndex);
+        
+        // Auto-scroll into view
+        if (idx === highlightedIndex) {
+            el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    });
+}
+```
+
+**Key Features**:
+- ArrowUp/Down navigate through results
+- Visual highlight with background color change
+- `scrollIntoView({ block: 'nearest' })` keeps highlighted item visible
+- Enter selects highlighted result
+- Escape closes dropdown and resets
+
+**Where to Apply**:
+- Header global search
+- Dashboard "Quick Add Card" search
+- Deck card search (collection + catalog)
+- Collection filters typeahead
+
+---
+
+### 8.3 Card Number Format: Display "#10/102" Pattern
+
+**Reference**: `app/Http/Controllers/Api/CardSearchController.php`
+
+**Problem**: Card numbers stored as "10/102" in database, but users expect clean display "#10/102".
+
+**Solution**: Extract `card_number` and `set_total` separately in API response.
+
+**Backend Implementation** (TCGCSV example):
+
+```php
+// Controller method
+public function searchTcgcsv(Request $request)
+{
+    $query = TcgcsvProduct::query()
+        ->selectRaw('
+            tcgcsv_products.*,
+            SUBSTRING_INDEX(card_number, \'/\', 1) as card_number_only,
+            SUBSTRING_INDEX(card_number, \'/\', -1) as set_total
+        ');
+    
+    $cards = $query->get()->map(function ($card) {
+        return [
+            'backend' => 'tcgcsv',
+            'product_id' => $card->product_id,
+            'name' => $card->name,
+            'card_number' => $card->card_number_only, // "10"
+            'set_total' => $card->set_total,          // "102"
+            'set_name' => $card->group->name ?? null,
+            'image_url' => $card->image_url,
+        ];
+    });
+    
+    return response()->json($cards);
+}
+```
+
+**For TCGDEX** (already separated):
+```php
+return [
+    'backend' => 'tcgdex',
+    'tcgdex_card_id' => $card->id,
+    'name' => $card->name['en'] ?? $card->name,
+    'card_number' => $card->local_id,           // Already separate
+    'set_total' => $card->set->card_count_official, // Already separate
+    'set_name' => $card->set->name['en'] ?? $card->set->name,
+    'image_url' => $card->image_small_url,
+];
+```
+
+**Frontend Display**:
+```blade
+{{-- In Blade templates --}}
+<p class="text-gray-400 text-xs">
+    {{ $setName }}
+    @if($cardNumber && $setTotal)
+        · #{{ $cardNumber }}/{{ $setTotal }}
+    @elseif($cardNumber)
+        · #{{ $cardNumber }}
+    @endif
+</p>
+```
+
+**JavaScript Rendering**:
+```javascript
+const cardInfo = `${setName} · #${cardNumber}/${setTotal}`;
+```
+
+**Benefits**:
+- Cleaner display format
+- Consistent across all searches
+- Frontend doesn't need string parsing
+- Backend handles complexity once
+- Easy to conditionally show/hide set total
+
+**Apply To**:
+- All search endpoints (`/api/search/cards`)
+- Collection views
+- Deck views
+- Catalog card grids
+
+**Checklist**:
+- [ ] Update search API to return separate `card_number` and `set_total`
+- [ ] Use SQL functions (SUBSTRING_INDEX) for TCGCSV-style "10/102" format
+- [ ] Update frontend to display "#10/102" consistently
+- [ ] Test in: header search, dashboard search, deck search, collection
+
+---
+
+## 📁 Phase 9: Translations (continued)
+
+### 9.1 Create Catalog Translations
 
 **Reference**: `resources/lang/en/catalog.php`
 

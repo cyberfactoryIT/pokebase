@@ -1,6 +1,6 @@
 # 📊 Basecard - Project Status
 
-*Last Updated: 31 January 2026 - 16:00 CET*
+*Last Updated: 1 February 2026 - 10:30 CET*
 
 ---
 
@@ -185,6 +185,24 @@
 - ✅ Automatic scoping per gioco selezionato
 - ✅ Game switcher nella navbar
 
+### 9. UX & Navigation Improvements (Feb 1, 2026)
+- ✅ **Keyboard Navigation**: Arrow keys (Up/Down), Enter per selezionare, Escape per chiudere
+  - Header global search con auto-scroll del dropdown
+  - Dashboard "Quick Add Card" con highlight visuale
+- ✅ **Card Number Format**: Display "#10/102" invece di "10" in tutte le ricerche
+  - CardSearchController separa `card_number` e `set_total`
+  - TCGCSV usa `SUBSTRING_INDEX` per estrarre numero/totale
+  - TCGDEX usa nativamente `local_id` e `card_count_official`
+- ✅ **Deck View Refactoring**: Backend-specific partial views
+  - `resources/views/decks/partials/card-grid-tcgcsv.blade.php` (207 righe - logica prezzi completa)
+  - `resources/views/decks/partials/card-grid-tcgdex.blade.php` (119 righe - parsing JSON Pokemon)
+  - `resources/views/decks/partials/card-grid-cmapi.blade.php` (111 righe - Lorcana/One Piece)
+  - Ridotto `show.blade.php` da 1134 a 858 righe (-276 righe di if/else eliminati)
+- ✅ **Deck Card Addition Fix**: JavaScript routing corretto per TCGDEX
+  - Fixed parameter order: (productId, tcgdexId, name)
+  - Fixed URL construction: `/decks/{id}/cards/tcgdex`
+  - Fixed CollectionController: return both `product_ids` e `tcgdex_card_ids`
+
 ---
 
 ## 🚧 Known Issues & Limitations
@@ -318,6 +336,44 @@ TCGDX_BASE_URL=https://api.tcgdex.net/v2
 ---
 
 ## 📝 Recent Major Updates
+
+### February 1, 2026: UX Improvements & Deck Refactoring
+**Enhanced user experience with keyboard navigation and cleaner architecture**
+
+#### Implemented:
+1. **Keyboard Navigation**
+   - Dashboard search: ArrowUp/Down navigation con `highlightedIndex`
+   - `scrollIntoView({ block: 'nearest' })` per auto-scroll dropdown
+   - Enter per selezionare risultato, Escape per chiudere
+   - Stesso pattern applicato a header search
+
+2. **Card Display Format**
+   - Nuovo formato: "#10/102" invece di solo "10"
+   - Backend TCGCSV: SQL `SUBSTRING_INDEX(card_number, '/', 1)` per numero, parte dopo '/' per totale
+   - Backend TCGDEX: `local_id` e `card_count_official` già separati
+   - API response: `{card_number: '10', set_total: '102'}`
+   - Applicato a: collection, deck search, catalog search
+
+3. **Deck View Architecture**
+   - Eliminati 276 righe di codice monolitico con if/else ripetuti
+   - Creati 3 partial views puliti (TCGCSV: 207 righe, TCGDEX: 119 righe, CMAPI: 111 righe)
+   - Ogni partial contiene tutta la logica specifica del backend
+   - Pattern scalabile per futuri backend
+   - Manutenibilità drasticamente migliorata
+
+4. **Bug Fixes**
+   - Fixed deck card addition per TCGDEX (JavaScript parameter passing)
+   - Fixed CollectionController API endpoint (ritorna entrambi gli array)
+   - Fixed DeckController `getDeckTopStats()` per supportare tutti e 3 i backend
+   - Rimosso codice duplicato da merge conflicts
+
+#### Files Modified: 15+
+- JavaScript: `resources/js/quickAddCard.js` (keyboard nav)
+- Controllers: `CardSearchController.php` (card_number/set_total), `CollectionController.php` (dual array), `DeckController.php` (multi-backend stats)
+- Views: `decks/show.blade.php` (ridotto 276 righe), 3 nuovi partial (tcgcsv/tcgdex/cmapi)
+- Views: `collection/index.blade.php` (formato numero carta)
+
+---
 
 ### January 28-31, 2026: TCGDEX Complete Integration
 **Complete catalog system rewrite con TCGDEX come backend primario per Pokemon**

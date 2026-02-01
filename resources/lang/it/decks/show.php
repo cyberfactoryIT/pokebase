@@ -21,5 +21,6 @@ return [
     'add_to_deck_btn' => 'Deck',
     'added_to_collection' => 'aggiunta alla collezione!',
     'failed_add_collection' => 'Impossibile aggiungere la carta alla collezione',
-    'failed_add_deck' => 'Impossibile aggiungere la carta al deck',
-];
+    'failed_add_deck' => 'Impossibile aggiungere la carta al deck',    'price_unavailable' => 'Prezzo non disponibile',
+    'remove' => 'Rimuovi',
+    'remove_confirm' => 'Sei sicuro di voler rimuovere questa carta dal mazzo?',];

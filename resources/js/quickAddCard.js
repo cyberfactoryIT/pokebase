@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let debounceTimer = null;
     let currentRequestId = 0;
+    let highlightedIndex = -1;
     
     // Debounced search handler
     searchInput.addEventListener('input', function(e) {
@@ -33,6 +34,29 @@ document.addEventListener('DOMContentLoaded', function() {
         debounceTimer = setTimeout(() => {
             performSearch(query);
         }, 300);
+    });
+    
+    // Keyboard navigation: ArrowUp, ArrowDown, Enter, Escape
+    searchInput.addEventListener('keydown', function(e) {
+        const items = searchResults.querySelectorAll('.search-result-card');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+            updateHighlight(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            highlightedIndex = Math.max(highlightedIndex - 1, -1);
+            updateHighlight(items);
+        } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+            e.preventDefault();
+            if (items[highlightedIndex]) {
+                selectCard(items[highlightedIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            hideResults();
+            highlightedIndex = -1;
+        }
     });
     
     // Click outside to close
@@ -70,8 +94,23 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
+    // Update visual highlight for keyboard navigation
+    function updateHighlight(items) {
+        items.forEach((item, index) => {
+            if (index === highlightedIndex) {
+                item.classList.add('bg-white/10');
+                item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            } else {
+                item.classList.remove('bg-white/10');
+            }
+        });
+    }
+    
     // Display search results
     function displayResults(results) {
+        // Reset highlight index when new results come in
+        highlightedIndex = -1;
+        
         if (results.length === 0) {
             searchResults.innerHTML = '<div class="px-4 py-3 text-gray-400 text-sm">No cards found</div>';
             return;
@@ -129,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedCardId.removeAttribute('data-tcgdex-id');
         }
         
+        highlightedIndex = -1;
         hideResults();
         
         console.log('Card selected:', { cardId, tcgdexId, cardName });
@@ -142,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide results dropdown
     function hideResults() {
         searchResults.classList.add('hidden');
+        highlightedIndex = -1;
     }
     
     // Escape HTML to prevent XSS

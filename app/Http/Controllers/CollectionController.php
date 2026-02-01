@@ -429,6 +429,20 @@ class CollectionController extends Controller
             $existing->increment('quantity', $quantityToAdd);
             $message = 'Card quantity updated in your collection!';
         } else {
+            // Get card price from catalog
+            $card = TcgcsvProduct::find($validated['product_id']);
+            $price = null;
+            $currency = 'USD';
+            
+            if ($card) {
+                // Try to get price from latest price record
+                $latestPrice = $card->prices()->orderBy('updated_at', 'desc')->first();
+                if ($latestPrice && $latestPrice->market_price) {
+                    $price = $latestPrice->market_price;
+                    $currency = 'USD';
+                }
+            }
+            
             // Create new entry
             UserCollection::create([
                 'user_id' => Auth::id(),
@@ -437,6 +451,9 @@ class CollectionController extends Controller
                 'condition' => $validated['condition'] ?? null,
                 'is_foil' => $validated['is_foil'] ?? false,
                 'notes' => $validated['notes'] ?? null,
+                'cached_price' => $price,
+                'cached_price_currency' => $currency,
+                'cached_price_updated_at' => $price ? now() : null,
             ]);
             $message = 'Card added to your collection!';
         }
@@ -485,6 +502,22 @@ class CollectionController extends Controller
             $existing->increment('quantity', $quantityToAdd);
             $message = 'Card quantity updated in your collection!';
         } else {
+            // Get card price from catalog
+            $card = \App\Models\Tcgdx\TcgdxCard::find($validated['tcgdex_card_id']);
+            $price = null;
+            $currency = 'EUR';
+            
+            if ($card) {
+                // Use EUR price if available, fallback to USD
+                if ($card->price_eur && $card->price_eur > 0) {
+                    $price = $card->price_eur;
+                    $currency = 'EUR';
+                } elseif ($card->price_usd && $card->price_usd > 0) {
+                    $price = $card->price_usd;
+                    $currency = 'USD';
+                }
+            }
+            
             // Create new entry
             UserCollection::create([
                 'user_id' => Auth::id(),
@@ -493,6 +526,9 @@ class CollectionController extends Controller
                 'condition' => $validated['condition'] ?? null,
                 'is_foil' => $validated['is_foil'] ?? false,
                 'notes' => $validated['notes'] ?? null,
+                'cached_price' => $price,
+                'cached_price_currency' => $currency,
+                'cached_price_updated_at' => $price ? now() : null,
             ]);
             $message = 'Card added to your collection!';
         }
@@ -541,6 +577,16 @@ class CollectionController extends Controller
             $existing->increment('quantity', $quantityToAdd);
             $message = 'Card quantity updated in your collection!';
         } else {
+            // Get card price from catalog
+            $card = \App\Models\Cmapi\CmapiCard::where('cmapi_id', $validated['cmapi_card_id'])->first();
+            $price = null;
+            $currency = 'EUR';
+            
+            if ($card && $card->price_eur && $card->price_eur > 0) {
+                $price = $card->price_eur;
+                $currency = 'EUR';
+            }
+            
             // Create new entry
             UserCollection::create([
                 'user_id' => Auth::id(),
@@ -549,6 +595,9 @@ class CollectionController extends Controller
                 'condition' => $validated['condition'] ?? null,
                 'is_foil' => $validated['is_foil'] ?? false,
                 'notes' => $validated['notes'] ?? null,
+                'cached_price' => $price,
+                'cached_price_currency' => $currency,
+                'cached_price_updated_at' => $price ? now() : null,
             ]);
             $message = 'Card added to your collection!';
         }
@@ -790,8 +839,8 @@ class CollectionController extends Controller
 
         $file = $request->file('photo');
         
-        // Store in private storage
-        $path = $file->store('user-card-photos/' . Auth::id(), 'private');
+        // Store in local storage (storage/app/private)
+        $path = $file->store('user-card-photos/' . Auth::id(), 'local');
         
         // Create photo record
         $photo = \App\Models\UserCardPhoto::create([
@@ -804,6 +853,26 @@ class CollectionController extends Controller
         ]);
 
         return back()->with('success', __('photos.upload.success'));
+    }
+
+    /**
+     * Serve a photo file (owner only)
+     */
+    public function servePhoto(\App\Models\UserCardPhoto $photo)
+    {
+        // Authorization: must own the photo
+        if ($photo->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!$photo->path || !\Storage::disk('local')->exists($photo->path)) {
+            abort(404, 'Photo not found.');
+        }
+
+        return response()->file(
+            storage_path('app/private/' . $photo->path),
+            ['Content-Type' => $photo->mime_type ?? 'image/jpeg']
+        );
     }
 
     /**

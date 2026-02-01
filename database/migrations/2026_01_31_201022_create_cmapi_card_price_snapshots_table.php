@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('condition', 10); // NM, EX, etc.
             $table->string('language', 5)->nullable(); // en, fr, de, es, it
             $table->decimal('price_eur', 10, 2)->nullable();
+            $table->decimal('price_usd', 10, 2)->nullable();
             $table->timestamp('recorded_at')->useCurrent();
             $table->timestamps();
             

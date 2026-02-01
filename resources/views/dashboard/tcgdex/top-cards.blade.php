@@ -65,15 +65,7 @@
                     <span class="px-2 py-1 bg-white/5 rounded text-sm">
                         {{ $item->quantity }}x
                     </span>
-                    @if($totalValue)
-                    <span class="text-sm font-semibold text-green-400">
-                        @if(in_array($preferredCurrency, ['DKK', 'SEK', 'NOK']))
-                            {{ number_format($displayTotal, 2, ',', '.') }} {{ $currencySymbol }}
-                        @else
-                            {{ $currencySymbol }}{{ number_format($displayTotal, 2, '.', ',') }}
-                        @endif
-                    </span>
-                    @endif
+                    
                 </div>
             </div>
             

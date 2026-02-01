@@ -119,6 +119,9 @@ class DashboardController extends Controller
         if ($catalogBackend === 'tcgdex') {
             $recentAdditions = UserCollection::where('user_id', Auth::id())
                 ->whereNotNull('tcgdex_card_id')
+                ->whereHas('tcgdexCard.set', function($q) use ($currentGame) {
+                    $q->where('game_id', $currentGame->id);
+                })
                 ->with('tcgdexCard')
                 ->orderByDesc('created_at')
                 ->limit(6)
@@ -139,6 +142,9 @@ class DashboardController extends Controller
             $topCards = UserCollection::where('user_id', Auth::id())
                 ->whereNotNull('tcgdex_card_id')
                 ->whereNotNull('cached_price')
+                ->whereHas('tcgdexCard.set', function($q) use ($currentGame) {
+                    $q->where('game_id', $currentGame->id);
+                })
                 ->with('tcgdexCard')
                 ->orderByDesc('cached_price')
                 ->limit(5)

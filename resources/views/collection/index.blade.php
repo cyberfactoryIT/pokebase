@@ -390,6 +390,19 @@
             </a>
         </div>
         @else
+        @php
+            // Prepare photo data for JavaScript
+            $photoData = [];
+            foreach($collection as $item) {
+                $photoData[$item->id] = $item->photos->map(function($photo) {
+                    return [
+                        'id' => $photo->id,
+                        'path' => route('collection.photos.serve', $photo->id),
+                        'uploaded_at' => $photo->created_at->diffForHumans(),
+                    ];
+                })->toArray();
+            }
+        @endphp
         <!-- Collection Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach($collection as $item)
@@ -483,12 +496,12 @@
                     <div class="mt-2 border-t border-white/10 pt-2">
                         @if($item->photos->count() > 0)
                             <!-- Show photos count and link -->
-                            <div class="flex items-center gap-2 mb-1">
+                            <button onclick="openPhotoModal({{ $item->id }})" class="flex items-center gap-2 mb-1 w-full text-left hover:bg-white/5 px-2 py-1 rounded transition">
                                 <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
-                                <span class="text-xs text-blue-400">{{ $item->photos->count() }} {{ $item->photos->count() === 1 ? 'photo' : 'photos' }}</span>
-                            </div>
+                                <span class="text-xs text-blue-400 underline">{{ $item->photos->count() }} {{ $item->photos->count() === 1 ? 'photo' : 'photos' }}</span>
+                            </button>
                         @endif
                         <form method="POST" action="{{ route('collection.photos.upload', $item) }}" enctype="multipart/form-data" class="relative">
                             @csrf
@@ -793,6 +806,40 @@
     </div>
 </div>
 
+<!-- Photo Gallery Modal -->
+<div id="photoModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/90 transition-opacity" onclick="closePhotoModal()"></div>
+        <div class="relative bg-[#161615] border border-white/15 rounded-xl shadow-xl max-w-4xl w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-white">Card Photos</h3>
+                <button onclick="closePhotoModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="photoGalleryContent" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Photos will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox Modal for full size photo -->
+<div id="lightboxModal" class="hidden fixed inset-0 z-[9999] overflow-hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/95 transition-opacity" onclick="closeLightbox()"></div>
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 z-[10000] text-white hover:text-gray-300 bg-black/50 rounded-full p-2">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <img id="lightboxImage" src="" alt="Card photo" class="relative z-[10000] max-w-full max-h-screen object-contain">
+    </div>
+</div>
+
 <script>
 // Collection search
 const collectionSearchInput = document.getElementById('collection-card-search');
@@ -842,7 +889,7 @@ async function searchCards(query) {
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="text-white font-medium truncate">${escapeHtml(card.name)}</div>
-                    <div class="text-gray-400 text-sm">${escapeHtml(card.set_name || '')} ${card.card_number ? '· #' + escapeHtml(card.card_number) : ''}</div>
+                    <div class="text-gray-400 text-sm">${escapeHtml(card.set_name || '')} ${card.card_number ? '· #' + escapeHtml(card.card_number) + (card.set_total ? '/' + card.set_total : '') : ''}</div>
                 </div>
                 <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -894,6 +941,91 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Photo modal functions
+const collectionPhotos = @json($photoData ?? []);
+
+function openPhotoModal(collectionId) {
+    const photos = collectionPhotos[collectionId] || [];
+    const gallery = document.getElementById('photoGalleryContent');
+    
+    if (photos.length === 0) {
+        gallery.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No photos available</p>';
+    } else {
+        gallery.innerHTML = photos.map((photo, index) => `
+            <div class="relative group">
+                <div class="aspect-[245/342] bg-black/50 rounded-lg border border-white/20 overflow-hidden cursor-pointer hover:border-blue-400 transition photo-thumbnail" data-photo-url="${photo.path}" data-index="${index}">
+                    <img src="${photo.path}" alt="Card photo" class="w-full h-full object-contain">
+                </div>
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
+                    <form method="POST" action="/collection/photos/${photo.id}" onsubmit="return confirm('Delete this photo?');" class="inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="p-1 bg-red-600/80 hover:bg-red-600 rounded text-white text-xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">${photo.uploaded_at}</p>
+            </div>
+        `).join('');
+        
+        // Add click listeners to photo thumbnails
+        document.querySelectorAll('.photo-thumbnail').forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                const photoUrl = this.getAttribute('data-photo-url');
+                openLightbox(photoUrl);
+            });
+        });
+    }
+    
+    document.getElementById('photoModal').classList.remove('hidden');
+}
+
+function closePhotoModal() {
+    document.getElementById('photoModal').classList.add('hidden');
+}
+
+function openLightbox(imagePath) {
+    // Close photo modal first
+    document.getElementById('photoModal').classList.add('hidden');
+    
+    // Create lightbox dynamically and append to body
+    const lightbox = document.createElement('div');
+    lightbox.id = 'dynamicLightbox';
+    lightbox.className = 'fixed inset-0 z-[99999] overflow-hidden';
+    lightbox.style.zIndex = '99999';
+    lightbox.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black/95 transition-opacity"></div>
+            <button class="close-lightbox absolute top-4 right-4 text-white hover:text-gray-300 bg-black/50 rounded-full p-2" style="z-index: 100000;">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <img src="${imagePath}" alt="Card photo" class="relative max-w-full max-h-screen object-contain" style="z-index: 100000;">
+        </div>
+    `;
+    
+    // Click on background or button to close and reopen photo modal
+    const closeLightboxFn = function() {
+        const lb = document.getElementById('dynamicLightbox');
+        if (lb) lb.remove();
+        // Reopen photo modal
+        document.getElementById('photoModal').classList.remove('hidden');
+    };
+    
+    lightbox.querySelector('.fixed.inset-0').addEventListener('click', closeLightboxFn);
+    lightbox.querySelector('.close-lightbox').addEventListener('click', closeLightboxFn);
+    
+    document.body.appendChild(lightbox);
+}
+
+function closeLightbox() {
+    document.getElementById('lightboxModal').classList.add('hidden');
 }
 </script>
 @endsection

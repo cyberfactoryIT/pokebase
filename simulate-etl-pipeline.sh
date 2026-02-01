@@ -186,6 +186,23 @@ echo -e "${GREEN}✅ STEP 7 completato in ${step7_duration}s${NC}"
 echo ""
 sleep 2
 
+# Step 7b: TCGdex Update Lookup Keys
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}STEP 7b/11: TCGdex Update Lookup Keys${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
+echo -e "${CYAN}📝 Populating visible_lookup_key for card search (SETCODE 028/64)${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
+echo ""
+step7b_start=$(date +%s)
+$PHP_CMD artisan tcgdex:update-lookup-keys
+step7b_end=$(date +%s)
+step7b_duration=$((step7b_end - step7b_start))
+echo ""
+echo -e "${GREEN}✅ STEP 7b completato in ${step7b_duration}s${NC}"
+echo ""
+sleep 2
+
 # Step 8: RapidAPI Episodes Mapping (05:30)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${GREEN}STEP 8/11: RapidAPI Episodes Mapping (Schedule: 05:30)${NC}"
@@ -292,6 +309,7 @@ echo -e "   4️⃣  RapidAPI Sync Cards ................... ${step6_duration}s"
 echo -e "   5️⃣  RapidAPI Cards Mapping ................ ${step5_duration}s"
 echo -e "   6️⃣  Cardmarket Match (Direct+Fuzzy) ....... ${step6_duration}s"
 echo -e "   7️⃣  TCGdex Download & Import .............. ${step7_duration}s"
+echo -e "   7️⃣🅱️ TCGdex Update Lookup Keys ............ ${step7b_duration}s"
 echo -e "   8️⃣  RapidAPI Episodes Mapping ............. ${step8_duration}s"
 echo -e "   9️⃣  TCGdex Mapping ........................ ${step9_duration}s"
 echo -e "   9️⃣🅱️ TCGdex CardMarket IDs ................ ${step9b_duration}s"

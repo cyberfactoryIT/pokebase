@@ -306,7 +306,97 @@ php artisan tinker
 
 ---
 
-## 💰 Stripe
+## � Price Caching System
+
+### Overview
+Quando un utente aggiunge una carta alla **collezione** o a un **deck**, il prezzo viene copiato dal catalogo e salvato nei campi:
+- `cached_price` (decimal)
+- `cached_price_currency` (EUR/USD)
+- `cached_price_updated_at` (timestamp)
+
+Questo garantisce che i prezzi rimangano stabili e non cambino nel tempo.
+
+### Fonti prezzi per backend
+
+**TCGCSV (USA):**
+- EUR: `tcgcsv_prices.market_price` (USD)
+- Fonte: TCGPlayer
+
+**TCGDEX (EU + USA):**
+- EUR: `tcgdx_cards.price_eur` (preferenza)
+- USD: `tcgdx_cards.price_usd` (fallback)
+
+**CMAPI (EU Cardmarket):**
+- EUR: `cmapi_cards.price_eur`
+- Fonte: Cardmarket API
+
+### Database Tables
+
+**user_collection:**
+```sql
+cached_price DECIMAL(10,2)
+cached_price_currency VARCHAR(3)
+cached_price_updated_at TIMESTAMP
+```
+
+**deck_cards:**
+```sql
+cached_price DECIMAL(10,2)
+cached_price_currency VARCHAR(3)
+cached_price_updated_at TIMESTAMP
+```
+
+### Controllers Implementation
+
+**CollectionController:**
+- `add()` - TCGCSV cards
+- `addTcgdex()` - TCGDEX cards
+- `addCmapi()` - CMAPI cards
+
+**DeckController:**
+- `addCard()` - TCGCSV cards
+- `addCardTcgdex()` - TCGDEX cards
+- `addCardCmapi()` - CMAPI cards
+
+Tutti i metodi copiano il prezzo dal catalogo al momento dell'aggiunta.
+
+### Price Display
+
+**Collezione:** 
+- Mostra `cached_price` nelle card
+- Conversione automatica a valuta preferita utente
+
+**Deck:**
+- Mostra `cached_price` nelle card (3 partial backend-specific)
+- Conversione automatica a valuta preferita utente
+- Totali deck calcolati da `getDeckTopStats()` sommando cached_price
+
+### Verificare cache prezzi
+
+**Check ultimo deck card:**
+```bash
+php artisan tinker --execute="
+\$dc = \App\Models\DeckCard::latest()->first();
+echo 'ID: ' . \$dc->id . PHP_EOL;
+echo 'Cached Price: ' . \$dc->cached_price . PHP_EOL;
+echo 'Currency: ' . \$dc->cached_price_currency . PHP_EOL;
+echo 'Updated: ' . \$dc->cached_price_updated_at . PHP_EOL;
+"
+```
+
+**Check collection items:**
+```bash
+php artisan tinker --execute="
+\$item = \App\Models\UserCollection::latest()->first();
+echo 'ID: ' . \$item->id . PHP_EOL;
+echo 'Cached Price: ' . \$item->cached_price . PHP_EOL;
+echo 'Currency: ' . \$item->cached_price_currency . PHP_EOL;
+"
+```
+
+---
+
+## �💰 Stripe
 
 ### Sync pricing plans
 ```bash

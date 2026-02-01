@@ -12,18 +12,27 @@ class CollectionController extends Controller
     /**
      * Get user's collection product IDs
      * 
-     * Returns only the product_id array for checking ownership
+     * Returns both product_id and tcgdex_card_id arrays for checking ownership
      */
     public function getProductIds(): JsonResponse
     {
         if (!Auth::check()) {
-            return response()->json([]);
+            return response()->json([
+                'product_ids' => [],
+                'tcgdex_card_ids' => []
+            ]);
         }
 
-        $productIds = UserCollection::where('user_id', Auth::id())
-            ->pluck('product_id')
-            ->toArray();
+        $collection = UserCollection::where('user_id', Auth::id())
+            ->select('product_id', 'tcgdex_card_id')
+            ->get();
 
-        return response()->json($productIds);
+        $productIds = $collection->whereNotNull('product_id')->pluck('product_id')->toArray();
+        $tcgdexCardIds = $collection->whereNotNull('tcgdex_card_id')->pluck('tcgdex_card_id')->toArray();
+
+        return response()->json([
+            'product_ids' => $productIds,
+            'tcgdex_card_ids' => $tcgdexCardIds
+        ]);
     }
 }
