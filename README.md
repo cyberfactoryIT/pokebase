@@ -56,6 +56,30 @@
 
 ---
 
+## 📚 Documentation Hub
+
+### Core Documentation
+- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - ⭐ Complete project status, features, architecture (updated Feb 2, 2026)
+- **[ROADMAP.md](ROADMAP.md)** - Future development roadmap and planned features
+
+### Implementation Guides
+- **[NEW_GAME_IMPLEMENTATION_GUIDE.md](NEW_GAME_IMPLEMENTATION_GUIDE.md)** - Complete guide for adding new card games (3240+ lines)
+- **[LORCANA_QUICKSTART.md](LORCANA_QUICKSTART.md)** - Quick start for Disney Lorcana implementation
+- **[CMAPI_IMPLEMENTATION_STATUS.md](CMAPI_IMPLEMENTATION_STATUS.md)** - 🆕 Current status of Lorcana/One Piece (70% complete)
+- **[TODO_CMAPI_COMPLETION.md](TODO_CMAPI_COMPLETION.md)** - 🆕 Step-by-step TODO checklist for CMAPI completion
+
+### Operation Guides
+- **[OPERATIONS.md](OPERATIONS.md)** - Deployment, maintenance, troubleshooting
+- **[CRON_SETUP.md](CRON_SETUP.md)** - Scheduled tasks configuration
+- **[CARDMARKET_PRICE_SYNC_GUIDE.md](CARDMARKET_PRICE_SYNC_GUIDE.md)** - CardMarket pricing integration
+
+### Stripe & Billing
+- **[STRIPE_SETUP_GUIDE.md](STRIPE_SETUP_GUIDE.md)** - Complete Stripe integration guide
+- **[STRIPE_RECURRING_IMPLEMENTATION.md](STRIPE_RECURRING_IMPLEMENTATION.md)** - Recurring subscriptions
+- **[SUBSCRIPTION_RENEWAL_GUIDE.md](SUBSCRIPTION_RENEWAL_GUIDE.md)** - Renewal flow documentation
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Framework**: Laravel 11 (PHP 8.2+)

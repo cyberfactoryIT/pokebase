@@ -28,6 +28,11 @@ if (!function_exists('catalog_backend')) {
             return 'tcgdex'; // Fallback for Pokemon
         }
         
+        // For Lorcana and One Piece routes (CMAPI backend)
+        if (request()->is('lorcana/*') || request()->is('onepiece/*')) {
+            return 'cmapi';
+        }
+        
         // Default fallback
         return 'tcgcsv';
     }
@@ -50,6 +55,16 @@ if (!function_exists('is_tcgcsv_catalog')) {
     function is_tcgcsv_catalog(): bool
     {
         return catalog_backend() === 'tcgcsv';
+    }
+}
+
+if (!function_exists('is_cmapi_catalog')) {
+    /**
+     * Check if CMAPI catalog is active (Lorcana, One Piece)
+     */
+    function is_cmapi_catalog(): bool
+    {
+        return catalog_backend() === 'cmapi';
     }
 }
 

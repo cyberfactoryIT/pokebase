@@ -255,22 +255,25 @@
                             <!-- Interaction Buttons -->
                             <div class="grid grid-cols-3 gap-2">
                                 <button 
+                                    id="likeBtn"
                                     onclick="toggleLike()"
                                     class="px-3 py-2 {{ $card->is_liked ? 'bg-red-600' : 'bg-white/10' }} hover:bg-red-700 text-white rounded-lg transition text-sm"
                                 >
-                                    ❤️ Like
+                                    ❤️ <span id="likeText">{{ $card->is_liked ? 'Unlike' : 'Like' }}</span>
                                 </button>
                                 <button 
+                                    id="wishlistBtn"
                                     onclick="toggleWishlist()"
                                     class="px-3 py-2 {{ $card->is_in_wishlist ? 'bg-yellow-600' : 'bg-white/10' }} hover:bg-yellow-700 text-white rounded-lg transition text-sm"
                                 >
-                                    ⭐ Wishlist
+                                    ⭐ <span id="wishlistText">{{ $card->is_in_wishlist ? 'In Wishlist' : 'Wishlist' }}</span>
                                 </button>
                                 <button 
+                                    id="watchBtn"
                                     onclick="toggleWatch()"
                                     class="px-3 py-2 {{ $card->is_watched ? 'bg-green-600' : 'bg-white/10' }} hover:bg-green-700 text-white rounded-lg transition text-sm"
                                 >
-                                    👁️ Watch
+                                    👁️ <span id="watchText">{{ $card->is_watched ? 'Watching' : 'Watch' }}</span>
                                 </button>
                             </div>
                         </div>
@@ -458,18 +461,151 @@ document.getElementById('daysFilter').addEventListener('change', (e) => {
 loadPriceHistory();
 
 function toggleLike() {
-    // TODO: Implement like toggle
-    alert('Like functionality coming soon!');
+    const btn = document.getElementById('likeBtn');
+    const text = document.getElementById('likeText');
+    
+    const url = '{{ route('cmapi.cards.like', ['game' => $gameSlug, 'cardId' => $card->id]) }}';
+    console.log('Calling like endpoint:', url);
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    console.log('CSRF token:', csrfToken);
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.status === 'liked') {
+            btn.classList.remove('bg-white/10');
+            btn.classList.add('bg-red-600');
+            text.textContent = 'Unlike';
+        } else {
+            btn.classList.remove('bg-red-600');
+            btn.classList.add('bg-white/10');
+            text.textContent = 'Like';
+        }
+        
+        // Show success message
+        if (data.message) {
+            showNotification(data.message, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Like Error:', error);
+        showNotification('Error updating like status', 'error');
+    });
 }
 
 function toggleWishlist() {
-    // TODO: Implement wishlist toggle
-    alert('Wishlist functionality coming soon!');
+    const btn = document.getElementById('wishlistBtn');
+    const text = document.getElementById('wishlistText');
+    
+    const url = '{{ route('cmapi.cards.wishlist', ['game' => $gameSlug, 'cardId' => $card->id]) }}';
+    console.log('Calling wishlist endpoint:', url);
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    console.log('CSRF token:', csrfToken);
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(response => {
+        console.log('Wishlist response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Wishlist response data:', data);
+        if (data.status === 'added') {
+            btn.classList.remove('bg-white/10');
+            btn.classList.add('bg-yellow-600');
+            text.textContent = 'In Wishlist';
+        } else {
+            btn.classList.remove('bg-yellow-600');
+            btn.classList.add('bg-white/10');
+            text.textContent = 'Wishlist';
+        }
+        
+        // Show success message
+        if (data.message) {
+            showNotification(data.message, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating wishlist status', 'error');
+    });
 }
 
 function toggleWatch() {
-    // TODO: Implement watch toggle
-    alert('Watch functionality coming soon!');
+    const btn = document.getElementById('watchBtn');
+    const text = document.getElementById('watchText');
+    
+    const url = '{{ route('cmapi.cards.watch', ['game' => $gameSlug, 'cardId' => $card->id]) }}';
+    console.log('Calling watch endpoint:', url);
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    console.log('CSRF token:', csrfToken);
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(response => {
+        console.log('Watch response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Watch response data:', data);
+        if (data.status === 'watched') {
+            btn.classList.remove('bg-white/10');
+            btn.classList.add('bg-green-600');
+            text.textContent = 'Watching';
+        } else {
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-white/10');
+            text.textContent = 'Watch';
+        }
+        
+        // Show success message
+        if (data.message) {
+            showNotification(data.message, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating watch status', 'error');
+    });
+}
+
+function showNotification(message, type = 'success') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${
+        type === 'success' ? 'bg-green-600' : 'bg-red-600'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 </script>
 @endauth

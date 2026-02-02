@@ -27,7 +27,14 @@
                 </a>
 
                 @if($expansionsCount > 0)
-                <a href="{{ $catalogBackend === 'tcgdex' ? route('pokemon.sets') : route('tcg.expansions.index') }}" class="flex items-center gap-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-2 py-1.5 transition group" title="{{ __('dashboard.browse_expansions') }}">
+                @php
+                    $setsUrl = match($catalogBackend) {
+                        'tcgdex' => route('pokemon.sets'),
+                        'cmapi' => route('cmapi.sets.index', ['game' => $currentGame->slug ?? 'lorcana']),
+                        default => route('tcg.expansions.index')
+                    };
+                @endphp
+                <a href="{{ $setsUrl }}" class="flex items-center gap-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-2 py-1.5 transition group" title="{{ __('dashboard.browse_expansions') }}">
                     <img src="/images/logos/logo_pokemon.png" alt="Pokemon" class="w-4 h-4 object-contain">
                     <span class="text-white text-xs font-medium">{{ $expansionsCount }}</span>
                 </a>
@@ -73,6 +80,8 @@
                     <!-- Recent Additions -->
                     @if($catalogBackend === 'tcgdex')
                         @include('dashboard.tcgdex.recent-additions')
+                    @elseif($catalogBackend === 'cmapi')
+                        @include('dashboard.cmapi.recent-additions')
                     @else
                         @include('dashboard.tcgcsv.recent-additions')
                     @endif
@@ -82,6 +91,8 @@
                 <div class="lg:col-span-1">
                     @if($catalogBackend === 'tcgdex')
                         @include('dashboard.tcgdex.top-cards')
+                    @elseif($catalogBackend === 'cmapi')
+                        @include('dashboard.cmapi.top-cards')
                     @else
                         @include('dashboard.tcgcsv.top-cards')
                     @endif
@@ -91,6 +102,8 @@
             <!-- Featured Expansions Carousel -->
             @if($catalogBackend === 'tcgdex')
                 @include('dashboard.tcgdex.featured-expansions')
+            @elseif($catalogBackend === 'cmapi')
+                @include('dashboard.cmapi.featured-expansions')
             @else
                 @include('dashboard.tcgcsv.featured-expansions')
             @endif
@@ -98,6 +111,8 @@
             <!-- Missing Cards (Full Width) -->
             @if($catalogBackend === 'tcgdex')
                 @include('dashboard.tcgdex.missing-cards')
+            @elseif($catalogBackend === 'cmapi')
+                @include('dashboard.cmapi.missing-cards')
             @else
                 @include('dashboard.tcgcsv.missing-cards')
             @endif

@@ -9,7 +9,7 @@
         <h3 class="text-xl font-bold text-white">{{ __('dashboard.quick_add_card') }}</h3>
     </div>
 
-    <form id="quick-add-form" action="{{ route('collection.quick-add') }}" method="POST" class="space-y-4">
+    <form id="quick-add-form" action="{{ route('collection.quick-add') }}" method="POST" class="space-y-4" data-catalog-backend="{{ $catalogBackend ?? 'tcgcsv' }}">
         @csrf
         
         <!-- Card Search -->

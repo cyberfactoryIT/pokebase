@@ -29,10 +29,15 @@
   - RapidAPI Pokemon (episodes & cards mapping)
 
 ### Multi-Game System
-- Sistema con scoping automatico per supportare 3 giochi
+- Sistema con scoping automatico per supportare 5 giochi (3 attivi, 2 in beta)
+- **3 Backend Catalog**:
+  - **TCGDEX**: Pokemon TCG (primary, production-ready)
+  - **TCGCSV**: MTG, YGO (legacy, stable)
+  - **CMAPI**: Lorcana, One Piece (beta, partial)
 - Ogni utente ha un `default_game_id` che filtra automaticamente i dati
 - Cambio gioco tramite dropdown nella navbar
 - Database condiviso con campo `game_id` su tutte le tabelle rilevanti
+- Backend selection via `games.catalog_backend` column
 
 ---
 
@@ -179,11 +184,14 @@
 - ✅ Promotions management
 
 ### 8. Multi-Game Support
-- ✅ Pokemon TCG
-- ✅ Magic: The Gathering (MTG)
-- ✅ Yu-Gi-Oh! (YGO)
+- ✅ Pokemon TCG (TCGDEX backend)
+- ✅ Magic: The Gathering (MTG) (TCGCSV backend)
+- ✅ Yu-Gi-Oh! (YGO) (TCGCSV backend)
+- 🚧 Disney Lorcana (CMAPI backend - partial implementation)
+- 🚧 One Piece Card Game (CMAPI backend - partial implementation)
 - ✅ Automatic scoping per gioco selezionato
 - ✅ Game switcher nella navbar
+- ✅ Database-driven backend configuration (`games.catalog_backend`)
 
 ### 9. UX & Navigation Improvements (Feb 1, 2026)
 - ✅ **Keyboard Navigation**: Arrow keys (Up/Down), Enter per selezionare, Escape per chiudere
@@ -210,8 +218,13 @@
 ### Data Import
 - ✅ **TCGDEX Now Primary**: Pokemon usa TCGDEX (stabile, 30k+ carte, prezzi integrati)
 - ⚠️ Pokemon TCG API deprecato (504 timeouts, instabilità)
-- ✅ TCGCSV mantenu to per MTG/YGO
+- ✅ TCGCSV mantenuto per MTG/YGO
 - ✅ Immagini TCGDEX alta qualità (.webp format)
+- 🚧 **CMAPI (Lorcana/One Piece)**: Backend code completo, import command mancante
+  - ❌ Missing: `php artisan cmapi:import` command
+  - ❌ Incomplete: Frontend views per browse sets/cards
+  - ❌ Incomplete: Dashboard integration per featured sets
+  - ✅ Models, Services, Migrations, Routes presenti
 
 ### Organizations Feature
 - ⚠️ Feature multi-organizzazione disabilitata (`ORGANIZATIONS_ENABLED=false`)
@@ -243,6 +256,13 @@
 - `tcgcsv_groups` - Set/Espansioni (con `game_id`)
 - `tcgcsv_products` - Singole carte (con `game_id`)
 - `tcgcsv_prices` - Prezzi USA (market, low, mid, high)
+
+### CMAPI Card Data (Lorcana/One Piece - Beta)
+- `cmapi_sets` - Set/Episodes (200+ per Lorcana, con game_id)
+- `cmapi_cards` - Carte con pricing EUR/USD integrato (con game_id)
+- `cmapi_import_runs` - Log import runs per tracking
+- `cmapi_card_price_snapshots` - Historical pricing snapshots
+- Relazioni: `cmapi_cards.set_cmapi_id` → `cmapi_sets.id`
 
 ### Pricing Data
 - `cardmarket_products` - Prodotti Cardmarket

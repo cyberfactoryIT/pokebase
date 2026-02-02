@@ -186,17 +186,17 @@ class CmapiSetController extends Controller
             
             $card->is_liked = \DB::table('user_likes')
                 ->where('user_id', $userId)
-                ->where('cmapi_card_id', $card->cmapi_id)
+                ->where('cmapi_card_id', $card->id)
                 ->exists();
                 
             $card->is_in_wishlist = \DB::table('user_wishlist_items')
                 ->where('user_id', $userId)
-                ->where('cmapi_card_id', $card->cmapi_id)
+                ->where('cmapi_card_id', $card->id)
                 ->exists();
                 
             $card->is_watched = \DB::table('user_watch_items')
                 ->where('user_id', $userId)
-                ->where('cmapi_card_id', $card->cmapi_id)
+                ->where('cmapi_card_id', $card->id)
                 ->exists();
         } else {
             $card->is_liked = false;
@@ -204,6 +204,8 @@ class CmapiSetController extends Controller
             $card->is_watched = false;
         }
 
-        return view('cmapi.cards.show', compact('card', 'game'));
+        $gameSlug = $game; // $game is already a string slug (e.g., 'lorcana')
+
+        return view('cmapi.cards.show', compact('card', 'game', 'gameSlug'));
     }
 }

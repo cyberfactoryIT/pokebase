@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CardSearchRequest;
+use App\Models\Cmapi\CmapiCard;
+use App\Models\Cmapi\CmapiSet;
 use App\Models\TcgcsvProduct;
 use App\Models\UserCollection;
 use Illuminate\Http\JsonResponse;
@@ -50,6 +52,14 @@ class CardSearchController extends Controller
                 // Fall back to helper (handles session, user default, and route context)
                 $catalogBackend = catalog_backend();
             }
+            
+            // Log for debugging
+            Log::info('Card search API called', [
+                'query' => $query,
+                'backend' => $catalogBackend,
+                'url' => $request->fullUrl(),
+                'referer' => $request->header('referer'),
+            ]);
 
             // Get current game ID for filtering (used only in TCGCSV search)
             $gameId = session('current_game_id');
@@ -61,6 +71,9 @@ class CardSearchController extends Controller
             if ($catalogBackend === 'tcgdex') {
                 // Search in TCGDEX tables
                 return $this->searchTcgdex($query, $limit, $collectionOnly);
+            } elseif ($catalogBackend === 'cmapi') {
+                // Search in CMAPI tables (Lorcana, One Piece)
+                return $this->searchCmapi($query, $limit, $collectionOnly, $gameId);
             } else {
                 // Search in TCGCSV tables
                 return $this->searchTcgcsv($query, $limit, $collectionOnly, $gameId);
@@ -268,6 +281,95 @@ class CardSearchController extends Controller
                 'set_code' => $card->set_code,
                 'set_name' => $setNameEn,
                 'image_url' => $card->image_url ? $card->image_url . '/low.webp' : null,
+            ];
+        });
+
+        return response()->json($formatted);
+    }
+
+    /**
+     * Search in CMAPI database (Lorcana, One Piece)
+     */
+    private function searchCmapi(string $query, int $limit, bool $collectionOnly, ?int $gameId): JsonResponse
+    {
+        // Escape LIKE wildcards to prevent injection
+        $escapedQuery = $this->escapeLikeWildcards($query);
+        
+        // Build search query
+        $results = CmapiCard::query()
+            ->select([
+                'cmapi_cards.id',
+                'cmapi_cards.cmapi_id',
+                'cmapi_cards.name',
+                'cmapi_cards.number as card_number',
+                'cmapi_cards.set_cmapi_id',
+                'cmapi_sets.name as set_name',
+                'cmapi_sets.cmapi_episode as set_code',
+                'cmapi_sets.total_cards as set_total',
+                'cmapi_cards.image_url',
+            ])
+            ->leftJoin('cmapi_sets', 'cmapi_cards.set_cmapi_id', '=', 'cmapi_sets.id');
+        
+        // Filter by game if set
+        if ($gameId) {
+            $results->where('cmapi_cards.game_id', $gameId);
+        }
+        
+        // Filter by collection if requested
+        if ($collectionOnly && Auth::check()) {
+            $userId = Auth::id();
+            $results->whereIn('cmapi_cards.id', function($query) use ($userId) {
+                $query->select('cmapi_card_id')
+                    ->from('user_collection')
+                    ->where('user_id', $userId)
+                    ->whereNotNull('cmapi_card_id'); // Only CMAPI cards
+            });
+        }
+        
+        // Search by:
+        // - Card name
+        // - Card number (like "1", "001")
+        // - Set episode (like "1", "2")
+        // - Set name
+        $results->where(function($q) use ($escapedQuery) {
+                $q->where('cmapi_cards.name', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('cmapi_cards.number', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('cmapi_sets.cmapi_episode', 'LIKE', "%{$escapedQuery}%")
+                  ->orWhere('cmapi_sets.name', 'LIKE', "%{$escapedQuery}%");
+            })
+            ->orderByRaw(
+                'CASE 
+                    WHEN cmapi_cards.number = ? THEN 0
+                    WHEN cmapi_sets.cmapi_episode = ? THEN 1
+                    WHEN cmapi_cards.name LIKE ? THEN 2 
+                    WHEN cmapi_cards.number LIKE ? THEN 3
+                    WHEN cmapi_sets.name LIKE ? THEN 4
+                    ELSE 5 
+                END',
+                [$escapedQuery, $escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%", "{$escapedQuery}%"]
+            )
+            ->orderBy('cmapi_sets.release_date', 'DESC')
+            ->orderBy('cmapi_cards.number', 'ASC')
+            ->orderBy('cmapi_cards.id', 'DESC')
+            ->limit($limit);
+            
+        // Execute query
+        $cards = $results->get();
+
+        // Format response (compatible with frontend expectations)
+        $formatted = $cards->map(function ($card) {
+            return [
+                'backend' => 'cmapi',
+                'cmapi_card_id' => $card->id,
+                'cmapi_id' => $card->cmapi_id,
+                'product_id' => null, // Not applicable for CMAPI
+                'tcgdex_card_id' => null, // Not applicable for CMAPI
+                'name' => $card->name,
+                'card_number' => $card->card_number,
+                'set_total' => $card->set_total,
+                'set_code' => $card->set_code,
+                'set_name' => $card->set_name,
+                'image_url' => $card->image_url,
             ];
         });
 

@@ -58,6 +58,10 @@ class DashboardController extends Controller
                 $q->where('game_id', $currentGame->id);
             })->count();
             $expansionsCount = \App\Models\Tcgdx\TcgdxSet::where('game_id', $currentGame->id)->count();
+        } elseif ($catalogBackend === 'cmapi') {
+            // For CMAPI (Lorcana, One Piece)
+            $cardsCount = \App\Models\Cmapi\CmapiCard::where('game', $currentGame->slug)->count();
+            $expansionsCount = \App\Models\Cmapi\CmapiSet::where('game', $currentGame->slug)->count();
         } else {
             $cardsCount = TcgcsvProduct::where('game_id', $currentGame->id)->count();
             $expansionsCount = TcgcsvGroup::where('game_id', $currentGame->id)->count();
@@ -75,6 +79,14 @@ class DashboardController extends Controller
                 
             $uniqueCardsCount = UserCollection::where('user_id', Auth::id())
                 ->whereNotNull('tcgdex_card_id')
+                ->count();
+        } elseif ($catalogBackend === 'cmapi') {
+            $userCollectionCount = UserCollection::where('user_id', Auth::id())
+                ->whereNotNull('cmapi_card_id')
+                ->sum('quantity');
+                
+            $uniqueCardsCount = UserCollection::where('user_id', Auth::id())
+                ->whereNotNull('cmapi_card_id')
                 ->count();
         } else {
             $userCollectionCount = UserCollection::where('user_id', Auth::id())
@@ -270,6 +282,23 @@ class DashboardController extends Controller
             
             // Featured expansions for carousel
             $featuredExpansions = TcgdxSet::where('game_id', $currentGame->id)
+                ->orderBy('release_date', 'desc')
+                ->limit(6)
+                ->get();
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI (Lorcana, One Piece)
+            $userSetIds = UserCollection::where('user_id', Auth::id())
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->distinct()
+                ->pluck('cmapi_cards.set_cmapi_id');
+            
+            $userExpansions = \App\Models\Cmapi\CmapiSet::whereIn('id', $userSetIds)
+                ->orderBy('release_date', 'desc')
+                ->limit(10)
+                ->get();
+            
+            // Featured expansions for carousel
+            $featuredExpansions = \App\Models\Cmapi\CmapiSet::where('game', $currentGame->slug)
                 ->orderBy('release_date', 'desc')
                 ->limit(6)
                 ->get();

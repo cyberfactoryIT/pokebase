@@ -1215,12 +1215,19 @@ class CollectionController extends Controller
      */
     public function quickAdd(Request $request)
     {
-        // Determine if this is TCGDEX or TCGCSV card
+        // Determine if this is TCGDEX, CMAPI, or TCGCSV card
         $isTcgdex = $request->has('tcgdex_card_id');
+        $isCmapi = $request->has('cmapi_card_id');
         
         if ($isTcgdex) {
             $validated = $request->validate([
                 'tcgdex_card_id' => 'required|integer|exists:tcgdx_cards,id',
+                'quantity' => 'required|integer|min:1|max:100',
+                'condition' => 'required|string|in:M,NM,LP,MP,HP,D',
+            ]);
+        } elseif ($isCmapi) {
+            $validated = $request->validate([
+                'cmapi_card_id' => 'required|integer|exists:cmapi_cards,id',
                 'quantity' => 'required|integer|min:1|max:100',
                 'condition' => 'required|string|in:M,NM,LP,MP,HP,D',
             ]);
@@ -1239,6 +1246,8 @@ class CollectionController extends Controller
             
             if ($isTcgdex) {
                 $query->where('tcgdex_card_id', $validated['tcgdex_card_id']);
+            } elseif ($isCmapi) {
+                $query->where('cmapi_card_id', $validated['cmapi_card_id']);
             } else {
                 $query->where('product_id', $validated['card_id']);
             }
@@ -1267,6 +1276,8 @@ class CollectionController extends Controller
                 
                 if ($isTcgdex) {
                     $data['tcgdex_card_id'] = $validated['tcgdex_card_id'];
+                } elseif ($isCmapi) {
+                    $data['cmapi_card_id'] = $validated['cmapi_card_id'];
                 } else {
                     $data['product_id'] = $validated['card_id'];
                 }
@@ -1284,6 +1295,7 @@ class CollectionController extends Controller
                 'user_id' => Auth::id(),
                 'card_id' => $validated['card_id'] ?? null,
                 'tcgdex_card_id' => $validated['tcgdex_card_id'] ?? null,
+                'cmapi_card_id' => $validated['cmapi_card_id'] ?? null,
                 'error' => $e->getMessage(),
             ]);
 

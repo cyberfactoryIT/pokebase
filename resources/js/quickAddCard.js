@@ -70,12 +70,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch(query) {
         const requestId = ++currentRequestId;
         
+        // Get catalog backend from form data attribute
+        const backend = form.dataset.catalogBackend || 'tcgcsv';
+        
         // Show loading state
         showResults();
         searchResults.innerHTML = '<div class="px-4 py-3 text-gray-400 text-sm">Searching...</div>';
         
-        // Fetch results
-        fetch(`/api/search/cards?q=${encodeURIComponent(query)}&limit=12`)
+        // Fetch results with backend parameter
+        fetch(`/api/search/cards?q=${encodeURIComponent(query)}&limit=12&backend=${backend}`)
             .then(response => {
                 if (!response.ok) throw new Error('Search failed');
                 return response.json();
@@ -127,8 +130,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return `
                 <div class="search-result-card flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition border-b border-white/5 last:border-0" 
-                     data-card-id="${card.product_id || card.tcgdex_card_id}" 
+                     data-card-id="${card.product_id || card.tcgdex_card_id || card.cmapi_card_id}" 
                      data-tcgdex-id="${card.tcgdex_card_id || ''}"
+                     data-cmapi-id="${card.cmapi_card_id || ''}"
+                     data-backend="${card.backend || 'tcgcsv'}"
                      data-card-name="${escapeHtml(card.name)}">
                     ${imageHtml}
                     <div class="flex-1 min-w-0">
@@ -154,24 +159,35 @@ document.addEventListener('DOMContentLoaded', function() {
     function selectCard(element) {
         const cardId = element.dataset.cardId;
         const tcgdexId = element.dataset.tcgdexId;
+        const cmapiId = element.dataset.cmapiId;
+        const backend = element.dataset.backend;
         const cardName = element.dataset.cardName;
         
         selectedCardId.value = cardId;
         searchInput.value = cardName;
         
         // Store card type in hidden field or data attribute for backend
-        if (tcgdexId) {
+        if (backend === 'tcgdex' && tcgdexId) {
             selectedCardId.setAttribute('data-is-tcgdex', 'true');
             selectedCardId.setAttribute('data-tcgdex-id', tcgdexId);
+            selectedCardId.removeAttribute('data-is-cmapi');
+            selectedCardId.removeAttribute('data-cmapi-id');
+        } else if (backend === 'cmapi' && cmapiId) {
+            selectedCardId.setAttribute('data-is-cmapi', 'true');
+            selectedCardId.setAttribute('data-cmapi-id', cmapiId);
+            selectedCardId.removeAttribute('data-is-tcgdex');
+            selectedCardId.removeAttribute('data-tcgdex-id');
         } else {
             selectedCardId.removeAttribute('data-is-tcgdex');
             selectedCardId.removeAttribute('data-tcgdex-id');
+            selectedCardId.removeAttribute('data-is-cmapi');
+            selectedCardId.removeAttribute('data-cmapi-id');
         }
         
         highlightedIndex = -1;
         hideResults();
         
-        console.log('Card selected:', { cardId, tcgdexId, cardName });
+        console.log('Card selected:', { cardId, tcgdexId, cmapiId, backend, cardName });
     }
     
     // Show results dropdown
@@ -208,6 +224,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedCardId.hasAttribute('data-is-tcgdex')) {
             formData.delete('card_id'); // Remove product_id
             formData.append('tcgdex_card_id', selectedCardId.getAttribute('data-tcgdex-id'));
+        }
+        
+        // Add CMAPI card ID if applicable
+        if (selectedCardId.hasAttribute('data-is-cmapi')) {
+            formData.delete('card_id'); // Remove product_id
+            formData.append('cmapi_card_id', selectedCardId.getAttribute('data-cmapi-id'));
         }
         
         const submitBtn = form.querySelector('button[type="submit"]');

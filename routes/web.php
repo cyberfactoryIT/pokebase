@@ -286,6 +286,16 @@ Route::prefix('{game}')->whereIn('game', ['lorcana', 'onepiece'])->group(functio
     
     // Cards
     Route::get('/cards/{cardId}', [\App\Http\Controllers\CmapiSetController::class, 'showCard'])->name('cmapi.cards.show');
+    
+    // Card interactions (authenticated)
+    Route::middleware('auth')->group(function () {
+        Route::post('/cards/{cardId}/like', [\App\Http\Controllers\CmapiInteractionController::class, 'toggleLike'])
+            ->name('cmapi.cards.like');
+        Route::post('/cards/{cardId}/wishlist', [\App\Http\Controllers\CmapiInteractionController::class, 'toggleWishlist'])
+            ->name('cmapi.cards.wishlist');
+        Route::post('/cards/{cardId}/watch', [\App\Http\Controllers\CmapiInteractionController::class, 'toggleWatch'])
+            ->name('cmapi.cards.watch');
+    });
 });
 
 // Pokemon Deck Valuation Flow (guest lead capture)

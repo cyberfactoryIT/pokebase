@@ -14,10 +14,16 @@
                 @if(! auth()->user()->hasRole('superadmin'))
                 @php
                     $catalogBackend = catalog_backend();
-                    $setsRoute = $catalogBackend === 'tcgdex' ? route('pokemon.sets') : route('tcg.expansions.index');
-                    $isActiveRoute = $catalogBackend === 'tcgdex' 
-                        ? request()->routeIs('pokemon.sets*') 
-                        : request()->routeIs('tcg.expansions.*');
+                    $setsRoute = match($catalogBackend) {
+                        'tcgdex' => route('pokemon.sets'),
+                        'cmapi' => route('cmapi.sets.index', ['game' => $currentGame->slug ?? 'lorcana']),
+                        default => route('tcg.expansions.index')
+                    };
+                    $isActiveRoute = match($catalogBackend) {
+                        'tcgdex' => request()->routeIs('pokemon.sets*'),
+                        'cmapi' => request()->routeIs('cmapi.sets.*'),
+                        default => request()->routeIs('tcg.expansions.*')
+                    };
                 @endphp
                 <a href="{{ $setsRoute }}" 
                    class="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg transition {{ $isActiveRoute ? 'bg-white/10 border-white/20 text-white font-semibold' : 'text-gray-300' }}"
