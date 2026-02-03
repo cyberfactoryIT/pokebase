@@ -72,6 +72,30 @@ Schedule::command('cardmarket:sync-prices --force')
     ->withoutOverlapping()
     ->onOneServer();
 
+// LORCANA ETL Pipeline: Run daily at 7:00 AM (Europe/Copenhagen)
+// Downloads CardMarket products + prices from S3 and imports to database
+Schedule::command('cardmarket:etl-lorcana')
+    ->dailyAt('07:00')
+    ->timezone('Europe/Copenhagen')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// LORCANA Card Matching: Run daily at 7:15 AM after ETL (Europe/Copenhagen)
+// Matches RapidAPI cards to CardMarket products via cardmarket_id
+Schedule::command('cardmarket:match-lorcana')
+    ->dailyAt('07:15')
+    ->timezone('Europe/Copenhagen')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// LORCANA Price Sync: Run daily at 7:20 AM after matching (Europe/Copenhagen)
+// Updates price_eur in cmapi_cards from cardmarket_price_quotes_lorcana
+Schedule::command('cardmarket:sync-lorcana-prices --force')
+    ->dailyAt('07:20')
+    ->timezone('Europe/Copenhagen')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 // Artisan Commands
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

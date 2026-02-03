@@ -77,4 +77,105 @@ return [
     // Marketplace names
     'cardmarket' => 'Cardmarket',
     'tcgplayer' => 'TCGPlayer',
+    'view_on_cardmarket' => 'Se på CardMarket',
+
+    // Additional sections
+    'additional_info' => 'Yderligere information',
+    'price_history' => 'Prishistorik',
+    
+    // Search and filters
+    'search_placeholder' => 'Søg efter kort efter navn eller nummer...',
+    'search_sets_placeholder' => 'Søg sæt...',
+    'clear_filters' => 'Ryd filtre',
+    'all_rarities' => 'Alle sjældenheder',
+    'all_types' => 'Alle typer',
+    'all_ink_colors' => 'Alle blækfarver',
+    
+    // Loading and status messages
+    'loading_cards' => 'Indlæser kort...',
+    'loading_sets' => 'Indlæser sæt...',
+    'load_more_cards' => 'Indlæs flere kort',
+    'load_more' => 'Indlæs flere',
+    'no_price_history' => 'Ingen prishistorik tilgængelig endnu. Data vil blive indsamlet fra næste daglige synkronisering.',
+    'price_from_cardmarket' => 'Priser fra CardMarket API',
+    'converted_to' => 'Konverteret til',
+    'original_price_below' => '(oprindelig pris vist nedenfor)',
+    'nm_condition_note' => 'Near Mint (NM) tilstandspriser fra CardMarket',
+    
+    // Error messages
+    'error_updating_like' => 'Fejl ved opdatering af synes-godt-om-status',
+    'error_updating_wishlist' => 'Fejl ved opdatering af ønskeliste-status',
+    'error_updating_watch' => 'Fejl ved opdatering af overvågningsstatus',
+    'error_loading_cards' => 'Fejl ved indlæsning af kort:',
+    'error_loading_sets' => 'Fejl ved indlæsning af sæt:',
+    
+    // Guest messages
+    'login_to_add' => 'Log ind',
+    'to_add_to_collection' => ' for at tilføje dette kort til din samling',
+    
+    // Lorcana-specific
+    'ink_cost' => 'Blækomkostning',
+    'ink_color' => 'Blækfarve',
+    'lore_value' => 'Lore-værdi',
+    'lore_suffix' => ' Lore',
+    'ink_suffix' => ' Blæk',
+    
+    // Lorcana card types
+    'character' => 'Karakter',
+    'action' => 'Handling',
+    'item' => 'Genstand',
+    'location' => 'Placering',
+    
+    // Lorcana ink colors
+    'amber' => 'Rav',
+    'amethyst' => 'Ametyst',
+    'emerald' => 'Smaragd',
+    'ruby' => 'Rubin',
+    'sapphire' => 'Safir',
+    'steel' => 'Stål',
+    
+    // One Piece-specific
+    'cost' => 'Omkostning',
+    'power' => 'Styrke',
+    'counter' => 'Tæller',
+    'color' => 'Farve',
+    'cost_suffix' => ' Omkostning',
+    'power_suffix' => ' Styrke',
+    'counter_suffix' => ' Tæller',
+    
+    // Set information
+    'episode' => 'Episode',
+    'episode_prefix' => 'Episode ',
+    'cards_in_db' => ' kort i DB',
+    'cards_suffix' => ' kort',
+    'tba' => 'TBA',
+    'no_logo' => 'Intet logo',
+    'no_image' => 'Intet+Billede',
+    'unknown_set' => 'Ukendt sæt',
+    
+    // Set browsing
+    'disney_lorcana_sets' => 'Disney Lorcana sæt',
+    'onepiece_sets' => 'One Piece kortspil sæt',
+    'browse_all_sets' => 'Gennemse alle ',
+    'sets_from_api' => ' sæt fra CardMarket API',
+    
+    // Photo
+    'photo' => ' foto',
+    'photos' => ' fotos',
+    
+    // Pokemon-specific
+    'pokemon_tcg_sets' => 'Pokémon TCG sæt',
+    'browse_pokemon_sets' => 'Gennemse alle Pokémon TCG sæt',
+    'search_cards_placeholder' => 'Søg efter kort efter navn eller nummer...',
+    'search_sets_placeholder' => 'Søg sæt efter navn eller kode...',
+    'failed_load_cards' => 'Kunne ikke indlæse kort. Prøv igen.',
+    'failed_load_sets' => 'Kunne ikke indlæse sæt. Prøv igen.',
+    'error_searching_cards' => 'Fejl ved søgning efter kort',
+    'qty_short' => 'Antal:',
+    'quantity_label' => 'Antal:',
+    'cards_label' => 'Kort:',
+    'na' => 'I/T',
+    'eur_cardmarket' => 'EUR (Cardmarket)',
+    'usd_tcgplayer' => 'USD (TCGPlayer)',
+    'tcgcsv_backend' => 'TCGCSV backend - visning ikke implementeret endnu',
 ];

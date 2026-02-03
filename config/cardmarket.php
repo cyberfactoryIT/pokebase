@@ -36,6 +36,12 @@ return [
             'products_url' => env('CARDMARKET_POKEMON_PRODUCTS_URL', 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_6.json'),
             'prices_url' => env('CARDMARKET_POKEMON_PRICES_URL', 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_6.json'),
         ],
+        'lorcana' => [
+            'id' => 19,
+            'name' => 'Disney Lorcana',
+            'products_url' => env('CARDMARKET_LORCANA_PRODUCTS_URL', 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_19.json'),
+            'prices_url' => env('CARDMARKET_LORCANA_PRICES_URL', 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_19.json'),
+        ],
         'mtg' => [
             'id' => 1,
             'name' => 'Magic: The Gathering',

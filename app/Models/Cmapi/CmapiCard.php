@@ -2,9 +2,11 @@
 
 namespace App\Models\Cmapi;
 
+use App\Models\CardmarketProductLorcana;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CmapiCard extends Model
 {
@@ -65,5 +67,13 @@ class CmapiCard extends Model
     {
         return $this->hasMany(CmapiCardPriceSnapshot::class, 'cmapi_card_id')
             ->orderBy('recorded_at', 'desc');
+    }
+
+    /**
+     * CardMarket product for Lorcana cards (S3 data)
+     */
+    public function cardmarketProductLorcana(): HasOne
+    {
+        return $this->hasOne(CardmarketProductLorcana::class, 'cmapi_card_id');
     }
 }

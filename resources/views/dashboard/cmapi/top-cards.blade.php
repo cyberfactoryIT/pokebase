@@ -99,7 +99,7 @@
                     </p>
                     @if($displayTotal && $item->quantity > 1)
                         <p class="text-xs text-gray-400 mt-1">
-                            Total:
+                            {{ __('dashboard.total') }}:
                             @if(in_array($preferredCurrency, ['DKK', 'SEK', 'NOK']))
                                 {{ number_format($displayTotal, 2, ',', '.') }} {{ $currencySymbol }}
                             @else

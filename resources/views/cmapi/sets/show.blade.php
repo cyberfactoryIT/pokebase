@@ -9,7 +9,7 @@
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                Back to Sets
+                {{ __('catalog.back_to_sets') }}
             </a>
         </div>
 
@@ -19,11 +19,11 @@
                 <div class="flex-1">
                     <h1 class="text-4xl font-bold text-white">{{ $set->name }}</h1>
                     <div class="mt-2 flex items-center space-x-4 text-sm text-gray-300">
-                        <span class="px-3 py-1 bg-white/10 border border-white/20 rounded-full font-semibold">Episode {{ $set->cmapi_episode }}</span>
+                        <span class="px-3 py-1 bg-white/10 border border-white/20 rounded-full font-semibold">{{ __('catalog.episode_prefix') }}{{ $set->cmapi_episode }}</span>
                         @if($set->release_date)
-                            <span>Released: {{ $set->release_date->format('F j, Y') }}</span>
+                            <span>{{ __('catalog.released') }}: {{ $set->release_date->format('F j, Y') }}</span>
                         @endif
-                        <span>{{ $set->cards_count }} cards in DB</span>
+                        <span>{{ $set->cards_count }}{{ __('catalog.cards_in_db') }}</span>
                     </div>
                 </div>
                 @if($set->logo_url)
@@ -46,7 +46,7 @@
                     <input 
                         type="text" 
                         id="searchInput" 
-                        placeholder="Search cards by name or number..." 
+                        placeholder="{{ __('catalog.search_placeholder') }}" 
                         class="w-full px-4 py-3 pl-10 bg-black/50 border border-white/20 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                     <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,28 +57,28 @@
                 <!-- Filters -->
                 <div class="flex gap-3">
                     <select id="rarityFilter" class="px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white text-sm">
-                        <option value="">All Rarities</option>
+                        <option value="">{{ __('catalog.all_rarities') }}</option>
                     </select>
                     @if($game === 'lorcana')
                     <select id="cardTypeFilter" class="px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white text-sm">
-                        <option value="">All Types</option>
-                        <option value="Character">Character</option>
-                        <option value="Action">Action</option>
-                        <option value="Item">Item</option>
-                        <option value="Location">Location</option>
+                        <option value="">{{ __('catalog.all_types') }}</option>
+                        <option value="Character">{{ __('catalog.character') }}</option>
+                        <option value="Action">{{ __('catalog.action') }}</option>
+                        <option value="Item">{{ __('catalog.item') }}</option>
+                        <option value="Location">{{ __('catalog.location') }}</option>
                     </select>
                     <select id="inkColorFilter" class="px-3 py-2 bg-black/50 border border-white/20 rounded-lg text-white text-sm">
-                        <option value="">All Ink Colors</option>
-                        <option value="Amber">Amber</option>
-                        <option value="Amethyst">Amethyst</option>
-                        <option value="Emerald">Emerald</option>
-                        <option value="Ruby">Ruby</option>
-                        <option value="Sapphire">Sapphire</option>
-                        <option value="Steel">Steel</option>
+                        <option value="">{{ __('catalog.all_ink_colors') }}</option>
+                        <option value="Amber">{{ __('catalog.amber') }}</option>
+                        <option value="Amethyst">{{ __('catalog.amethyst') }}</option>
+                        <option value="Emerald">{{ __('catalog.emerald') }}</option>
+                        <option value="Ruby">{{ __('catalog.ruby') }}</option>
+                        <option value="Sapphire">{{ __('catalog.sapphire') }}</option>
+                        <option value="Steel">{{ __('catalog.steel') }}</option>
                     </select>
                     @endif
                     <button onclick="clearFilters()" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-sm transition">
-                        Clear Filters
+                        {{ __('catalog.clear_filters') }}
                     </button>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Loading cards...
+            {{ __('catalog.loading_cards') }}
         </div>
 
         <!-- Cards Grid -->
@@ -105,7 +105,7 @@
             <svg class="mx-auto h-12 w-12 text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <p class="text-lg">No cards found</p>
+            <p class="text-lg">{{ __('catalog.no_cards_found') }}</p>
         </div>
 
         <!-- Load More -->
@@ -114,7 +114,7 @@
                 id="loadMoreBtn"
                 class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-lg"
             >
-                Load More Cards
+                {{ __('catalog.load_more_cards') }}
             </button>
         </div>
     </div>
@@ -290,7 +290,7 @@ function loadCards(page = 1, append = false) {
             isLoading = false;
         })
         .catch(error => {
-            console.error('Error loading cards:', error);
+            console.error('{{ __('catalog.error_loading_cards') }}', error);
             isLoading = false;
             loadingState.classList.add('hidden');
         });
@@ -308,7 +308,7 @@ function populateRarityFilter(cards) {
 }
 
 function createCardElement(card) {
-    const imageUrl = card.image_large_url || card.image_small_url || 'https://via.placeholder.com/245x342/1a1a19/666?text=No+Image';
+    const imageUrl = card.image_large_url || card.image_small_url || 'https://via.placeholder.com/245x342/1a1a19/666?text={{ __('catalog.no_image') }}';
     
     let badgeHtml = '';
     if (game === 'lorcana' && card.ink_color) {

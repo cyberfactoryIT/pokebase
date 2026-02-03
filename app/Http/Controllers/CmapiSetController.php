@@ -177,7 +177,7 @@ class CmapiSetController extends Controller
     {
         $card = \App\Models\Cmapi\CmapiCard::where('cmapi_id', $cardId)
             ->where('game', $game)
-            ->with('set')
+            ->with(['set', 'cardmarketProductLorcana.latestPriceQuote'])
             ->firstOrFail();
 
         // Add user interaction flags if authenticated
@@ -206,6 +206,12 @@ class CmapiSetController extends Controller
 
         $gameSlug = $game; // $game is already a string slug (e.g., 'lorcana')
 
-        return view('cmapi.cards.show', compact('card', 'game', 'gameSlug'));
+        // Get CardMarket price details for Lorcana
+        $cardmarketPrices = null;
+        if ($game === 'lorcana' && $card->cardmarketProductLorcana && $card->cardmarketProductLorcana->latestPriceQuote) {
+            $cardmarketPrices = $card->cardmarketProductLorcana->latestPriceQuote;
+        }
+
+        return view('cmapi.cards.show', compact('card', 'game', 'gameSlug', 'cardmarketPrices'));
     }
 }

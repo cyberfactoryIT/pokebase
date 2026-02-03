@@ -41,7 +41,7 @@
                                 <span class="text-gray-400">{{ $expansion->release_date->format('Y') }}</span>
                             @endif
                             @if($expansion->card_count)
-                                <span class="text-gray-500">{{ $expansion->card_count }} cards</span>
+                                <span class="text-gray-500">{{ $expansion->card_count }}{{ __('catalog.cards_suffix') }}</span>
                             @endif
                         </div>
                     </div>

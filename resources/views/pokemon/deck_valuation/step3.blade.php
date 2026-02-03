@@ -46,14 +46,14 @@
                     :class="currency === 'EUR' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
                     class="px-4 py-2 rounded-md font-medium transition"
                 >
-                    EUR (Cardmarket)
+                    {{ __('catalog.eur_cardmarket') }}
                 </button>
                 <button 
                     @click="setCurrency('USD')"
                     :class="currency === 'USD' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'"
                     class="px-4 py-2 rounded-md font-medium transition"
                 >
-                    USD (TCGPlayer)
+                    {{ __('catalog.usd_tcgplayer') }}
                 </button>
             </div>
         </div>
@@ -168,10 +168,10 @@
                     <div class="flex-1">
                         <h3 class="text-white font-semibold">{{ $item->tcgcsvProduct->name }}</h3>
                         <p class="text-gray-400 text-sm">
-                            {{ $item->tcgcsvProduct->group?->name ?? 'Unknown Set' }} • 
+                            {{ $item->tcgcsvProduct->group?->name ?? __('catalog.unknown_set') }} • 
                             {{ $item->tcgcsvProduct->card_number }}
                         </p>
-                        <p class="text-gray-500 text-xs">Qty: {{ $item->quantity }}</p>
+                        <p class="text-gray-500 text-xs">{{ __('catalog.qty_short') }} {{ $item->quantity }}</p>
                     </div>
                     <div class="text-right">
                         @php
@@ -294,7 +294,7 @@
                                     </p>
                                 @endif
                             @else
-                                <p class="text-gray-500 text-sm">N/A</p>
+                                <p class="text-gray-500 text-sm">{{ __('catalog.na') }}</p>
                             @endif
                         </div>
                     </div>

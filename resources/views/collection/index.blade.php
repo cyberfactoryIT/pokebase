@@ -373,78 +373,14 @@
                     <form method="GET" action="{{ route('collection.index') }}">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-semibold text-white">Filters</h2>
-                            <div class="flex items-center gap-3">
-                                @if(request()->hasAny(['sort', 'letter', 'set', 'rarity', 'min_price', 'max_price']))
-                                    <!-- Add to Deck Button -->
-                                    <div x-data="{ addToDeckOpen: false }" class="relative">
-                                        <button type="button" @click="addToDeckOpen = !addToDeckOpen" 
-                                                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                            Add to Deck
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </button>
-                                        
-                                        <!-- Dropdown -->
-                                        <div x-show="addToDeckOpen" @click.away="addToDeckOpen = false" x-cloak
-                                             class="absolute right-0 mt-2 w-64 bg-[#1a1a19] border border-white/20 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-                                            <div class="p-2">
-                                                @php
-                                                    $userDecksForAdd = Auth::user()->decks()
-                                                        ->where('game_id', $currentGame->id ?? null)
-                                                        ->with('deckCards')
-                                                        ->latest()
-                                                        ->get();
-                                                @endphp
-                                                
-                                                @if($userDecksForAdd->isEmpty())
-                                                    <p class="px-3 py-2 text-sm text-gray-400">No decks available</p>
-                                                @else
-                                                    @foreach($userDecksForAdd as $userDeck)
-                                                        <button type="button" onclick="addFilteredCardsToDeck({{ $userDeck->id }}, '{{ addslashes($userDeck->name) }}')"
-                                                                class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded transition flex items-center justify-between group">
-                                                            <span class="truncate">{{ $userDeck->name }}</span>
-                                                            <span class="text-xs text-gray-500 group-hover:text-gray-400">({{ $userDeck->deckCards->count() }} cards)</span>
-                                                        </button>
-                                                    @endforeach
-                                                @endif
-                                                
-                                                <!-- Create New Deck -->
-                                                <div class="border-t border-white/10 mt-2 pt-2">
-                                                    @if(Auth::user()->canCreateAnotherDeck())
-                                                        <button type="button" onclick="createDeckAndAddFilteredCards()"
-                                                                class="w-full text-left px-3 py-2 text-sm text-blue-400 hover:bg-white/10 hover:text-blue-300 rounded transition flex items-center gap-2">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                            </svg>
-                                                            Create New Deck
-                                                        </button>
-                                                    @else
-                                                        <a href="{{ route('profile.subscription') }}"
-                                                           class="block px-3 py-2 text-sm text-orange-400 hover:bg-white/10 hover:text-orange-300 rounded transition">
-                                                            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                                            </svg>
-                                                            Upgrade to create more decks
-                                                        </a>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Clear Filters -->
-                                    <a href="{{ route('collection.index') }}" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                        Clear all filters
-                                    </a>
-                                @endif
-                            </div>
+                            @if(request()->hasAny(['sort', 'letter', 'set', 'rarity', 'min_price', 'max_price']))
+                                <a href="{{ route('collection.index') }}" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Clear all filters
+                                </a>
+                            @endif
                         </div>
 
                         <!-- Active Filters -->
@@ -669,6 +605,84 @@
                 })->toArray();
             }
         @endphp
+        
+        <!-- Selection Action Bar (Always Visible) -->
+        <div id="selectedCardsBar" class="bg-[#1a1a19] border border-white/15 rounded-xl shadow-xl mb-6 p-4" x-data="{ addToDeckOpen: false }">
+            <div class="flex items-center justify-between gap-4 flex-wrap">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span class="text-gray-400 text-sm">
+                        <span id="selectedCount" class="text-white font-semibold text-lg">0</span> cards selected
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="selectAllCards()" class="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white rounded transition border border-white/10">
+                            Select All
+                        </button>
+                        <button onclick="clearSelection()" class="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white rounded transition border border-white/10">
+                            Deselect All
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <button id="addToDeckBtn" @click="addToDeckOpen = !addToDeckOpen" disabled class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add to Deck
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <div x-show="addToDeckOpen" @click.away="addToDeckOpen = false" x-cloak
+                             class="absolute bottom-full left-0 mb-2 w-64 bg-[#1a1a19] border border-white/20 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                            <div class="p-2">
+                                @php
+                                    $userDecksForSelection = Auth::user()->decks()
+                                        ->where('game_id', $currentGame->id ?? null)
+                                        ->with('deckCards')
+                                        ->latest()
+                                        ->get();
+                                @endphp
+                                
+                                @if($userDecksForSelection->isEmpty())
+                                    <p class="px-3 py-2 text-sm text-gray-400">No decks available</p>
+                                @else
+                                    @foreach($userDecksForSelection as $userDeck)
+                                        <button type="button" onclick="addSelectedCardsToDeck({{ $userDeck->id }}, '{{ addslashes($userDeck->name) }}')"
+                                                class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded transition flex items-center justify-between group">
+                                            <span class="truncate">{{ $userDeck->name }}</span>
+                                            <span class="text-xs text-gray-500 group-hover:text-gray-400">({{ $userDeck->deckCards->count() }} cards)</span>
+                                        </button>
+                                    @endforeach
+                                @endif
+                                
+                                <div class="border-t border-white/10 mt-2 pt-2">
+                                    @if(Auth::user()->canCreateAnotherDeck())
+                                        <button type="button" onclick="createDeckAndAddSelectedCards()"
+                                                class="w-full text-left px-3 py-2 text-sm text-blue-400 hover:bg-white/10 hover:text-blue-300 rounded transition flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                            Create New Deck
+                                        </button>
+                                    @else
+                                        <a href="{{ route('profile.subscription') }}"
+                                           class="block px-3 py-2 text-sm text-orange-400 hover:bg-white/10 hover:text-orange-300 rounded transition">
+                                            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            </svg>
+                                            Upgrade to create more decks
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Collection Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             @foreach($collection as $item)
@@ -720,8 +734,17 @@
                     </div>
                 </a>
                 <div class="p-3">
-                    <h4 class="text-white text-sm font-semibold truncate">{{ $cardName }}</h4>
-                    <div class="flex items-center justify-between mt-2">
+                    <!-- Card name with selection checkbox -->
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="checkbox" 
+                               class="card-selection-checkbox w-4 h-4 rounded border-2 border-white/30 bg-black/50 checked:bg-blue-600 checked:border-blue-600 cursor-pointer flex-shrink-0"
+                               data-collection-id="{{ $item->id }}"
+                               data-card-id="{{ $isTcgdex ? $item->tcgdex_card_id : ($isCmapi ? $item->cmapi_card_id : $item->product_id) }}"
+                               data-backend="{{ $catalogBackend }}"
+                               onchange="toggleCardSelection(this)">
+                        <h4 class="text-white text-sm font-semibold truncate flex-1">{{ $cardName }}</h4>
+                    </div>
+                    <div class="flex items-center justify-between">
                         <div class="flex flex-col gap-0.5">
                             <span class="text-gray-400 text-xs">{{ __('collection/index.qty_label') }}: {{ $item->quantity }}</span>
                             @if(auth()->user()->isAdvanced() || auth()->user()->isPremium())
@@ -758,11 +781,6 @@
                         </span>
                         @endif
                     </div>
-                    @if($item->condition)
-                    <span class="inline-block mt-1 text-xs px-2 py-0.5 bg-white/10 rounded text-gray-300">
-                        {{ ucfirst(str_replace('_', ' ', $item->condition)) }}
-                    </span>
-                    @endif
                     
                     <!-- Photo Upload Section (Premium only) -->
                     @can('uploadCardPhotos')
@@ -1402,32 +1420,75 @@ function showUploadLoader(form) {
 }
 
 // Add filtered cards to deck
-async function addFilteredCardsToDeck(deckId, deckName) {
-    if (!confirm(`Add all filtered cards to "${deckName}"?`)) {
+// Card Selection Management
+let selectedCards = new Set();
+
+function toggleCardSelection(checkbox) {
+    const collectionId = checkbox.dataset.collectionId;
+    const cardId = checkbox.dataset.cardId;
+    const backend = checkbox.dataset.backend;
+    
+    if (checkbox.checked) {
+        selectedCards.add(JSON.stringify({ collectionId, cardId, backend }));
+    } else {
+        selectedCards.delete(JSON.stringify({ collectionId, cardId, backend }));
+    }
+    
+    updateSelectionBar();
+}
+
+function updateSelectionBar() {
+    const count = document.getElementById('selectedCount');
+    const btn = document.getElementById('addToDeckBtn');
+    
+    count.textContent = selectedCards.size;
+    
+    if (selectedCards.size > 0) {
+        btn.disabled = false;
+    } else {
+        btn.disabled = true;
+    }
+}
+
+function clearSelection() {
+    selectedCards.clear();
+    document.querySelectorAll('.card-selection-checkbox').forEach(cb => cb.checked = false);
+    updateSelectionBar();
+}
+
+function selectAllCards() {
+    document.querySelectorAll('.card-selection-checkbox').forEach(cb => {
+        cb.checked = true;
+        const collectionId = cb.dataset.collectionId;
+        const cardId = cb.dataset.cardId;
+        const backend = cb.dataset.backend;
+        selectedCards.add(JSON.stringify({ collectionId, cardId, backend }));
+    });
+    updateSelectionBar();
+}
+
+// Add selected cards to deck
+async function addSelectedCardsToDeck(deckId, deckName) {
+    if (selectedCards.size === 0) {
+        alert('No cards selected');
+        return;
+    }
+    
+    if (!confirm(`Add ${selectedCards.size} card(s) to "${deckName}"?`)) {
         return;
     }
     
     try {
-        // Show loading
         const loadingOverlay = document.getElementById('uploadLoadingOverlay');
         if (loadingOverlay) {
-            loadingOverlay.querySelector('p.text-lg').textContent = 'Adding Cards to Deck';
-            loadingOverlay.querySelector('p.text-sm').textContent = `Adding filtered cards to ${deckName}...`;
+            loadingOverlay.querySelector('p.text-lg').textContent = 'Adding Cards';
+            loadingOverlay.querySelector('p.text-sm').textContent = `Adding ${selectedCards.size} cards to ${deckName}...`;
             loadingOverlay.classList.remove('hidden');
         }
         
-        // Get current filters (only non-null values)
-        const params = new URLSearchParams(window.location.search);
-        const filters = {};
+        const cards = Array.from(selectedCards).map(json => JSON.parse(json));
         
-        if (params.get('letter')) filters.letter = params.get('letter');
-        if (params.get('set')) filters.set = params.get('set');
-        if (params.get('rarity')) filters.rarity = params.get('rarity');
-        if (params.get('min_price')) filters.min_price = params.get('min_price');
-        if (params.get('max_price')) filters.max_price = params.get('max_price');
-        if (params.get('sort')) filters.sort = params.get('sort');
-        
-        const response = await fetch(`/api/collection/add-filtered-to-deck`, {
+        const response = await fetch('/api/collection/add-selected-to-deck', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1436,7 +1497,7 @@ async function addFilteredCardsToDeck(deckId, deckName) {
             },
             body: JSON.stringify({
                 deck_id: deckId,
-                filters: filters
+                cards: cards
             })
         });
         
@@ -1448,12 +1509,13 @@ async function addFilteredCardsToDeck(deckId, deckName) {
         
         if (response.ok && data.success) {
             alert(`Successfully added ${data.cards_added} card(s) to ${deckName}!`);
+            clearSelection();
             window.location.href = `/decks/${deckId}`;
         } else {
             alert(data.message || 'Failed to add cards to deck');
         }
     } catch (error) {
-        console.error('Error adding cards to deck:', error);
+        console.error('Error adding cards:', error);
         const loadingOverlay = document.getElementById('uploadLoadingOverlay');
         if (loadingOverlay) {
             loadingOverlay.classList.add('hidden');
@@ -1462,32 +1524,27 @@ async function addFilteredCardsToDeck(deckId, deckName) {
     }
 }
 
-// Create new deck and add filtered cards
-async function createDeckAndAddFilteredCards() {
+// Create deck and add selected cards
+async function createDeckAndAddSelectedCards() {
+    if (selectedCards.size === 0) {
+        alert('No cards selected');
+        return;
+    }
+    
     const deckName = prompt('Enter deck name:');
     if (!deckName) return;
     
     try {
-        // Show loading
         const loadingOverlay = document.getElementById('uploadLoadingOverlay');
         if (loadingOverlay) {
             loadingOverlay.querySelector('p.text-lg').textContent = 'Creating Deck';
-            loadingOverlay.querySelector('p.text-sm').textContent = 'Creating new deck and adding filtered cards...';
+            loadingOverlay.querySelector('p.text-sm').textContent = `Creating "${deckName}" with ${selectedCards.size} cards...`;
             loadingOverlay.classList.remove('hidden');
         }
         
-        // Get current filters (only non-null values)
-        const params = new URLSearchParams(window.location.search);
-        const filters = {};
+        const cards = Array.from(selectedCards).map(json => JSON.parse(json));
         
-        if (params.get('letter')) filters.letter = params.get('letter');
-        if (params.get('set')) filters.set = params.get('set');
-        if (params.get('rarity')) filters.rarity = params.get('rarity');
-        if (params.get('min_price')) filters.min_price = params.get('min_price');
-        if (params.get('max_price')) filters.max_price = params.get('max_price');
-        if (params.get('sort')) filters.sort = params.get('sort');
-        
-        const response = await fetch('/api/collection/create-deck-with-filtered', {
+        const response = await fetch('/api/collection/create-deck-with-selected', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1496,11 +1553,13 @@ async function createDeckAndAddFilteredCards() {
             },
             body: JSON.stringify({
                 deck_name: deckName,
-                filters: filters
+                cards: cards
             })
         });
         
+        console.log('Response status:', response.status, 'Response OK:', response.ok);
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (loadingOverlay) {
             loadingOverlay.classList.add('hidden');
@@ -1508,8 +1567,10 @@ async function createDeckAndAddFilteredCards() {
         
         if (response.ok && data.success) {
             alert(`Deck "${deckName}" created with ${data.cards_added} card(s)!`);
+            clearSelection();
             window.location.href = `/decks/${data.deck_id}`;
         } else {
+            console.error('Failed response:', data);
             alert(data.message || 'Failed to create deck');
         }
     } catch (error) {
@@ -1518,7 +1579,7 @@ async function createDeckAndAddFilteredCards() {
         if (loadingOverlay) {
             loadingOverlay.classList.add('hidden');
         }
-        alert('Failed to create deck');
+        alert('Failed to create deck - Check console for details');
     }
 }
 </script>

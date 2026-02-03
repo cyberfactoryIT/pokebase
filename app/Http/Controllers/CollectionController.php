@@ -116,8 +116,48 @@ class CollectionController extends Controller
             }
         }
         
-        // Apply price range filter (Premium only)
-        if (($minPrice !== null || $maxPrice !== null) && Gate::allows('seePrices')) {
+        // Get price range for comparison (before filtering)
+        $actualPriceRange = ['min' => 0, 'max' => 100];
+        if (Gate::allows('seePrices')) {
+            $user = Auth::user();
+            $preferredCurrency = $user->preferred_currency ?? 'EUR';
+            
+            $priceCheckQuery = UserCollection::where('user_id', $userId)
+                ->whereNotNull('cached_price')
+                ->where('cached_price', '>', 0)
+                ->select('cached_price', 'cached_price_currency');
+            
+            if ($catalogBackend === 'tcgdex') {
+                $priceCheckQuery->whereNotNull('tcgdex_card_id');
+            } elseif ($catalogBackend === 'cmapi') {
+                $priceCheckQuery->whereNotNull('cmapi_card_id');
+            } else {
+                $priceCheckQuery->whereNotNull('product_id');
+                if ($currentGame) {
+                    $priceCheckQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+                }
+            }
+            
+            $pricesForRange = $priceCheckQuery->get();
+            
+            if ($pricesForRange->isNotEmpty()) {
+                $convertedPrices = $pricesForRange->map(function($item) use ($preferredCurrency) {
+                    $currency = $item->cached_price_currency ?? 'EUR';
+                    return \App\Services\CurrencyService::convert($item->cached_price, $currency, $preferredCurrency);
+                });
+                
+                $actualPriceRange = [
+                    'min' => $convertedPrices->min(),
+                    'max' => $convertedPrices->max(),
+                ];
+            }
+        }
+        
+        // Apply price range filter (Premium only) - but only if user has customized the range
+        $isPriceFilterActive = ($minPrice !== null && $minPrice > $actualPriceRange['min']) 
+                             || ($maxPrice !== null && $maxPrice < $actualPriceRange['max']);
+        
+        if ($isPriceFilterActive && Gate::allows('seePrices')) {
             // Convert user's input from preferred currency to EUR for comparison
             $user = Auth::user();
             $preferredCurrency = $user->preferred_currency ?? 'EUR';
@@ -154,8 +194,33 @@ class CollectionController extends Controller
                 return $matchesMin && $matchesMax;
             })->pluck('id')->toArray();
             
-            if (!empty($validIds)) {
-                $query->whereIn('user_collection.id', $validIds);
+            // Also get IDs of cards without price (they should always be included)
+            $noPriceQuery = UserCollection::where('user_id', $userId)
+                ->where(function($q) {
+                    $q->whereNull('cached_price')
+                      ->orWhere('cached_price', '<=', 0);
+                })
+                ->select('id');
+            
+            // Apply backend filter to no-price query
+            if ($catalogBackend === 'tcgdex') {
+                $noPriceQuery->whereNotNull('tcgdex_card_id');
+            } elseif ($catalogBackend === 'cmapi') {
+                $noPriceQuery->whereNotNull('cmapi_card_id');
+            } else {
+                $noPriceQuery->whereNotNull('product_id');
+                if ($currentGame) {
+                    $noPriceQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+                }
+            }
+            
+            $noPriceIds = $noPriceQuery->pluck('id')->toArray();
+            
+            // Merge cards with valid prices and cards without prices
+            $allValidIds = array_merge($validIds, $noPriceIds);
+            
+            if (!empty($allValidIds)) {
+                $query->whereIn('user_collection.id', $allValidIds);
             } else {
                 // No items match the price filter, return empty result
                 $query->whereRaw('1 = 0');
@@ -211,44 +276,8 @@ class CollectionController extends Controller
         $availableSets = $this->getAvailableSets($userId, $currentGame, $catalogBackend);
         $availableRarities = $this->getAvailableRarities($userId, $currentGame, $catalogBackend);
         
-        // Get price range for slider (Premium only)
-        $priceRange = ['min' => 0, 'max' => 100];
-        if (Gate::allows('seePrices')) {
-            $user = Auth::user();
-            $preferredCurrency = $user->preferred_currency ?? 'EUR';
-            
-            // Get all prices with their currencies to convert them properly
-            $priceQuery = UserCollection::where('user_id', $userId)
-                ->whereNotNull('cached_price')
-                ->where('cached_price', '>', 0)
-                ->select('cached_price', 'cached_price_currency');
-            
-            if ($catalogBackend === 'tcgdex') {
-                $priceQuery->whereNotNull('tcgdex_card_id');
-            } elseif ($catalogBackend === 'cmapi') {
-                $priceQuery->whereNotNull('cmapi_card_id');
-            } else {
-                $priceQuery->whereNotNull('product_id');
-                if ($currentGame) {
-                    $priceQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-                }
-            }
-            
-            $prices = $priceQuery->get();
-            
-            if ($prices->isNotEmpty()) {
-                // Convert all prices to user's preferred currency
-                $convertedPrices = $prices->map(function($item) use ($preferredCurrency) {
-                    $currency = $item->cached_price_currency ?? 'EUR';
-                    return \App\Services\CurrencyService::convert($item->cached_price, $currency, $preferredCurrency);
-                });
-                
-                $priceRange = [
-                    'min' => $convertedPrices->min(),
-                    'max' => $convertedPrices->max(),
-                ];
-            }
-        }
+        // Use the price range calculated earlier (for consistency)
+        $priceRange = $actualPriceRange;
 
         // Basic stats (filtered by game)
         $stats = [
@@ -273,7 +302,7 @@ class CollectionController extends Controller
         // Calculate collection value (with rarity filter applied)
         $valuation = $this->calculateCollectionValue($userId, $currentGame, $catalogBackend, $rarityFilter);
 
-        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation', 'rarityInsight', 'conditionInsight', 'setsInsight', 'focusSet', 'availableLetters', 'availableSets', 'availableRarities', 'priceRange'));
+        return view('collection.index', compact('collection', 'stats', 'topStats', 'detailedStats', 'valuation', 'rarityInsight', 'conditionInsight', 'setsInsight', 'focusSet', 'availableLetters', 'availableSets', 'availableRarities', 'priceRange', 'catalogBackend'));
     }
     
     /**
@@ -294,7 +323,7 @@ class CollectionController extends Controller
         } elseif ($catalogBackend === 'cmapi') {
             $letters = UserCollection::where('user_id', $userId)
                 ->whereNotNull('cmapi_card_id')
-                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                 ->selectRaw('UPPER(LEFT(cmapi_cards.name, 1)) as letter, COUNT(*) as count')
                 ->groupBy('letter')
                 ->orderBy('letter', 'asc')
@@ -340,7 +369,7 @@ class CollectionController extends Controller
         } elseif ($catalogBackend === 'cmapi') {
             return UserCollection::where('user_id', $userId)
                 ->whereNotNull('cmapi_card_id')
-                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                 ->join('cmapi_sets', 'cmapi_cards.set_cmapi_id', '=', 'cmapi_sets.id')
                 ->selectRaw('cmapi_sets.name, COUNT(*) as card_count')
                 ->whereNotNull('cmapi_sets.name')
@@ -383,7 +412,7 @@ class CollectionController extends Controller
         } elseif ($catalogBackend === 'cmapi') {
             return UserCollection::where('user_id', $userId)
                 ->whereNotNull('cmapi_card_id')
-                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                 ->selectRaw('cmapi_cards.rarity, COUNT(*) as card_count')
                 ->whereNotNull('cmapi_cards.rarity')
                 ->groupBy('cmapi_cards.rarity')
@@ -1600,5 +1629,165 @@ class CollectionController extends Controller
             'deck_id' => $deck->id,
             'cards_added' => $resultData['cards_added'],
         ]);
+    }
+
+    /**
+     * Add selected collection cards to deck
+     */
+    public function addSelectedToDeck(Request $request)
+    {
+        $validated = $request->validate([
+            'deck_id' => 'required|integer|exists:decks,id',
+            'cards' => 'required|array|min:1',
+            'cards.*.collectionId' => 'required',
+            'cards.*.cardId' => 'required',
+            'cards.*.backend' => 'required|string',
+        ]);
+
+        $deck = \App\Models\Deck::findOrFail($validated['deck_id']);
+        
+        if ($deck->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access to this deck.',
+            ], 403);
+        }
+
+        $cardsAdded = 0;
+        
+        foreach ($validated['cards'] as $cardData) {
+            $backend = $cardData['backend'];
+            $cardId = $cardData['cardId'];
+            
+            if ($backend === 'tcgdex') {
+                $existing = \App\Models\DeckCard::where('deck_id', $deck->id)
+                    ->where('tcgdex_card_id', $cardId)
+                    ->first();
+                    
+                if ($existing) {
+                    $existing->quantity += 1;
+                    $existing->save();
+                } else {
+                    \App\Models\DeckCard::create([
+                        'deck_id' => $deck->id,
+                        'tcgdex_card_id' => $cardId,
+                        'quantity' => 1,
+                    ]);
+                }
+                $cardsAdded++;
+            } elseif ($backend === 'cmapi') {
+                $existing = \App\Models\DeckCard::where('deck_id', $deck->id)
+                    ->where('cmapi_card_id', $cardId)
+                    ->first();
+                    
+                if ($existing) {
+                    $existing->quantity += 1;
+                    $existing->save();
+                } else {
+                    $card = \App\Models\Cmapi\CmapiCard::where('cmapi_id', $cardId)->first();
+                    \App\Models\DeckCard::create([
+                        'deck_id' => $deck->id,
+                        'cmapi_card_id' => $cardId,
+                        'quantity' => 1,
+                        'cached_price' => $card->price_eur ?? null,
+                        'cached_price_currency' => 'EUR',
+                        'cached_price_updated_at' => $card->price_eur ? now() : null,
+                    ]);
+                }
+                $cardsAdded++;
+            } else {
+                $existing = \App\Models\DeckCard::where('deck_id', $deck->id)
+                    ->where('product_id', $cardId)
+                    ->first();
+                    
+                if ($existing) {
+                    $existing->quantity += 1;
+                    $existing->save();
+                } else {
+                    $card = \App\Models\TcgcsvProduct::where('product_id', $cardId)->first();
+                    $price = null;
+                    if ($card && $card->prices && $card->prices->first()) {
+                        $price = $card->prices->first()->price;
+                    }
+                    
+                    \App\Models\DeckCard::create([
+                        'deck_id' => $deck->id,
+                        'product_id' => $cardId,
+                        'quantity' => 1,
+                        'cached_price' => $price,
+                        'cached_price_currency' => 'USD',
+                        'cached_price_updated_at' => $price ? now() : null,
+                    ]);
+                }
+                $cardsAdded++;
+            }
+        }
+        
+        return response()->json([
+            'success' => true,
+            'cards_added' => $cardsAdded,
+            'deck_id' => $deck->id,
+        ]);
+    }
+
+    /**
+     * Create deck and add selected collection cards
+     */
+    public function createDeckWithSelected(Request $request)
+    {
+        try {
+            \Log::info('Creating deck with selected cards', ['request' => $request->all()]);
+            
+            $validated = $request->validate([
+                'deck_name' => 'required|string|max:255',
+                'cards' => 'required|array|min:1',
+                'cards.*.collectionId' => 'required',
+                'cards.*.cardId' => 'required',
+                'cards.*.backend' => 'required|string',
+            ]);
+            
+            if (!Auth::user()->canCreateAnotherDeck()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('decks/index.limit_reached'),
+                ], 403);
+            }
+            
+            $currentGame = $request->attributes->get('currentGame');
+            
+            $deck = \App\Models\Deck::create([
+                'user_id' => Auth::id(),
+                'game_id' => $currentGame ? $currentGame->id : 1,
+                'name' => $validated['deck_name'],
+            ]);
+            
+            \Log::info('Deck created', ['deck_id' => $deck->id]);
+            
+            $addRequest = new Request([
+                'deck_id' => $deck->id,
+                'cards' => $validated['cards'],
+            ]);
+            $addRequest->attributes->add(['currentGame' => $currentGame]);
+            
+            $result = $this->addSelectedToDeck($addRequest);
+            $resultData = $result->getData(true);
+            
+            \Log::info('Cards added to deck', ['result' => $resultData]);
+            
+            return response()->json([
+                'success' => true,
+                'deck_id' => $deck->id,
+                'cards_added' => $resultData['cards_added'],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error creating deck with selected cards', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -33,6 +33,6 @@ class CurrentGameController extends Controller
         // Store in session
         session(['current_game_id' => $gameId]);
 
-        return back()->with('success', 'Game switched successfully.');
+        return redirect()->route('dashboard')->with('success', 'Game switched successfully.');
     }
 }

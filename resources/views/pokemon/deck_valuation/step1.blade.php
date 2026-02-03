@@ -180,8 +180,8 @@
                     @endif
                     <div class="flex-1">
                         <h3 class="text-white font-semibold">{{ $item['card']->name }}</h3>
-                        <p class="text-gray-400 text-sm">{{ $item['card']->group?->name ?? 'Unknown Set' }} • {{ $item['card']->card_number }}</p>
-                        <p class="text-gray-500 text-xs">Quantity: {{ $item['qty'] }}</p>
+                        <p class="text-gray-400 text-sm">{{ $item['card']->group?->name ?? __('catalog.unknown_set') }} • {{ $item['card']->card_number }}</p>
+                        <p class="text-gray-500 text-xs">{{ __('catalog.quantity_label') }} {{ $item['qty'] }}</p>
                     </div>
                     <form method="POST" action="{{ route('pokemon.deck-valuation.remove') }}">
                         @csrf

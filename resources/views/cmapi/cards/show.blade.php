@@ -52,26 +52,26 @@
 
                 <!-- Basic Details -->
                 <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
-                    <h2 class="text-xl font-bold text-white mb-4">Additional Info</h2>
+                    <h2 class="text-xl font-bold text-white mb-4">{{ __('catalog.additional_info') }}</h2>
                     
                     <dl class="space-y-3">
                         @if($card->number)
                         <div class="flex justify-between py-2 border-b border-white/10">
-                            <dt class="text-sm font-medium text-gray-400">Card Number</dt>
+                            <dt class="text-sm font-medium text-gray-400">{{ __('catalog.number') }}</dt>
                             <dd class="text-sm text-white">#{{ $card->number }}</dd>
                         </div>
                         @endif
                         
                         @if($card->rarity)
                         <div class="flex justify-between py-2 border-b border-white/10">
-                            <dt class="text-sm font-medium text-gray-400">Rarity</dt>
+                            <dt class="text-sm font-medium text-gray-400">{{ __('catalog.rarity') }}</dt>
                             <dd class="text-sm text-white">{{ $card->rarity }}</dd>
                         </div>
                         @endif
                         
                         @if($card->artist_name)
                         <div class="flex justify-between py-2 border-b border-white/10">
-                            <dt class="text-sm font-medium text-gray-400">Artist</dt>
+                            <dt class="text-sm font-medium text-gray-400">{{ __('catalog.artist') }}</dt>
                             <dd class="text-sm text-white">{{ $card->artist_name }}</dd>
                         </div>
                         @endif
@@ -79,28 +79,28 @@
                         @if($game === 'lorcana')
                             @if($card->card_type)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Card Type</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.card_type') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->card_type }}</dd>
                             </div>
                             @endif
                             
                             @if($card->ink_cost !== null)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Ink Cost</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.ink_cost') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->ink_cost }}</dd>
                             </div>
                             @endif
                             
                             @if($card->ink_color)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Ink Color</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.ink_color') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->ink_color }}</dd>
                             </div>
                             @endif
                             
                             @if($card->lore_value !== null)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Lore Value</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.lore_value') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->lore_value }}</dd>
                             </div>
                             @endif
@@ -109,28 +109,28 @@
                         @if($game === 'onepiece')
                             @if($card->cost !== null)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Cost</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.cost') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->cost }}</dd>
                             </div>
                             @endif
                             
                             @if($card->power !== null)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Power</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.power') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->power }}</dd>
                             </div>
                             @endif
                             
                             @if($card->counter !== null)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Counter</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.counter') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->counter }}</dd>
                             </div>
                             @endif
                             
                             @if($card->color)
                             <div class="flex justify-between py-2 border-b border-white/10">
-                                <dt class="text-sm font-medium text-gray-400">Color</dt>
+                                <dt class="text-sm font-medium text-gray-400">{{ __('catalog.color') }}</dt>
                                 <dd class="text-sm text-white">{{ $card->color }}</dd>
                             </div>
                             @endif
@@ -138,7 +138,7 @@
                         
                         @if($card->hp !== null)
                         <div class="flex justify-between py-2 border-b border-white/10">
-                            <dt class="text-sm font-medium text-gray-400">HP</dt>
+                            <dt class="text-sm font-medium text-gray-400">{{ __('catalog.hp') }}</dt>
                             <dd class="text-sm text-white">{{ $card->hp }}</dd>
                         </div>
                         @endif
@@ -195,7 +195,7 @@
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                                 </svg>
-                                {{ $card->lore_value }} Lore
+                                {{ $card->lore_value }}{{ __('catalog.lore_suffix') }}
                             </span>
                             @endif
                             
@@ -204,7 +204,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                 </svg>
-                                {{ $card->ink_cost }} Ink
+                                {{ $card->ink_cost }}{{ __('catalog.ink_suffix') }}
                             </span>
                             @endif
                         @endif
@@ -218,19 +218,19 @@
                             
                             @if($card->cost !== null)
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-900/30 border border-orange-700/50 rounded-full text-sm text-orange-300 font-semibold">
-                                {{ $card->cost }} Cost
+                                {{ $card->cost }}{{ __('catalog.cost_suffix') }}
                             </span>
                             @endif
                             
                             @if($card->power !== null)
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-900/30 border border-red-700/50 rounded-full text-sm text-red-300 font-semibold">
-                                {{ $card->power }} Power
+                                {{ $card->power }}{{ __('catalog.power_suffix') }}
                             </span>
                             @endif
                             
                             @if($card->counter !== null)
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-900/30 border border-green-700/50 rounded-full text-sm text-green-300 font-semibold">
-                                {{ $card->counter }} Counter
+                                {{ $card->counter }}{{ __('catalog.counter_suffix') }}
                             </span>
                             @endif
                         @endif
@@ -260,7 +260,7 @@
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                     </svg>
-                                    Add to Collection
+                                    {{ __('catalog.add_to_collection') }}
                                 </button>
                             </form>
                             
@@ -271,21 +271,21 @@
                                     onclick="toggleLike()"
                                     class="px-3 py-2 {{ $card->is_liked ? 'bg-red-600' : 'bg-white/10' }} hover:bg-red-700 text-white rounded-lg transition text-sm"
                                 >
-                                    ❤️ <span id="likeText">{{ $card->is_liked ? 'Unlike' : 'Like' }}</span>
+                                    ❤️ <span id="likeText">{{ $card->is_liked ? __('catalog.unlike') : __('catalog.like') }}</span>
                                 </button>
                                 <button 
                                     id="wishlistBtn"
                                     onclick="toggleWishlist()"
                                     class="px-3 py-2 {{ $card->is_in_wishlist ? 'bg-yellow-600' : 'bg-white/10' }} hover:bg-yellow-700 text-white rounded-lg transition text-sm"
                                 >
-                                    ⭐ <span id="wishlistText">{{ $card->is_in_wishlist ? 'In Wishlist' : 'Wishlist' }}</span>
+                                    ⭐ <span id="wishlistText">{{ $card->is_in_wishlist ? __('catalog.in_wishlist') : __('catalog.wishlist') }}</span>
                                 </button>
                                 <button 
                                     id="watchBtn"
                                     onclick="toggleWatch()"
                                     class="px-3 py-2 {{ $card->is_watched ? 'bg-green-600' : 'bg-white/10' }} hover:bg-green-700 text-white rounded-lg transition text-sm"
                                 >
-                                    👁️ <span id="watchText">{{ $card->is_watched ? 'Watching' : 'Watch' }}</span>
+                                    👁️ <span id="watchText">{{ $card->is_watched ? __('catalog.watching') : __('catalog.watch') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -295,8 +295,7 @@
                     @guest
                     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
                         <p class="text-gray-400 text-center">
-                            <a href="{{ route('login') }}" class="text-blue-400 hover:text-blue-300 underline">Log in</a> 
-                            to add this card to your collection
+                            <a href="{{ route('login') }}" class="text-blue-400 hover:text-blue-300 underline">{{ __('catalog.login_to_add') }}</a>{{ __('catalog.to_add_to_collection') }}
                         </p>
                     </div>
                     @endguest
@@ -305,13 +304,13 @@
                 <!-- Pricing Information -->
                 <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-white">Market Prices</h2>
+                        <h2 class="text-xl font-bold text-white">{{ __('catalog.market_prices') }}</h2>
                         @if($card->raw && isset($card->raw['links']['cardmarket']))
                         <a href="{{ $card->raw['links']['cardmarket'] }}" target="_blank" class="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                             </svg>
-                            View on CardMarket
+                            {{ __('catalog.view_on_cardmarket') }}
                         </a>
                         @endif
                     </div>
@@ -319,22 +318,22 @@
                     @if($card->id)
                     <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-white">Price History</h2>
+                            <h2 class="text-xl font-bold text-white">{{ __('catalog.price_history') }}</h2>
                             
                             <!-- Filters -->
                             <div class="flex gap-2">
                                 <select id="languageFilter" class="bg-gray-800 text-white text-sm rounded px-3 py-1.5 border border-gray-700">
-                                    <option value="en">English</option>
-                                    <option value="fr">French</option>
-                                    <option value="de">German</option>
-                                    <option value="es">Spanish</option>
-                                    <option value="it">Italian</option>
+                                    <option value="en">{{ __('common.lang_en') }}</option>
+                                    <option value="fr">{{ __('common.lang_fr') }}</option>
+                                    <option value="de">{{ __('common.lang_de') }}</option>
+                                    <option value="es">{{ __('common.lang_es') }}</option>
+                                    <option value="it">{{ __('common.lang_it') }}</option>
                                 </select>
                                 <select id="daysFilter" class="bg-gray-800 text-white text-sm rounded px-3 py-1.5 border border-gray-700">
-                                    <option value="7">7 days</option>
-                                    <option value="30" selected>30 days</option>
-                                    <option value="90">90 days</option>
-                                    <option value="180">6 months</option>
+                                    <option value="7">{{ __('common.period_7d') }}</option>
+                                    <option value="30" selected>{{ __('common.period_30d') }}</option>
+                                    <option value="90">{{ __('common.period_90d') }}</option>
+                                    <option value="180">{{ __('common.period_6m') }}</option>
                                 </select>
                             </div>
                         </div>
@@ -342,7 +341,7 @@
                         <div class="relative h-64">
                             <canvas id="priceChart"></canvas>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2 text-center">Near Mint (NM) condition prices from CardMarket</p>
+                        <p class="text-xs text-gray-500 mt-2 text-center">{{ __('catalog.nm_condition_note') }}</p>
                         
                        
                     </div>
@@ -374,7 +373,7 @@ async function loadPriceHistory(language = 'en', days = 30) {
         
         if (data.length === 0) {
             document.getElementById('priceChart').parentElement.innerHTML = 
-                '<p class="text-gray-400 text-center py-8">No price history available yet. Data will be collected starting from the next daily sync.</p>';
+                '<p class="text-gray-400 text-center py-8">{{ __('catalog.no_price_history') }}</p>';
             return;
         }
         
@@ -397,7 +396,7 @@ function updateChart(data) {
             labels: data.map(d => new Date(d.price_date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })),
             datasets: [
                 {
-                    label: 'Price',
+                    label: '{{ __('common.price_label') }}',
                     data: data.map(d => d.price_eur),
                     borderColor: 'rgb(59, 130, 246)',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -405,7 +404,7 @@ function updateChart(data) {
                     fill: true
                 },
                 {
-                    label: 'Trend',
+                    label: '{{ __('common.trend_label') }}',
                     data: data.map(d => d.price_trend_eur),
                     borderColor: 'rgb(234, 179, 8)',
                     borderDash: [5, 5],
@@ -427,7 +426,7 @@ function updateChart(data) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.dataset.label + ': €' + context.parsed.y.toFixed(2);
+                            return context.dataset.label + '{{ __('common.price_format') }}' + context.parsed.y.toFixed(2);
                         }
                     }
                 }
@@ -438,7 +437,7 @@ function updateChart(data) {
                     ticks: {
                         color: 'rgb(156, 163, 175)',
                         callback: function(value) {
-                            return '€' + value.toFixed(2);
+                            return '{{ __('common.currency_symbol') }}' + value.toFixed(2);
                         }
                     },
                     grid: {
@@ -498,11 +497,11 @@ function toggleLike() {
         if (data.status === 'liked') {
             btn.classList.remove('bg-white/10');
             btn.classList.add('bg-red-600');
-            text.textContent = 'Unlike';
+            text.textContent = '{{ __('catalog.unlike') }}';
         } else {
             btn.classList.remove('bg-red-600');
             btn.classList.add('bg-white/10');
-            text.textContent = 'Like';
+            text.textContent = '{{ __('catalog.like') }}';
         }
         
         // Show success message
@@ -512,7 +511,7 @@ function toggleLike() {
     })
     .catch(error => {
         console.error('Like Error:', error);
-        showNotification('Error updating like status', 'error');
+        showNotification('{{ __('catalog.error_updating_like') }}', 'error');
     });
 }
 
@@ -542,11 +541,11 @@ function toggleWishlist() {
         if (data.status === 'added') {
             btn.classList.remove('bg-white/10');
             btn.classList.add('bg-yellow-600');
-            text.textContent = 'In Wishlist';
+            text.textContent = '{{ __('catalog.in_wishlist') }}';
         } else {
             btn.classList.remove('bg-yellow-600');
             btn.classList.add('bg-white/10');
-            text.textContent = 'Wishlist';
+            text.textContent = '{{ __('catalog.wishlist') }}';
         }
         
         // Show success message
@@ -556,7 +555,7 @@ function toggleWishlist() {
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error updating wishlist status', 'error');
+        showNotification('{{ __('catalog.error_updating_wishlist') }}', 'error');
     });
 }
 
@@ -586,11 +585,11 @@ function toggleWatch() {
         if (data.status === 'watched') {
             btn.classList.remove('bg-white/10');
             btn.classList.add('bg-green-600');
-            text.textContent = 'Watching';
+            text.textContent = '{{ __('catalog.watching') }}';
         } else {
             btn.classList.remove('bg-green-600');
             btn.classList.add('bg-white/10');
-            text.textContent = 'Watch';
+            text.textContent = '{{ __('catalog.watch') }}';
         }
         
         // Show success message
@@ -600,7 +599,7 @@ function toggleWatch() {
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error updating watch status', 'error');
+        showNotification('{{ __('catalog.error_updating_watch') }}', 'error');
     });
 }
 

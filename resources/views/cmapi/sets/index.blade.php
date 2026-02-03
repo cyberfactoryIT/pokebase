@@ -22,13 +22,13 @@
             <div class="border-b border-white/10 px-6 py-4">
                 <h1 class="text-3xl font-bold text-white">
                     @if($game === 'lorcana')
-                        Disney Lorcana Sets
+                        {{ __('catalog.disney_lorcana_sets') }}
                     @else
-                        One Piece Card Game Sets
+                        {{ __('catalog.onepiece_sets') }}
                     @endif
                 </h1>
                 <p class="mt-1 text-sm text-gray-300">
-                    Browse all {{ $game === 'lorcana' ? 'Lorcana' : 'One Piece' }} sets from CardMarket API
+                    {{ __('catalog.browse_all_sets') }}{{ $game === 'lorcana' ? 'Lorcana' : 'One Piece' }}{{ __('catalog.sets_from_api') }}
                 </p>
             </div>
 
@@ -38,7 +38,7 @@
                     <input 
                         type="text" 
                         id="searchInput" 
-                        placeholder="Search sets..." 
+                        placeholder="{{ __('catalog.search_sets_placeholder') }}" 
                         class="w-full px-4 py-3 pl-10 bg-black/50 border border-white/20 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                     <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Loading sets...
+                {{ __('catalog.loading_sets') }}
             </div>
 
             <!-- Results Grid -->
@@ -68,7 +68,7 @@
                 <svg class="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <p class="mt-2">No sets found</p>
+                <p class="mt-2">{{ __('catalog.no_sets_found') }}</p>
             </div>
 
             <!-- Load More Button -->
@@ -77,7 +77,7 @@
                     id="loadMoreBtn" 
                     class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-lg"
                 >
-                    Load More
+                    {{ __('catalog.load_more') }}
                 </button>
             </div>
         </div>
@@ -160,14 +160,14 @@ function loadSets(page = 1, append = false) {
             isLoading = false;
         })
         .catch(error => {
-            console.error('Error loading sets:', error);
+            console.error('{{ __('catalog.error_loading_sets') }}', error);
             isLoading = false;
             loadingState.classList.add('hidden');
         });
 }
 
 function createSetCard(set) {
-    const releaseDate = set.release_date ? new Date(set.release_date).toLocaleDateString() : 'TBA';
+    const releaseDate = set.release_date ? new Date(set.release_date).toLocaleDateString() : '{{ __('catalog.tba') }}';
     
     return `
         <a href="/${game}/sets/${set.cmapi_episode}" class="block group">
@@ -178,7 +178,7 @@ function createSetCard(set) {
                         src="${set.logo_url}" 
                         alt="${set.name}"
                         class="max-w-full max-h-full object-contain"
-                        onerror="this.parentElement.innerHTML='<div class=\\'text-gray-600 text-sm\\'>No Logo</div>'"
+                        onerror="this.parentElement.innerHTML='<div class=\\'text-gray-600 text-sm\\'>{{ __('catalog.no_logo') }}</div>'"
                     >
                 </div>
                 ` : ''}
@@ -188,8 +188,8 @@ function createSetCard(set) {
                     </h3>
                     <div class="mt-auto space-y-1 text-xs text-gray-400">
                         <div class="flex justify-between">
-                            <span>Episode ${set.cmapi_episode}</span>
-                            <span>${set.cards_count} cards</span>
+                            <span>{{ __('catalog.episode_prefix') }}${set.cmapi_episode}</span>
+                            <span>${set.cards_count}{{ __('catalog.cards_suffix') }}</span>
                         </div>
                         <div class="text-gray-500">${releaseDate}</div>
                     </div>
