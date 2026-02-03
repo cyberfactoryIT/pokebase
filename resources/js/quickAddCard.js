@@ -1,19 +1,20 @@
 /**
- * Quick Add Card - Dashboard form with typeahead functionality
- * Uses same /api/search/cards endpoint as global search
+ * Quick Card Search - Dashboard typeahead that navigates to card detail
+ * Supports all backends: TCGCSV, TCGDEX, CMAPI
  */
 
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('card-search');
     const searchResults = document.getElementById('search-results');
-    const selectedCardId = document.getElementById('selected-card-id');
-    const form = document.getElementById('quick-add-form');
-    const messageDiv = document.getElementById('quick-add-message');
+    const wrapper = searchInput?.closest('[data-catalog-backend]');
     
-    if (!searchInput || !searchResults || !form) {
-        console.log('Quick Add: Elements not found on this page');
+    if (!searchInput || !searchResults || !wrapper) {
+        console.log('Quick Search: Elements not found on this page');
         return;
     }
+    
+    const catalogBackend = wrapper.dataset.catalogBackend || 'tcgcsv';
+    const gameSlug = wrapper.dataset.gameSlug || 'pokemon';
     
     let debounceTimer = null;
     let currentRequestId = 0;
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear dropdown if query too short
         if (query.length < 2) {
             hideResults();
+            highlightedIndex = -1;
             return;
         }
         
@@ -38,7 +40,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Keyboard navigation: ArrowUp, ArrowDown, Enter, Escape
     searchInput.addEventListener('keydown', function(e) {
-        const items = searchResults.querySelectorAll('.search-result-card');
+        const items = searchResults.querySelectorAll('a[data-result-index]');
+        
+        if (e.key === 'Escape') {
+            hideResults();
+            searchInput.blur();
+            return;
+        }
+        
+        if (items.length === 0) return;
         
         if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -50,12 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateHighlight(items);
         } else if (e.key === 'Enter' && highlightedIndex >= 0) {
             e.preventDefault();
-            if (items[highlightedIndex]) {
-                selectCard(items[highlightedIndex]);
-            }
-        } else if (e.key === 'Escape') {
-            hideResults();
-            highlightedIndex = -1;
+            items[highlightedIndex].click();
         }
     });
     
@@ -70,15 +75,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch(query) {
         const requestId = ++currentRequestId;
         
-        // Get catalog backend from form data attribute
-        const backend = form.dataset.catalogBackend || 'tcgcsv';
-        
         // Show loading state
         showResults();
         searchResults.innerHTML = '<div class="px-4 py-3 text-gray-400 text-sm">Searching...</div>';
         
         // Fetch results with backend parameter
-        fetch(`/api/search/cards?q=${encodeURIComponent(query)}&limit=12&backend=${backend}`)
+        fetch(`/api/search/cards?q=${encodeURIComponent(query)}&limit=12&backend=${catalogBackend}`)
             .then(response => {
                 if (!response.ok) throw new Error('Search failed');
                 return response.json();
@@ -87,31 +89,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Ignore stale responses
                 if (requestId !== currentRequestId) return;
                 
-                displayResults(data || []);
+                // Deduplicate results
+                const dedupedResults = deduplicateResults(data || []);
+                displayResults(dedupedResults);
             })
             .catch(error => {
-                console.error('Quick Add search error:', error);
+                console.error('Quick Search error:', error);
                 if (requestId === currentRequestId) {
                     searchResults.innerHTML = '<div class="px-4 py-3 text-red-400 text-sm">Search error. Please try again.</div>';
                 }
             });
     }
     
-    // Update visual highlight for keyboard navigation
+    // Deduplicate results by unique card identifier
+    function deduplicateResults(results) {
+        const seen = new Set();
+        return results.filter(card => {
+            let key;
+            if (card.backend === 'tcgdex') {
+                key = card.tcgdex_id;
+            } else if (card.backend === 'cmapi') {
+                key = card.cmapi_id;
+            } else {
+                key = card.product_id || `${card.group_id}-${card.card_number}`;
+            }
+            
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+    
+    // Update highlighted item
     function updateHighlight(items) {
         items.forEach((item, index) => {
             if (index === highlightedIndex) {
-                item.classList.add('bg-white/10');
+                item.classList.add('bg-white/20');
                 item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             } else {
-                item.classList.remove('bg-white/10');
+                item.classList.remove('bg-white/20');
             }
         });
     }
     
     // Display search results
     function displayResults(results) {
-        // Reset highlight index when new results come in
         highlightedIndex = -1;
         
         if (results.length === 0) {
@@ -119,75 +141,38 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const html = results.map(card => {
-            const imageHtml = card.image_url 
-                ? `<img src="${card.image_url}" class="w-12 h-16 object-cover rounded" alt="${escapeHtml(card.name)}">`
-                : `<div class="w-12 h-16 bg-white/5 rounded flex items-center justify-center">
-                     <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                     </svg>
-                   </div>`;
+        const html = results.map((card, index) => {
+            // Generate the card detail URL based on backend
+            let cardUrl;
+            if (card.backend === 'tcgdex') {
+                cardUrl = `/pokemon/cards/${card.tcgdex_id}`;
+            } else if (card.backend === 'cmapi') {
+                cardUrl = `/${gameSlug}/cards/${card.cmapi_id}`;
+            } else {
+                // TCGCSV
+                cardUrl = `/tcg/cards/${card.product_id}`;
+            }
             
             return `
-                <div class="search-result-card flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition border-b border-white/5 last:border-0" 
-                     data-card-id="${card.product_id || card.tcgdex_card_id || card.cmapi_card_id}" 
-                     data-tcgdex-id="${card.tcgdex_card_id || ''}"
-                     data-cmapi-id="${card.cmapi_card_id || ''}"
-                     data-backend="${card.backend || 'tcgcsv'}"
-                     data-card-name="${escapeHtml(card.name)}">
-                    ${imageHtml}
-                    <div class="flex-1 min-w-0">
-                        <div class="font-semibold text-white truncate">${escapeHtml(card.name)}</div>
-                        <div class="text-sm text-gray-400 truncate">${escapeHtml(card.set_name || card.group_name || 'Unknown Set')}</div>
-                        ${card.card_number ? `<div class="text-xs text-gray-500">#${escapeHtml(card.card_number)}${card.set_total ? '/' + card.set_total : ''}</div>` : ''}
+                <a href="${cardUrl}" 
+                   data-result-index="${index}"
+                   class="search-result-item block px-4 py-3 hover:bg-white/10 border-b border-white/10 last:border-b-0 transition text-white">
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm truncate">${escapeHtml(card.name)}</div>
+                            <div class="text-xs text-gray-400 mt-0.5">
+                                ${escapeHtml(card.set_name || card.group_name || 'Unknown Set')}
+                            </div>
+                        </div>
+                        <div class="text-xs font-mono text-gray-400 flex-shrink-0">
+                            #${escapeHtml(card.card_number || 'N/A')}${card.set_total ? '/' + card.set_total : ''}
+                        </div>
                     </div>
-                </div>
+                </a>
             `;
         }).join('');
         
         searchResults.innerHTML = html;
-        
-        // Add click handlers to all result cards
-        searchResults.querySelectorAll('.search-result-card').forEach(card => {
-            card.addEventListener('click', function() {
-                selectCard(this);
-            });
-        });
-    }
-    
-    // Select a card from results
-    function selectCard(element) {
-        const cardId = element.dataset.cardId;
-        const tcgdexId = element.dataset.tcgdexId;
-        const cmapiId = element.dataset.cmapiId;
-        const backend = element.dataset.backend;
-        const cardName = element.dataset.cardName;
-        
-        selectedCardId.value = cardId;
-        searchInput.value = cardName;
-        
-        // Store card type in hidden field or data attribute for backend
-        if (backend === 'tcgdex' && tcgdexId) {
-            selectedCardId.setAttribute('data-is-tcgdex', 'true');
-            selectedCardId.setAttribute('data-tcgdex-id', tcgdexId);
-            selectedCardId.removeAttribute('data-is-cmapi');
-            selectedCardId.removeAttribute('data-cmapi-id');
-        } else if (backend === 'cmapi' && cmapiId) {
-            selectedCardId.setAttribute('data-is-cmapi', 'true');
-            selectedCardId.setAttribute('data-cmapi-id', cmapiId);
-            selectedCardId.removeAttribute('data-is-tcgdex');
-            selectedCardId.removeAttribute('data-tcgdex-id');
-        } else {
-            selectedCardId.removeAttribute('data-is-tcgdex');
-            selectedCardId.removeAttribute('data-tcgdex-id');
-            selectedCardId.removeAttribute('data-is-cmapi');
-            selectedCardId.removeAttribute('data-cmapi-id');
-        }
-        
-        highlightedIndex = -1;
-        hideResults();
-        
-        console.log('Card selected:', { cardId, tcgdexId, cmapiId, backend, cardName });
     }
     
     // Show results dropdown
@@ -198,6 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide results dropdown
     function hideResults() {
         searchResults.classList.add('hidden');
+        searchResults.innerHTML = '';
         highlightedIndex = -1;
     }
     
@@ -207,82 +193,5 @@ document.addEventListener('DOMContentLoaded', function() {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    }
-    
-    // Handle form submission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (!selectedCardId.value) {
-            showMessage('error', 'Please select a card from the search results first');
-            return;
-        }
-        
-        const formData = new FormData(form);
-        
-        // Add TCGDEX card ID if applicable
-        if (selectedCardId.hasAttribute('data-is-tcgdex')) {
-            formData.delete('card_id'); // Remove product_id
-            formData.append('tcgdex_card_id', selectedCardId.getAttribute('data-tcgdex-id'));
-        }
-        
-        // Add CMAPI card ID if applicable
-        if (selectedCardId.hasAttribute('data-is-cmapi')) {
-            formData.delete('card_id'); // Remove product_id
-            formData.append('cmapi_card_id', selectedCardId.getAttribute('data-cmapi-id'));
-        }
-        
-        const submitBtn = form.querySelector('button[type="submit"]');
-        
-        // Save original button content
-        const originalBtnContent = submitBtn.innerHTML;
-        
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<svg class="animate-spin w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-        
-        fetch(form.action || '/collection/quick-add', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('[name="_token"]').value,
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showMessage('success', data.message || 'Card added successfully!');
-                form.reset();
-                selectedCardId.value = '';
-                
-                // Reload page after 1 second to show updated stats
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                showMessage('error', data.message || 'Error adding card');
-            }
-        })
-        .catch(err => {
-            console.error('Add card error:', err);
-            showMessage('error', 'Error adding card. Please try again.');
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnContent;
-        });
-    });
-    
-    // Show message
-    function showMessage(type, text) {
-        const bgColor = type === 'success' 
-            ? 'bg-green-900/30 border-green-500/30 text-green-300' 
-            : 'bg-red-900/30 border-red-500/30 text-red-300';
-        
-        messageDiv.className = `mt-4 p-4 rounded-lg border ${bgColor}`;
-        messageDiv.textContent = text;
-        messageDiv.classList.remove('hidden');
-        
-        setTimeout(() => {
-            messageDiv.classList.add('hidden');
-        }, 5000);
     }
 });

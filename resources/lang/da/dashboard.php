@@ -30,8 +30,10 @@ return [
     
     // Quick Add Card
     'quick_add_card' => 'Tilføj Kort Hurtigt',
+    'quick_search_card' => 'Hurtig Kortsøgning',
     'search_card' => 'Søg kort',
     'type_card_name' => 'Skriv kortnavn...',
+    'search_hint' => 'Søg efter et kort for at se dets detaljer',
     'quantity' => 'Antal',
     'condition' => 'Stand',
     'condition_mint' => 'Mint (M)',

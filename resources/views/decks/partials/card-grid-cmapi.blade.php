@@ -6,7 +6,7 @@
         if (!$card) continue;
         
         $inCollection = auth()->user()->collection()->where('cmapi_card_id', $card->cmapi_id)->exists();
-        $displayImage = $card->image_url;
+        $displayImage = $card->image_large_url ?? $card->image_small_url;
     @endphp
     
     <div class="deck-card-item bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition overflow-hidden group relative" 
@@ -56,9 +56,9 @@
                 {{ $card->name }}
             </h4>
             <p class="text-gray-400 text-xs truncate mt-1">
-                {{ $card->set_name ?? 'Unknown Set' }}
-                @if($card->card_number)
-                · #{{ $card->card_number }}
+                {{ $card->set->name ?? 'Unknown Set' }}
+                @if($card->number)
+                · #{{ $card->number }}
                 @endif
             </p>
             
@@ -106,7 +106,7 @@
                 @endif
                 <form method="POST" action="{{ route('decks.cards.photos.upload', $deckCard) }}" enctype="multipart/form-data" class="relative">
                     @csrf
-                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="hidden" id="deck-photo-{{ $deckCard->id }}" onchange="this.form.submit()">
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="hidden" id="deck-photo-{{ $deckCard->id }}" onchange="showDeckUploadLoader(this.form)">
                     <label for="deck-photo-{{ $deckCard->id }}" class="w-full text-xs px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded transition cursor-pointer flex items-center justify-center gap-1">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>

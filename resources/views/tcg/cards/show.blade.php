@@ -22,21 +22,33 @@
         </div>
         @endif
 
-        <!-- Back Button -->
-        <div class="mb-4">
-            @if($card->group)
-            <a href="{{ route('tcg.expansions.show', $card->group->group_id) }}" class="inline-flex items-center text-blue-400 hover:text-blue-300">
+        <!-- Navigation Buttons -->
+        <div class="mb-4 flex items-center gap-4">
+            <!-- Back Button (browser history) -->
+            <button onclick="window.history.back()" class="inline-flex items-center text-gray-400 hover:text-white transition">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                {{ __('tcg/cards/show.back_to') }} {{ $card->group->name }}
+                {{ __('catalog.back') }}
+            </button>
+            
+            <!-- Separator -->
+            <span class="text-gray-600">|</span>
+            
+            <!-- View Set Button -->
+            @if($card->group)
+            <a href="{{ route('tcg.expansions.show', $card->group->group_id) }}" class="inline-flex items-center text-blue-400 hover:text-blue-300 transition">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                {{ __('catalog.view_set', ['set' => $card->group->name]) }}
             </a>
             @else
-            <a href="{{ route('tcg.expansions.index') }}" class="inline-flex items-center text-blue-400 hover:text-blue-300">
+            <a href="{{ route('tcg.expansions.index') }}" class="inline-flex items-center text-blue-400 hover:text-blue-300 transition">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                 </svg>
-                {{ __('tcg/cards/show.back_to') }} {{ __('tcg/cards/show.expansions') }}
+                {{ __('catalog.view_set', ['set' => __('tcg/cards/show.expansions')]) }}
             </a>
             @endif
         </div>

@@ -61,10 +61,17 @@ class CardSearchController extends Controller
                 'referer' => $request->header('referer'),
             ]);
 
-            // Get current game ID for filtering (used only in TCGCSV search)
+            // Get current game ID for filtering (used in TCGCSV and CMAPI search)
             $gameId = session('current_game_id');
             if (!$gameId && Auth::check()) {
                 $gameId = Auth::user()->default_game_id;
+            }
+            
+            // Get game code for CMAPI (uses slug, not ID)
+            $gameCode = null;
+            if ($catalogBackend === 'cmapi' && $gameId) {
+                $game = \App\Models\Game::find($gameId);
+                $gameCode = $game ? $game->code : null;
             }
 
             // Search based on catalog backend
@@ -73,7 +80,7 @@ class CardSearchController extends Controller
                 return $this->searchTcgdex($query, $limit, $collectionOnly);
             } elseif ($catalogBackend === 'cmapi') {
                 // Search in CMAPI tables (Lorcana, One Piece)
-                return $this->searchCmapi($query, $limit, $collectionOnly, $gameId);
+                return $this->searchCmapi($query, $limit, $collectionOnly, $gameCode);
             } else {
                 // Search in TCGCSV tables
                 return $this->searchTcgcsv($query, $limit, $collectionOnly, $gameId);
@@ -290,7 +297,7 @@ class CardSearchController extends Controller
     /**
      * Search in CMAPI database (Lorcana, One Piece)
      */
-    private function searchCmapi(string $query, int $limit, bool $collectionOnly, ?int $gameId): JsonResponse
+    private function searchCmapi(string $query, int $limit, bool $collectionOnly, ?string $gameCode): JsonResponse
     {
         // Escape LIKE wildcards to prevent injection
         $escapedQuery = $this->escapeLikeWildcards($query);
@@ -305,20 +312,20 @@ class CardSearchController extends Controller
                 'cmapi_cards.set_cmapi_id',
                 'cmapi_sets.name as set_name',
                 'cmapi_sets.cmapi_episode as set_code',
-                'cmapi_sets.total_cards as set_total',
-                'cmapi_cards.image_url',
+                'cmapi_sets.card_count as set_total',
+                'cmapi_cards.image_small_url as image_url',
             ])
             ->leftJoin('cmapi_sets', 'cmapi_cards.set_cmapi_id', '=', 'cmapi_sets.id');
         
         // Filter by game if set
-        if ($gameId) {
-            $results->where('cmapi_cards.game_id', $gameId);
+        if ($gameCode) {
+            $results->where('cmapi_cards.game', $gameCode);
         }
         
         // Filter by collection if requested
         if ($collectionOnly && Auth::check()) {
             $userId = Auth::id();
-            $results->whereIn('cmapi_cards.id', function($query) use ($userId) {
+            $results->whereIn('cmapi_cards.cmapi_id', function($query) use ($userId) {
                 $query->select('cmapi_card_id')
                     ->from('user_collection')
                     ->where('user_id', $userId)

@@ -106,7 +106,7 @@
                 @endif
                 <form method="POST" action="{{ route('decks.cards.photos.upload', $deckCard) }}" enctype="multipart/form-data" class="relative">
                     @csrf
-                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="hidden" id="deck-photo-{{ $deckCard->id }}" onchange="this.form.submit()">
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="hidden" id="deck-photo-{{ $deckCard->id }}" onchange="showDeckUploadLoader(this.form)">
                     <label for="deck-photo-{{ $deckCard->id }}" class="w-full text-xs px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded transition cursor-pointer flex items-center justify-center gap-1">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>

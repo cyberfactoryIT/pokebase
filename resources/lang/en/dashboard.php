@@ -30,8 +30,10 @@ return [
     
     // Quick Add Card
     'quick_add_card' => 'Quick Add Card',
+    'quick_search_card' => 'Quick Card Search',
     'search_card' => 'Search card',
     'type_card_name' => 'Type card name...',
+    'search_hint' => 'Search for a card to view its details',
     'quantity' => 'Quantity',
     'condition' => 'Condition',
     'condition_mint' => 'Mint (M)',

@@ -2,8 +2,10 @@
 
 return [
     // Navigation
+    'back' => 'Back',
     'back_to_sets' => 'Back to Sets',
     'back_to_set' => 'Back to :set',
+    'view_set' => 'View Set :set',
 
     // Sets page
     'no_sets_found' => 'No sets found.',

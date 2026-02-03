@@ -341,10 +341,11 @@ class CollectionController extends Controller
             return UserCollection::where('user_id', $userId)
                 ->whereNotNull('cmapi_card_id')
                 ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
-                ->selectRaw('cmapi_cards.set_name as name, COUNT(*) as card_count')
-                ->whereNotNull('cmapi_cards.set_name')
-                ->groupBy('cmapi_cards.set_name')
-                ->orderBy('cmapi_cards.set_name', 'asc')
+                ->join('cmapi_sets', 'cmapi_cards.set_cmapi_id', '=', 'cmapi_sets.id')
+                ->selectRaw('cmapi_sets.name, COUNT(*) as card_count')
+                ->whereNotNull('cmapi_sets.name')
+                ->groupBy('cmapi_sets.name')
+                ->orderBy('cmapi_sets.name', 'asc')
                 ->get()
                 ->toArray();
         } else {
@@ -1150,6 +1151,12 @@ class CollectionController extends Controller
 
         // Authorization: must be premium
         if (!Gate::allows('uploadCardPhotos')) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('photos.upload.not_allowed.title')
+                ], 403);
+            }
             return back()->with('error', __('photos.upload.not_allowed.title'));
         }
 
@@ -1171,6 +1178,15 @@ class CollectionController extends Controller
             'mime_type' => $file->getMimeType(),
             'size_bytes' => $file->getSize(),
         ]);
+
+        // Return JSON for AJAX requests, redirect for form submissions
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('photos.upload.success'),
+                'photo' => $photo
+            ]);
+        }
 
         return back()->with('success', __('photos.upload.success'));
     }

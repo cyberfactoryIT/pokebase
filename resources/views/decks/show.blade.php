@@ -433,15 +433,22 @@
                 </svg>
                 <h3 class="text-white text-xl font-semibold mb-2">{{ __('decks/show.empty_state_title') }}</h3>
                 <p class="text-gray-400 mb-6">{{ __('decks/show.empty_state_text') }}</p>
-                <a href="{{ route('tcg.expansions.index') }}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                @php
+                    $browseUrl = match($catalogBackend) {
+                        'tcgdex' => route('pokemon.sets'),
+                        'cmapi' => route('cmapi.sets.index', ['game' => $currentGame->slug ?? 'lorcana']),
+                        default => route('tcg.expansions.index')
+                    };
+                @endphp
+                <a href="{{ $browseUrl }}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                     {{ __('decks/show.browse_cards') }}
                 </a>
             </div>
             @else
             <!-- Card Grids by Backend -->
             @include('decks.partials.card-grid-tcgcsv', ['deck' => $deck, 'preferredCurrency' => $preferredCurrency, 'defaultCurrency' => $defaultCurrency])
-            @include('decks.partials.card-grid-tcgdex', ['deck' => $deck])
-            @include('decks.partials.card-grid-cmapi', ['deck' => $deck])
+            @include('decks.partials.card-grid-tcgdex', ['deck' => $deck, 'preferredCurrency' => $preferredCurrency, 'defaultCurrency' => $defaultCurrency])
+            @include('decks.partials.card-grid-cmapi', ['deck' => $deck, 'preferredCurrency' => $preferredCurrency, 'defaultCurrency' => $defaultCurrency])
             @endif
         </div>
     </div>
@@ -480,6 +487,12 @@ foreach ($deck->deckCards as $deckCard) {
             <div id="deckPhotoGalleryContent" class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <!-- Photos will be loaded here -->
             </div>
+            
+            <!-- Upload Photo Form (hidden) -->
+            <form id="deckPhotoUploadForm" enctype="multipart/form-data" class="hidden">
+                @csrf
+                <input type="file" id="deckPhotoUploadInput" name="photo" accept="image/*" onchange="handleDeckPhotoUpload(event)">
+            </form>
         </div>
     </div>
 </div>
@@ -497,6 +510,7 @@ let currentDeckSearchRequest = 0;
 let currentCatalogSearchRequest = 0;
 let userCollectionProductIds = new Set();
 let userCollectionTcgdexIds = new Set();
+let userCollectionCmapiIds = new Set();
 
 // Load user collection IDs for checking
 async function loadUserCollectionIds() {
@@ -517,7 +531,8 @@ async function loadUserCollectionIds() {
         const data = await response.json();
         userCollectionProductIds = new Set(data.product_ids || data);
         userCollectionTcgdexIds = new Set(data.tcgdex_card_ids || []);
-        console.log(`Loaded ${userCollectionProductIds.size} TCGCSV + ${userCollectionTcgdexIds.size} TCGDEX collection IDs`);
+        userCollectionCmapiIds = new Set(data.cmapi_card_ids || []);
+        console.log(`Loaded ${userCollectionProductIds.size} TCGCSV + ${userCollectionTcgdexIds.size} TCGDEX + ${userCollectionCmapiIds.size} CMAPI collection IDs`);
     } catch (error) {
         console.error('Error loading collection:', error);
     }
@@ -575,8 +590,15 @@ async function searchCollectionCards(query) {
         }
         
         const resultsHTML = data.map(card => {
-            const cardId = card.backend === 'tcgdex' ? card.tcgdex_card_id : card.product_id;
-            const cardIdParam = card.backend === 'tcgdex' ? `null, ${card.tcgdex_card_id}, '${escapeHtml(card.name)}'` : `${card.product_id}, null, '${escapeHtml(card.name)}'`;
+            const cardId = card.backend === 'tcgdex' ? card.tcgdex_card_id : (card.backend === 'cmapi' ? card.cmapi_id : card.product_id);
+            let cardIdParam;
+            if (card.backend === 'tcgdex') {
+                cardIdParam = `null, ${card.tcgdex_card_id}, null, '${escapeHtml(card.name)}'`;
+            } else if (card.backend === 'cmapi') {
+                cardIdParam = `null, null, '${card.cmapi_id}', '${escapeHtml(card.name)}'`;
+            } else {
+                cardIdParam = `${card.product_id}, null, null, '${escapeHtml(card.name)}'`;
+            }
             return `
                 <div class="px-4 py-3 hover:bg-white/10 cursor-pointer border-b border-white/10 last:border-b-0 flex items-center gap-3"
                      onclick="addCardToDeck(${cardIdParam})">
@@ -619,11 +641,20 @@ async function searchCatalogCards(query) {
         }
         
         const resultsHTML = data.map(card => {
-            const cardId = card.backend === 'tcgdex' ? card.tcgdex_card_id : card.product_id;
-            const cardIdParam = card.backend === 'tcgdex' ? `null, ${card.tcgdex_card_id}, '${escapeHtml(card.name)}'` : `${card.product_id}, null, '${escapeHtml(card.name)}'`;
+            const cardId = card.backend === 'tcgdex' ? card.tcgdex_card_id : (card.backend === 'cmapi' ? card.cmapi_id : card.product_id);
+            let cardIdParam;
+            if (card.backend === 'tcgdex') {
+                cardIdParam = `null, ${card.tcgdex_card_id}, null, '${escapeHtml(card.name)}'`;
+            } else if (card.backend === 'cmapi') {
+                cardIdParam = `null, null, '${card.cmapi_id}', '${escapeHtml(card.name)}'`;
+            } else {
+                cardIdParam = `${card.product_id}, null, null, '${escapeHtml(card.name)}'`;
+            }
             const inCollection = card.backend === 'tcgdex' 
                 ? userCollectionTcgdexIds.has(card.tcgdex_card_id)
-                : userCollectionProductIds.has(card.product_id);
+                : (card.backend === 'cmapi' 
+                    ? userCollectionCmapiIds.has(card.cmapi_id)
+                    : userCollectionProductIds.has(card.product_id));
             return `
                 <div class="px-4 py-3 hover:bg-white/10 border-b border-white/10 last:border-b-0 flex items-center gap-3">
                     <div class="flex-shrink-0 w-12 h-16 bg-black/50 rounded overflow-hidden">
@@ -699,7 +730,7 @@ async function quickAddToCollection(productId, tcgdexCardId, cardName) {
     }
 }
 
-async function addCardToDeck(productId, tcgdexCardId, cardName) {
+async function addCardToDeck(productId, tcgdexCardId, cmapiCardId, cardName) {
     try {
         const formData = new FormData();
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
@@ -709,6 +740,9 @@ async function addCardToDeck(productId, tcgdexCardId, cardName) {
         if (tcgdexCardId) {
             formData.append('tcgdex_card_id', tcgdexCardId);
             url = `/decks/${deckId}/cards/tcgdex`;
+        } else if (cmapiCardId) {
+            formData.append('cmapi_card_id', cmapiCardId);
+            url = `/decks/${deckId}/cards/cmapi`;
         } else if (productId) {
             formData.append('product_id', productId);
             url = `/decks/${deckId}/cards`;
@@ -896,47 +930,130 @@ document.getElementById('clear-rarity-filter')?.addEventListener('click', functi
 // Photo modal functions for deck cards
 const deckPhotos = @json($deckPhotoData ?? []);
 
+let currentDeckCardId = null;
+
 function openDeckPhotoModal(deckCardId) {
+    currentDeckCardId = deckCardId;
     const photos = deckPhotos[deckCardId] || [];
     const gallery = document.getElementById('deckPhotoGalleryContent');
     
-    if (photos.length === 0) {
-        gallery.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No photos available</p>';
-    } else {
-        gallery.innerHTML = photos.map((photo, index) => `
-            <div class="relative group">
-                <div class="aspect-[245/342] bg-black/50 rounded-lg border border-white/20 overflow-hidden cursor-pointer hover:border-blue-400 transition photo-thumbnail" data-photo-url="${photo.path}" data-index="${index}">
-                    <img src="${photo.path}" alt="Card photo" class="w-full h-full object-contain">
-                </div>
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
-                    <form method="POST" action="/decks/photos/${photo.id}" onsubmit="return confirm('Delete this photo?');" class="inline">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="p-1 bg-red-600/80 hover:bg-red-600 rounded text-white text-xs">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">${photo.uploaded_at}</p>
+    // Build photo grid HTML
+    let photosHTML = photos.map((photo, index) => `
+        <div class="relative group">
+            <div class="aspect-[245/342] bg-black/50 rounded-lg border border-white/20 overflow-hidden cursor-pointer hover:border-blue-400 transition photo-thumbnail" data-photo-url="${photo.path}" data-index="${index}">
+                <img src="${photo.path}" alt="Card photo" class="w-full h-full object-contain">
             </div>
-        `).join('');
-        
-        // Add click listeners to photo thumbnails
-        document.querySelectorAll('.photo-thumbnail').forEach(thumb => {
-            thumb.addEventListener('click', function() {
-                const photoUrl = this.getAttribute('data-photo-url');
-                openDeckLightbox(photoUrl);
-            });
+            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
+                <form method="POST" action="/decks/photos/${photo.id}" onsubmit="return confirm('Delete this photo?');" class="inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="p-1 bg-red-600/80 hover:bg-red-600 rounded text-white text-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">${photo.uploaded_at}</p>
+        </div>
+    `).join('');
+    
+    // Add "Add Photo" button
+    photosHTML += `
+        <div class="relative group">
+            <button onclick="document.getElementById('deckPhotoUploadInput').click()" 
+                    class="aspect-[245/342] w-full bg-black/30 border-2 border-dashed border-white/20 rounded-lg hover:border-blue-400 hover:bg-black/50 transition flex flex-col items-center justify-center gap-3 text-gray-400 hover:text-blue-400">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span class="text-sm font-medium">Add Photo</span>
+            </button>
+        </div>
+    `;
+    
+    gallery.innerHTML = photosHTML || '<p class="text-gray-400 col-span-full text-center py-8">No photos available</p>';
+    
+    // Add click listeners to photo thumbnails
+    document.querySelectorAll('.photo-thumbnail').forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            const photoUrl = this.getAttribute('data-photo-url');
+            openDeckLightbox(photoUrl);
         });
-    }
+    });
     
     document.getElementById('deckPhotoModal').classList.remove('hidden');
 }
 
 function closeDeckPhotoModal() {
     document.getElementById('deckPhotoModal').classList.add('hidden');
+    currentDeckCardId = null;
+}
+
+async function handleDeckPhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file || !currentDeckCardId) return;
+    
+    // Show loading overlay
+    const gallery = document.getElementById('deckPhotoGalleryContent');
+    const originalHTML = gallery.innerHTML;
+    
+    gallery.innerHTML = `
+        <div class="col-span-full flex flex-col items-center justify-center py-12">
+            <svg class="animate-spin w-12 h-12 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-white font-medium">Uploading photo...</p>
+            <p class="text-gray-400 text-sm mt-1">Please wait</p>
+        </div>
+    `;
+    
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('_token', '{{ csrf_token() }}');
+    
+    try {
+        const response = await fetch(`/decks/cards/${currentDeckCardId}/photos`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success message
+            gallery.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-12">
+                    <svg class="w-16 h-16 text-green-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-white font-medium">Photo uploaded successfully!</p>
+                    <p class="text-gray-400 text-sm mt-1">Refreshing...</p>
+                </div>
+            `;
+            // Reload after 1 second
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            // Show error and restore original content
+            gallery.innerHTML = originalHTML;
+            alert(data.message || 'Error uploading photo');
+            // Re-attach event listeners
+            openDeckPhotoModal(currentDeckCardId);
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        gallery.innerHTML = originalHTML;
+        alert('Error uploading photo. Please try again.');
+        // Re-attach event listeners
+        openDeckPhotoModal(currentDeckCardId);
+    }
+    
+    // Reset file input
+    event.target.value = '';
 }
 
 function openDeckLightbox(imagePath) {
@@ -973,5 +1090,31 @@ function openDeckLightbox(imagePath) {
     
     document.body.appendChild(lightbox);
 }
+
+// Show upload loader for traditional form submissions
+function showDeckUploadLoader(form) {
+    // Show overlay
+    const overlay = document.getElementById('deckUploadLoadingOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+    }
+    // Submit form
+    form.submit();
+}
 </script>
+
+<!-- Upload Loading Overlay -->
+<div id="deckUploadLoadingOverlay" class="hidden fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center">
+    <div class="bg-[#161615] border border-white/15 rounded-xl p-8 max-w-sm mx-4">
+        <div class="flex flex-col items-center">
+            <svg class="animate-spin w-16 h-16 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-white font-semibold text-lg mb-2">Uploading Photo</p>
+            <p class="text-gray-400 text-sm text-center">Please wait while we upload your photo...</p>
+        </div>
+    </div>
+</div>
+
 @endsection

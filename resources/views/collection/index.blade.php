@@ -580,7 +580,14 @@
             </svg>
             <h3 class="text-white text-xl font-semibold mb-2">{{ __('collection/index.empty_title') }}</h3>
             <p class="text-gray-400 mb-6">{{ __('collection/index.empty_text') }}</p>
-            <a href="{{ route('tcg.expansions.index') }}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+            @php
+                $browseUrl = match($catalogBackend) {
+                    'tcgdex' => route('pokemon.sets'),
+                    'cmapi' => route('cmapi.sets.index', ['game' => $currentGame->slug ?? 'lorcana']),
+                    default => route('tcg.expansions.index')
+                };
+            @endphp
+            <a href="{{ $browseUrl }}" class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                 {{ __('collection/index.browse_cards') }}
             </a>
         </div>
@@ -603,19 +610,26 @@
             @foreach($collection as $item)
             @php
                 // Determine which card relation to use
-                $card = $item->card ?? $item->tcgdexCard;
                 $isTcgdex = !is_null($item->tcgdex_card_id);
+                $isCmapi = !is_null($item->cmapi_card_id);
+                $isTcgcsv = !$isTcgdex && !$isCmapi;
                 
-                // Get card details
                 if ($isTcgdex) {
+                    $card = $item->tcgdexCard;
                     $cardName = is_array($card->name) ? ($card->name['en'] ?? 'Unknown') : (is_string($card->name) ? (json_decode($card->name, true)['en'] ?? $card->name) : 'Unknown');
                     $displayImage = $card->image_large_url ?? $card->image_small_url;
                     if ($displayImage && !str_ends_with($displayImage, '.webp')) {
                         $displayImage .= '/high.webp';
                     }
                     $cardUrl = route('pokemon.card', [$card->tcgdex_id]);
+                } elseif ($isCmapi) {
+                    $card = $item->cmapiCard;
+                    $cardName = $card->name ?? 'Unknown';
+                    $displayImage = $card->image_large_url ?? $card->image_small_url;
+                    $cardUrl = route('cmapi.cards.show', [$currentGame->slug ?? 'lorcana', $card->cmapi_id]);
                 } else {
-                    $cardName = $card->name;
+                    $card = $item->card;
+                    $cardName = $card->name ?? 'Unknown';
                     $displayImage = $card->hd_image_url ?? $card->image_url;
                     $cardUrl = route('tcg.cards.show', $item->product_id);
                 }
@@ -624,8 +638,8 @@
                 <a href="{{ $cardUrl }}" class="block">
                     <div class="aspect-[245/342] bg-black/50 relative">
                         @if($displayImage)
-                        <img src="{{ $displayImage }}" alt="{{ $cardName }}" class="w-full h-full object-cover" @if(!$isTcgdex && $card->image_url) onerror="this.src='{{ $card->image_url }}'" @endif>
-                        @if(!$isTcgdex && $card->hd_image_url)
+                        <img src="{{ $displayImage }}" alt="{{ $cardName }}" class="w-full h-full object-cover" @if($isTcgcsv && isset($card->image_url)) onerror="this.src='{{ $card->image_url }}'" @endif>
+                        @if($isTcgcsv && isset($card->hd_image_url) && $card->hd_image_url)
                             <div class="absolute top-2 right-2">
                                 <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-blue-500/80 text-white rounded">
                                     HD
@@ -700,7 +714,7 @@
                         @endif
                         <form method="POST" action="{{ route('collection.photos.upload', $item) }}" enctype="multipart/form-data" class="relative">
                             @csrf
-                            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="hidden" id="photo-{{ $item->id }}" onchange="this.form.submit()">
+                            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="hidden" id="photo-{{ $item->id }}" onchange="showUploadLoader(this.form)">
                             <label for="photo-{{ $item->id }}" class="w-full text-xs px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded transition cursor-pointer flex items-center justify-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -1018,6 +1032,12 @@
             <div id="photoGalleryContent" class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <!-- Photos will be loaded here -->
             </div>
+            
+            <!-- Upload Photo Form (hidden) -->
+            <form id="photoUploadForm" enctype="multipart/form-data" class="hidden">
+                @csrf
+                <input type="file" id="photoUploadInput" name="photo" accept="image/*" onchange="handlePhotoUpload(event)">
+            </form>
         </div>
     </div>
 </div>
@@ -1141,47 +1161,130 @@ function escapeHtml(text) {
 // Photo modal functions
 const collectionPhotos = @json($photoData ?? []);
 
+let currentCollectionId = null;
+
 function openPhotoModal(collectionId) {
+    currentCollectionId = collectionId;
     const photos = collectionPhotos[collectionId] || [];
     const gallery = document.getElementById('photoGalleryContent');
     
-    if (photos.length === 0) {
-        gallery.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">No photos available</p>';
-    } else {
-        gallery.innerHTML = photos.map((photo, index) => `
-            <div class="relative group">
-                <div class="aspect-[245/342] bg-black/50 rounded-lg border border-white/20 overflow-hidden cursor-pointer hover:border-blue-400 transition photo-thumbnail" data-photo-url="${photo.path}" data-index="${index}">
-                    <img src="${photo.path}" alt="Card photo" class="w-full h-full object-contain">
-                </div>
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
-                    <form method="POST" action="/collection/photos/${photo.id}" onsubmit="return confirm('Delete this photo?');" class="inline">
-                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="p-1 bg-red-600/80 hover:bg-red-600 rounded text-white text-xs">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">${photo.uploaded_at}</p>
+    // Build photo grid HTML
+    let photosHTML = photos.map((photo, index) => `
+        <div class="relative group">
+            <div class="aspect-[245/342] bg-black/50 rounded-lg border border-white/20 overflow-hidden cursor-pointer hover:border-blue-400 transition photo-thumbnail" data-photo-url="${photo.path}" data-index="${index}">
+                <img src="${photo.path}" alt="Card photo" class="w-full h-full object-contain">
             </div>
-        `).join('');
-        
-        // Add click listeners to photo thumbnails
-        document.querySelectorAll('.photo-thumbnail').forEach(thumb => {
-            thumb.addEventListener('click', function() {
-                const photoUrl = this.getAttribute('data-photo-url');
-                openLightbox(photoUrl);
-            });
+            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation()">
+                <form method="POST" action="/collection/photos/${photo.id}" onsubmit="return confirm('Delete this photo?');" class="inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="p-1 bg-red-600/80 hover:bg-red-600 rounded text-white text-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">${photo.uploaded_at}</p>
+        </div>
+    `).join('');
+    
+    // Add "Add Photo" button
+    photosHTML += `
+        <div class="relative group">
+            <button onclick="document.getElementById('photoUploadInput').click()" 
+                    class="aspect-[245/342] w-full bg-black/30 border-2 border-dashed border-white/20 rounded-lg hover:border-blue-400 hover:bg-black/50 transition flex flex-col items-center justify-center gap-3 text-gray-400 hover:text-blue-400">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span class="text-sm font-medium">Add Photo</span>
+            </button>
+        </div>
+    `;
+    
+    gallery.innerHTML = photosHTML || '<p class="text-gray-400 col-span-full text-center py-8">No photos available</p>';
+    
+    // Add click listeners to photo thumbnails
+    document.querySelectorAll('.photo-thumbnail').forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            const photoUrl = this.getAttribute('data-photo-url');
+            openLightbox(photoUrl);
         });
-    }
+    });
     
     document.getElementById('photoModal').classList.remove('hidden');
 }
 
 function closePhotoModal() {
     document.getElementById('photoModal').classList.add('hidden');
+    currentCollectionId = null;
+}
+
+async function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file || !currentCollectionId) return;
+    
+    // Show loading overlay
+    const gallery = document.getElementById('photoGalleryContent');
+    const originalHTML = gallery.innerHTML;
+    
+    gallery.innerHTML = `
+        <div class="col-span-full flex flex-col items-center justify-center py-12">
+            <svg class="animate-spin w-12 h-12 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-white font-medium">Uploading photo...</p>
+            <p class="text-gray-400 text-sm mt-1">Please wait</p>
+        </div>
+    `;
+    
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('_token', '{{ csrf_token() }}');
+    
+    try {
+        const response = await fetch(`/collection/${currentCollectionId}/photos`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success message
+            gallery.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-12">
+                    <svg class="w-16 h-16 text-green-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-white font-medium">Photo uploaded successfully!</p>
+                    <p class="text-gray-400 text-sm mt-1">Refreshing...</p>
+                </div>
+            `;
+            // Reload after 1 second
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            // Show error and restore original content
+            gallery.innerHTML = originalHTML;
+            alert(data.message || 'Error uploading photo');
+            // Re-attach event listeners
+            openPhotoModal(currentCollectionId);
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        gallery.innerHTML = originalHTML;
+        alert('Error uploading photo. Please try again.');
+        // Re-attach event listeners
+        openPhotoModal(currentCollectionId);
+    }
+    
+    // Reset file input
+    event.target.value = '';
 }
 
 function openLightbox(imagePath) {
@@ -1222,5 +1325,31 @@ function openLightbox(imagePath) {
 function closeLightbox() {
     document.getElementById('lightboxModal').classList.add('hidden');
 }
+
+// Show upload loader for traditional form submissions
+function showUploadLoader(form) {
+    // Show overlay
+    const overlay = document.getElementById('uploadLoadingOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+    }
+    // Submit form
+    form.submit();
+}
 </script>
+
+<!-- Upload Loading Overlay -->
+<div id="uploadLoadingOverlay" class="hidden fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center">
+    <div class="bg-[#161615] border border-white/15 rounded-xl p-8 max-w-sm mx-4">
+        <div class="flex flex-col items-center">
+            <svg class="animate-spin w-16 h-16 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-white font-semibold text-lg mb-2">Uploading Photo</p>
+            <p class="text-gray-400 text-sm text-center">Please wait while we upload your photo...</p>
+        </div>
+    </div>
+</div>
+
 @endsection

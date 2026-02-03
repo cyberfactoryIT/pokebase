@@ -121,10 +121,21 @@
                         </div>
                         @php
                             $catalogBackend = catalog_backend();
-                            $userDecks = Auth::user()->decks()
+                            $currentGameNav = $currentGame ?? null;
+                            
+                            $userDecksQuery = Auth::user()->decks();
+                            
+                            // Filter by current game
+                            if ($currentGameNav) {
+                                $userDecksQuery->where('game_id', $currentGameNav->id);
+                            }
+                            
+                            $userDecks = $userDecksQuery
                                 ->with(['deckCards' => function($query) use ($catalogBackend) {
                                     if ($catalogBackend === 'tcgdex') {
                                         $query->whereNotNull('tcgdex_card_id');
+                                    } elseif ($catalogBackend === 'cmapi') {
+                                        $query->whereNotNull('cmapi_card_id');
                                     } else {
                                         $query->whereNotNull('product_id');
                                     }

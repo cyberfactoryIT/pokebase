@@ -30,8 +30,10 @@ return [
     
     // Quick Add Card
     'quick_add_card' => 'Aggiungi Carta Veloce',
+    'quick_search_card' => 'Ricerca Rapida Carte',
     'search_card' => 'Cerca carta',
     'type_card_name' => 'Digita il nome della carta...',
+    'search_hint' => 'Cerca una carta per visualizzarne i dettagli',
     'quantity' => 'Quantità',
     'condition' => 'Condizione',
     'condition_mint' => 'Mint (M)',

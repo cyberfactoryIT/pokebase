@@ -10,7 +10,7 @@
             $price = $item->cached_price ?? $card->price_eur ?? 0;
             return $price * $item->quantity;
         })
-        ->take(5);
+        ->take(4);
 @endphp
 
 @if($topCards && $topCards->isNotEmpty())

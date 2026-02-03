@@ -178,24 +178,51 @@ class TcgItemInteractionController extends Controller
         $user = Auth::user();
         $catalogBackend = catalog_backend();
 
-        $query = $user->likedProducts()
-            ->with(['group', 'prices', 'rapidapiCard'])
-            ->orderBy('user_likes.created_at', 'desc');
-
-        if ($currentGame) {
-            $query->where('tcgcsv_products.game_id', $currentGame->id);
-        }
-
-        // Filter by catalog backend: only show cards from current backend
+        // Get likes based on current backend
         if ($catalogBackend === 'tcgdex') {
-            $query->whereNotNull('user_likes.tcgdex_card_id');
+            // TCGDEX backend
+            $query = \App\Models\UserLike::where('user_id', $user->id)
+                ->whereNotNull('tcgdex_card_id')
+                ->with(['tcgdexCard.set'])
+                ->orderBy('created_at', 'desc');
+
+            if ($currentGame) {
+                $query->whereHas('tcgdexCard.set', function($q) use ($currentGame) {
+                    $q->where('game_id', $currentGame->id);
+                });
+            }
+
+            $likedProducts = $query->paginate(50);
+
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI backend
+            $query = \App\Models\UserLike::where('user_id', $user->id)
+                ->whereNotNull('cmapi_card_id')
+                ->with('cmapiCard')
+                ->orderBy('created_at', 'desc');
+
+            if ($currentGame) {
+                $query->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where('game', $currentGame->code);
+                });
+            }
+
+            $likedProducts = $query->paginate(50);
+
         } else {
-            $query->whereNotNull('user_likes.product_id');
+            // TCGCSV backend (default)
+            $query = $user->likedProducts()
+                ->with(['group', 'prices', 'rapidapiCard'])
+                ->orderBy('user_likes.created_at', 'desc');
+
+            if ($currentGame) {
+                $query->where('tcgcsv_products.game_id', $currentGame->id);
+            }
+
+            $likedProducts = $query->paginate(50);
         }
 
-        $likedProducts = $query->paginate(50);
-
-        return view('tcg.interactions.likes', compact('likedProducts', 'currentGame'));
+        return view('tcg.interactions.likes', compact('likedProducts', 'currentGame', 'catalogBackend'));
     }
 
     /**
@@ -207,24 +234,51 @@ class TcgItemInteractionController extends Controller
         $user = Auth::user();
         $catalogBackend = catalog_backend();
 
-        $query = $user->wishlistProducts()
-            ->with(['group', 'prices', 'rapidapiCard'])
-            ->orderBy('user_wishlist_items.created_at', 'desc');
-
-        if ($currentGame) {
-            $query->where('tcgcsv_products.game_id', $currentGame->id);
-        }
-
-        // Filter by catalog backend: only show cards from current backend
+        // Get wishlist based on current backend
         if ($catalogBackend === 'tcgdex') {
-            $query->whereNotNull('user_wishlist_items.tcgdex_card_id');
+            // TCGDEX backend
+            $query = \App\Models\UserWishlistItem::where('user_id', $user->id)
+                ->whereNotNull('tcgdex_card_id')
+                ->with(['tcgdexCard.set'])
+                ->orderBy('created_at', 'desc');
+
+            if ($currentGame) {
+                $query->whereHas('tcgdexCard.set', function($q) use ($currentGame) {
+                    $q->where('game_id', $currentGame->id);
+                });
+            }
+
+            $wishlistProducts = $query->paginate(50);
+
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI backend
+            $query = \App\Models\UserWishlistItem::where('user_id', $user->id)
+                ->whereNotNull('cmapi_card_id')
+                ->with('cmapiCard')
+                ->orderBy('created_at', 'desc');
+
+            if ($currentGame) {
+                $query->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where('game', $currentGame->code);
+                });
+            }
+
+            $wishlistProducts = $query->paginate(50);
+
         } else {
-            $query->whereNotNull('user_wishlist_items.product_id');
+            // TCGCSV backend (default)
+            $query = $user->wishlistProducts()
+                ->with(['group', 'prices', 'rapidapiCard'])
+                ->orderBy('user_wishlist_items.created_at', 'desc');
+
+            if ($currentGame) {
+                $query->where('tcgcsv_products.game_id', $currentGame->id);
+            }
+
+            $wishlistProducts = $query->paginate(50);
         }
 
-        $wishlistProducts = $query->paginate(50);
-
-        return view('tcg.interactions.wishlist', compact('wishlistProducts', 'currentGame'));
+        return view('tcg.interactions.wishlist', compact('wishlistProducts', 'currentGame', 'catalogBackend'));
     }
 
     /**
@@ -236,24 +290,51 @@ class TcgItemInteractionController extends Controller
         $user = Auth::user();
         $catalogBackend = catalog_backend();
 
-        $query = $user->watchedProducts()
-            ->with(['group', 'prices', 'rapidapiCard'])
-            ->orderBy('user_watch_items.created_at', 'desc');
-
-        if ($currentGame) {
-            $query->where('tcgcsv_products.game_id', $currentGame->id);
-        }
-
-        // Filter by catalog backend: only show cards from current backend
+        // Get watch list based on current backend
         if ($catalogBackend === 'tcgdex') {
-            $query->whereNotNull('user_watch_items.tcgdex_card_id');
+            // TCGDEX backend
+            $query = \App\Models\UserWatchItem::where('user_id', $user->id)
+                ->whereNotNull('tcgdex_card_id')
+                ->with(['tcgdexCard.set'])
+                ->orderBy('created_at', 'desc');
+
+            if ($currentGame) {
+                $query->whereHas('tcgdexCard.set', function($q) use ($currentGame) {
+                    $q->where('game_id', $currentGame->id);
+                });
+            }
+
+            $watchedProducts = $query->paginate(50);
+
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI backend
+            $query = \App\Models\UserWatchItem::where('user_id', $user->id)
+                ->whereNotNull('cmapi_card_id')
+                ->with('cmapiCard')
+                ->orderBy('created_at', 'desc');
+
+            if ($currentGame) {
+                $query->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where('game', $currentGame->code);
+                });
+            }
+
+            $watchedProducts = $query->paginate(50);
+
         } else {
-            $query->whereNotNull('user_watch_items.product_id');
+            // TCGCSV backend (default)
+            $query = $user->watchedProducts()
+                ->with(['group', 'prices', 'rapidapiCard'])
+                ->orderBy('user_watch_items.created_at', 'desc');
+
+            if ($currentGame) {
+                $query->where('tcgcsv_products.game_id', $currentGame->id);
+            }
+
+            $watchedProducts = $query->paginate(50);
         }
 
-        $watchedProducts = $query->paginate(50);
-
-        return view('tcg.interactions.osservazione', compact('watchedProducts', 'currentGame'));
+        return view('tcg.interactions.osservazione', compact('watchedProducts', 'currentGame', 'catalogBackend'));
     }
 
     // ===== TCGDEX METHODS =====

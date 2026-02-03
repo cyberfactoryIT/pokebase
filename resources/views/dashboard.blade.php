@@ -70,11 +70,11 @@
 
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
 
-            <!-- 2 Column Layout: Left (66%) stacked Quick Add + Recent, Right (33%) Top Cards -->
+            <!-- 2 Column Layout: Left (66%) stacked Quick Search + Recent + Expansions, Right (33%) Top Cards -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Left Column: Quick Add + Recent Additions stacked (2/3 width) -->
+                <!-- Left Column: Quick Search + Recent Additions + Featured Expansions stacked (2/3 width) -->
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- Quick Add Card Form -->
+                    <!-- Quick Search Card -->
                     @include('dashboard.quick-add')
 
                     <!-- Recent Additions -->
@@ -84,6 +84,15 @@
                         @include('dashboard.cmapi.recent-additions')
                     @else
                         @include('dashboard.tcgcsv.recent-additions')
+                    @endif
+
+                    <!-- Featured Expansions Carousel -->
+                    @if($catalogBackend === 'tcgdex')
+                        @include('dashboard.tcgdex.featured-expansions')
+                    @elseif($catalogBackend === 'cmapi')
+                        @include('dashboard.cmapi.featured-expansions')
+                    @else
+                        @include('dashboard.tcgcsv.featured-expansions')
                     @endif
                 </div>
 
@@ -98,15 +107,6 @@
                     @endif
                 </div>
             </div>
-
-            <!-- Featured Expansions Carousel -->
-            @if($catalogBackend === 'tcgdex')
-                @include('dashboard.tcgdex.featured-expansions')
-            @elseif($catalogBackend === 'cmapi')
-                @include('dashboard.cmapi.featured-expansions')
-            @else
-                @include('dashboard.tcgcsv.featured-expansions')
-            @endif
 
             <!-- Missing Cards (Full Width) -->
             @if($catalogBackend === 'tcgdex')

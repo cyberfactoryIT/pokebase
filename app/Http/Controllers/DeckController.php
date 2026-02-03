@@ -18,15 +18,24 @@ class DeckController extends Controller
     /**
      * Display a listing of user's decks
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $catalogBackend = catalog_backend();
+        $currentGame = $request->attributes->get('currentGame');
         
-        $decks = Deck::where('user_id', Auth::id())
-            ->with(['deckCards' => function($query) use ($catalogBackend) {
+        $query = Deck::where('user_id', Auth::id());
+        
+        // Filter by current game
+        if ($currentGame) {
+            $query->where('game_id', $currentGame->id);
+        }
+        
+        $decks = $query->with(['deckCards' => function($query) use ($catalogBackend) {
                 // Filter by catalog backend: only show cards from current backend
                 if ($catalogBackend === 'tcgdex') {
                     $query->whereNotNull('tcgdex_card_id');
+                } elseif ($catalogBackend === 'cmapi') {
+                    $query->whereNotNull('cmapi_card_id');
                 } else {
                     $query->whereNotNull('product_id');
                 }
@@ -68,10 +77,12 @@ class DeckController extends Controller
             'description' => 'nullable|string|max:1000',
         ]);
 
-        // For now, default to Pokémon game (ID 1)
+        // Get current game
+        $currentGame = $request->attributes->get('currentGame');
+        
         $deck = Deck::create([
             'user_id' => Auth::id(),
-            'game_id' => 1,
+            'game_id' => $currentGame ? $currentGame->id : 1,
             'name' => $validated['name'],
             'format' => $validated['format'] ?? null,
             'description' => $validated['description'] ?? null,
@@ -84,7 +95,7 @@ class DeckController extends Controller
     /**
      * Display the specified deck
      */
-    public function show(Deck $deck): View
+    public function show(Request $request, Deck $deck): View
     {
         // Authorization check
         if ($deck->user_id !== Auth::id()) {
@@ -92,12 +103,15 @@ class DeckController extends Controller
         }
 
         $catalogBackend = catalog_backend();
+        $currentGame = $request->attributes->get('currentGame');
 
         $deck->load([
             'deckCards' => function($query) use ($catalogBackend) {
                 // Filter by catalog backend: only show cards from current backend
                 if ($catalogBackend === 'tcgdex') {
                     $query->whereNotNull('tcgdex_card_id');
+                } elseif ($catalogBackend === 'cmapi') {
+                    $query->whereNotNull('cmapi_card_id');
                 } else {
                     $query->whereNotNull('product_id');
                 }
@@ -108,14 +122,16 @@ class DeckController extends Controller
                 $query->latest('snapshot_at')->limit(1);
             },
             'deckCards.card.rapidapiCard',
-            'deckCards.card.cardmarketProduct.latestPriceQuote'
+            'deckCards.card.cardmarketProduct.latestPriceQuote',
+            'deckCards.cmapiCard.set',
+            'deckCards.tcgdexCard.set'
         ]);
 
         // Calculate deck statistics
         $stats = $this->getDeckStats($deck);
         $topStats = $this->getDeckTopStats($deck);
 
-        return view('decks.show', compact('deck', 'stats', 'topStats'));
+        return view('decks.show', compact('deck', 'stats', 'topStats', 'catalogBackend', 'currentGame'));
     }
 
     /**
@@ -598,6 +614,12 @@ class DeckController extends Controller
 
         // Authorization: must be premium
         if (!Gate::allows('uploadCardPhotos')) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('photos.upload.not_allowed.title')
+                ], 403);
+            }
             return back()->with('error', __('photos.upload.not_allowed.title'));
         }
 
@@ -619,6 +641,15 @@ class DeckController extends Controller
             'mime_type' => $file->getMimeType(),
             'size_bytes' => $file->getSize(),
         ]);
+
+        // Return JSON for AJAX requests, redirect for form submissions
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => __('photos.upload.success'),
+                'photo' => $photo
+            ]);
+        }
 
         return back()->with('success', __('photos.upload.success'));
     }

@@ -2,8 +2,10 @@
 
 return [
     // Navigation
+    'back' => 'Tilbage',
     'back_to_sets' => 'Tilbage til sæt',
     'back_to_set' => 'Tilbage til :set',
+    'view_set' => 'Se sæt :set',
 
     // Sets page
     'no_sets_found' => 'Ingen sæt fundet.',
@@ -43,8 +45,11 @@ return [
 
     // Actions
     'like' => 'Synes godt om',
+    'unlike' => 'Fjern synes godt om',
     'wishlist' => 'Ønskeliste',
+    'in_wishlist' => 'På ønskeliste',
     'watch' => 'Se',
+    'watching' => 'Ser',
     'add_to_collection' => 'Tilføj til Samling',
     'add_to_deck' => 'Tilføj til Deck',
 

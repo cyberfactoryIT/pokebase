@@ -149,7 +149,7 @@ class DashboardController extends Controller
                 ->get();
         }
         
-        // Get top 5 most valuable cards in collection
+        // Get top 4 most valuable cards in collection
         if ($catalogBackend === 'tcgdex') {
             $topCards = UserCollection::where('user_id', Auth::id())
                 ->whereNotNull('tcgdex_card_id')
@@ -159,7 +159,7 @@ class DashboardController extends Controller
                 })
                 ->with('tcgdexCard')
                 ->orderByDesc('cached_price')
-                ->limit(5)
+                ->limit(4)
                 ->get();
         } else {
             $topCards = UserCollection::where('user_id', Auth::id())
@@ -214,7 +214,7 @@ class DashboardController extends Controller
                     }
                     return 0;
                 })
-                ->take(5);
+                ->take(4);
         }
         
         // Calculate total collection value (in EUR base)
