@@ -373,14 +373,78 @@
                     <form method="GET" action="{{ route('collection.index') }}">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-semibold text-white">Filters</h2>
-                            @if(request()->hasAny(['sort', 'letter', 'set', 'rarity', 'min_price', 'max_price']))
-                                <a href="{{ route('collection.index') }}" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                    Clear all filters
-                                </a>
-                            @endif
+                            <div class="flex items-center gap-3">
+                                @if(request()->hasAny(['sort', 'letter', 'set', 'rarity', 'min_price', 'max_price']))
+                                    <!-- Add to Deck Button -->
+                                    <div x-data="{ addToDeckOpen: false }" class="relative">
+                                        <button type="button" @click="addToDeckOpen = !addToDeckOpen" 
+                                                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                            Add to Deck
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+                                        
+                                        <!-- Dropdown -->
+                                        <div x-show="addToDeckOpen" @click.away="addToDeckOpen = false" x-cloak
+                                             class="absolute right-0 mt-2 w-64 bg-[#1a1a19] border border-white/20 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                                            <div class="p-2">
+                                                @php
+                                                    $userDecksForAdd = Auth::user()->decks()
+                                                        ->where('game_id', $currentGame->id ?? null)
+                                                        ->with('deckCards')
+                                                        ->latest()
+                                                        ->get();
+                                                @endphp
+                                                
+                                                @if($userDecksForAdd->isEmpty())
+                                                    <p class="px-3 py-2 text-sm text-gray-400">No decks available</p>
+                                                @else
+                                                    @foreach($userDecksForAdd as $userDeck)
+                                                        <button type="button" onclick="addFilteredCardsToDeck({{ $userDeck->id }}, '{{ addslashes($userDeck->name) }}')"
+                                                                class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded transition flex items-center justify-between group">
+                                                            <span class="truncate">{{ $userDeck->name }}</span>
+                                                            <span class="text-xs text-gray-500 group-hover:text-gray-400">({{ $userDeck->deckCards->count() }} cards)</span>
+                                                        </button>
+                                                    @endforeach
+                                                @endif
+                                                
+                                                <!-- Create New Deck -->
+                                                <div class="border-t border-white/10 mt-2 pt-2">
+                                                    @if(Auth::user()->canCreateAnotherDeck())
+                                                        <button type="button" onclick="createDeckAndAddFilteredCards()"
+                                                                class="w-full text-left px-3 py-2 text-sm text-blue-400 hover:bg-white/10 hover:text-blue-300 rounded transition flex items-center gap-2">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                            </svg>
+                                                            Create New Deck
+                                                        </button>
+                                                    @else
+                                                        <a href="{{ route('profile.subscription') }}"
+                                                           class="block px-3 py-2 text-sm text-orange-400 hover:bg-white/10 hover:text-orange-300 rounded transition">
+                                                            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                            </svg>
+                                                            Upgrade to create more decks
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Clear Filters -->
+                                    <a href="{{ route('collection.index') }}" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                        Clear all filters
+                                    </a>
+                                @endif
+                            </div>
                         </div>
 
                         <!-- Active Filters -->
@@ -1335,6 +1399,127 @@ function showUploadLoader(form) {
     }
     // Submit form
     form.submit();
+}
+
+// Add filtered cards to deck
+async function addFilteredCardsToDeck(deckId, deckName) {
+    if (!confirm(`Add all filtered cards to "${deckName}"?`)) {
+        return;
+    }
+    
+    try {
+        // Show loading
+        const loadingOverlay = document.getElementById('uploadLoadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.querySelector('p.text-lg').textContent = 'Adding Cards to Deck';
+            loadingOverlay.querySelector('p.text-sm').textContent = `Adding filtered cards to ${deckName}...`;
+            loadingOverlay.classList.remove('hidden');
+        }
+        
+        // Get current filters (only non-null values)
+        const params = new URLSearchParams(window.location.search);
+        const filters = {};
+        
+        if (params.get('letter')) filters.letter = params.get('letter');
+        if (params.get('set')) filters.set = params.get('set');
+        if (params.get('rarity')) filters.rarity = params.get('rarity');
+        if (params.get('min_price')) filters.min_price = params.get('min_price');
+        if (params.get('max_price')) filters.max_price = params.get('max_price');
+        if (params.get('sort')) filters.sort = params.get('sort');
+        
+        const response = await fetch(`/api/collection/add-filtered-to-deck`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                deck_id: deckId,
+                filters: filters
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
+        
+        if (response.ok && data.success) {
+            alert(`Successfully added ${data.cards_added} card(s) to ${deckName}!`);
+            window.location.href = `/decks/${deckId}`;
+        } else {
+            alert(data.message || 'Failed to add cards to deck');
+        }
+    } catch (error) {
+        console.error('Error adding cards to deck:', error);
+        const loadingOverlay = document.getElementById('uploadLoadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
+        alert('Failed to add cards to deck');
+    }
+}
+
+// Create new deck and add filtered cards
+async function createDeckAndAddFilteredCards() {
+    const deckName = prompt('Enter deck name:');
+    if (!deckName) return;
+    
+    try {
+        // Show loading
+        const loadingOverlay = document.getElementById('uploadLoadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.querySelector('p.text-lg').textContent = 'Creating Deck';
+            loadingOverlay.querySelector('p.text-sm').textContent = 'Creating new deck and adding filtered cards...';
+            loadingOverlay.classList.remove('hidden');
+        }
+        
+        // Get current filters (only non-null values)
+        const params = new URLSearchParams(window.location.search);
+        const filters = {};
+        
+        if (params.get('letter')) filters.letter = params.get('letter');
+        if (params.get('set')) filters.set = params.get('set');
+        if (params.get('rarity')) filters.rarity = params.get('rarity');
+        if (params.get('min_price')) filters.min_price = params.get('min_price');
+        if (params.get('max_price')) filters.max_price = params.get('max_price');
+        if (params.get('sort')) filters.sort = params.get('sort');
+        
+        const response = await fetch('/api/collection/create-deck-with-filtered', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                deck_name: deckName,
+                filters: filters
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
+        
+        if (response.ok && data.success) {
+            alert(`Deck "${deckName}" created with ${data.cards_added} card(s)!`);
+            window.location.href = `/decks/${data.deck_id}`;
+        } else {
+            alert(data.message || 'Failed to create deck');
+        }
+    } catch (error) {
+        console.error('Error creating deck:', error);
+        const loadingOverlay = document.getElementById('uploadLoadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
+        alert('Failed to create deck');
+    }
 }
 </script>
 

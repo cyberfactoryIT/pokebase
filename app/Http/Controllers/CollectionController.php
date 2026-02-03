@@ -1321,4 +1321,284 @@ class CollectionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Add filtered collection cards to deck
+     */
+    public function addFilteredToDeck(Request $request)
+    {
+        $validated = $request->validate([
+            'deck_id' => 'required|integer|exists:decks,id',
+            'filters' => 'array',
+        ]);
+
+        $deck = \App\Models\Deck::findOrFail($validated['deck_id']);
+        
+        // Authorization check
+        if ($deck->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access to this deck.',
+            ], 403);
+        }
+
+        $filters = $validated['filters'] ?? [];
+        $catalogBackend = catalog_backend();
+        $currentGame = $request->attributes->get('currentGame');
+        
+        Log::info('Add filtered to deck', [
+            'deck_id' => $deck->id,
+            'filters' => $filters,
+            'catalogBackend' => $catalogBackend,
+            'currentGame' => $currentGame?->id,
+        ]);
+        
+        // Get filtered collection (same logic as index method)
+        $query = UserCollection::where('user_id', Auth::id());
+        
+        // Apply backend filter
+        if ($catalogBackend === 'tcgdex') {
+            $query->whereNotNull('tcgdex_card_id')
+                ->with('tcgdexCard');
+        } elseif ($catalogBackend === 'cmapi') {
+            $query->whereNotNull('cmapi_card_id')
+                ->with('cmapiCard');
+        } else {
+            $query->whereNotNull('product_id')
+                ->with(['card.group', 'card.rapidapiCard']);
+        }
+        
+        // Apply user filters
+        if (!empty($filters['letter'])) {
+            if ($catalogBackend === 'tcgdex') {
+                $query->whereHas('tcgdexCard', function($q) use ($filters) {
+                    $q->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(name, "$.en")) LIKE ?', [$filters['letter'] . '%']);
+                });
+            } elseif ($catalogBackend === 'cmapi') {
+                $query->whereHas('cmapiCard', function($q) use ($filters) {
+                    $q->where('name', 'LIKE', $filters['letter'] . '%');
+                });
+            } else {
+                $query->whereHas('card', function($q) use ($filters) {
+                    $q->where('name', 'LIKE', $filters['letter'] . '%');
+                });
+            }
+        }
+        
+        if (!empty($filters['set'])) {
+            if ($catalogBackend === 'tcgdex') {
+                $query->whereHas('tcgdexCard', function($q) use ($filters) {
+                    $q->where('tcgdx_set_id', $filters['set']);
+                });
+            } elseif ($catalogBackend === 'cmapi') {
+                $query->whereHas('cmapiCard', function($q) use ($filters) {
+                    $q->where('set_name', $filters['set']);
+                });
+            } else {
+                $query->whereHas('card.group', function($q) use ($filters) {
+                    $q->where('name', $filters['set']);
+                });
+            }
+        }
+        
+        if (!empty($filters['rarity'])) {
+            if ($catalogBackend === 'tcgdex') {
+                $query->whereHas('tcgdexCard', function($q) use ($filters) {
+                    $q->where('rarity', $filters['rarity']);
+                });
+            } elseif ($catalogBackend === 'cmapi') {
+                $query->whereHas('cmapiCard', function($q) use ($filters) {
+                    $q->where('rarity', $filters['rarity']);
+                });
+            } else {
+                $query->whereHas('card', function($q) use ($filters) {
+                    $q->where('rarity', $filters['rarity']);
+                });
+            }
+        }
+        
+        // Apply price range filter (Premium only)
+        $minPrice = isset($filters['min_price']) ? (float)$filters['min_price'] : null;
+        $maxPrice = isset($filters['max_price']) ? (float)$filters['max_price'] : null;
+        
+        if (($minPrice !== null || $maxPrice !== null)) {
+            $canSeePrices = Gate::allows('seePrices');
+            
+            Log::info('Price filter check', [
+                'minPrice' => $minPrice,
+                'maxPrice' => $maxPrice,
+                'canSeePrices' => $canSeePrices,
+                'userTier' => Auth::user()->subscription_tier,
+            ]);
+            
+            if ($canSeePrices) {
+                $user = Auth::user();
+                $preferredCurrency = $user->preferred_currency ?? 'EUR';
+                
+                // Get all collection IDs that match the price range
+                $priceFilterQuery = UserCollection::where('user_id', Auth::id())
+                    ->whereNotNull('cached_price')
+                    ->where('cached_price', '>', 0)
+                    ->select('id', 'cached_price', 'cached_price_currency');
+                
+                // Apply backend filter to price query
+                if ($catalogBackend === 'tcgdex') {
+                    $priceFilterQuery->whereNotNull('tcgdex_card_id');
+                } elseif ($catalogBackend === 'cmapi') {
+                    $priceFilterQuery->whereNotNull('cmapi_card_id');
+                } else {
+                    $priceFilterQuery->whereNotNull('product_id');
+                    if ($currentGame) {
+                        $priceFilterQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+                    }
+                }
+                
+                $priceItems = $priceFilterQuery->get();
+                
+                Log::info('Price items before filtering', [
+                    'total_items_with_price' => $priceItems->count(),
+                    'preferredCurrency' => $preferredCurrency,
+                ]);
+                
+                $validIds = $priceItems->filter(function($item) use ($minPrice, $maxPrice, $preferredCurrency) {
+                    $currency = $item->cached_price_currency ?? 'EUR';
+                    $priceInPreferred = \App\Services\CurrencyService::convert($item->cached_price, $currency, $preferredCurrency);
+                    
+                    $matchesMin = $minPrice === null || $priceInPreferred >= $minPrice;
+                    $matchesMax = $maxPrice === null || $priceInPreferred <= $maxPrice;
+                    
+                    return $matchesMin && $matchesMax;
+                })->pluck('id')->toArray();
+                
+                Log::info('Price filter result', [
+                    'valid_ids_count' => count($validIds),
+                ]);
+                
+                if (!empty($validIds)) {
+                    $query->whereIn('user_collection.id', $validIds);
+                } else {
+                    // No items match the price filter, return empty result
+                    $query->whereRaw('1 = 0');
+                }
+            } else {
+                Log::warning('User tried to filter by price without premium access');
+            }
+        }
+        
+        $cards = $query->get();
+        $cardsAdded = 0;
+        
+        Log::info('Found cards to add', [
+            'count' => $cards->count(),
+        ]);
+        
+        foreach ($cards as $collectionItem) {
+            // Add to deck based on backend
+            if ($catalogBackend === 'tcgdex' && $collectionItem->tcgdex_card_id) {
+                $existing = \App\Models\DeckCard::where('deck_id', $deck->id)
+                    ->where('tcgdex_card_id', $collectionItem->tcgdex_card_id)
+                    ->first();
+                    
+                if (!$existing) {
+                    \App\Models\DeckCard::create([
+                        'deck_id' => $deck->id,
+                        'tcgdex_card_id' => $collectionItem->tcgdex_card_id,
+                        'quantity' => 1,
+                    ]);
+                    $cardsAdded++;
+                }
+            } elseif ($catalogBackend === 'cmapi' && $collectionItem->cmapi_card_id) {
+                $existing = \App\Models\DeckCard::where('deck_id', $deck->id)
+                    ->where('cmapi_card_id', $collectionItem->cmapi_card_id)
+                    ->first();
+                    
+                if (!$existing) {
+                    $card = $collectionItem->cmapiCard;
+                    \App\Models\DeckCard::create([
+                        'deck_id' => $deck->id,
+                        'cmapi_card_id' => $collectionItem->cmapi_card_id,
+                        'quantity' => 1,
+                        'cached_price' => $card->price_eur ?? null,
+                        'cached_price_currency' => 'EUR',
+                        'cached_price_updated_at' => $card->price_eur ? now() : null,
+                    ]);
+                    $cardsAdded++;
+                }
+            } else if ($collectionItem->product_id) {
+                $existing = \App\Models\DeckCard::where('deck_id', $deck->id)
+                    ->where('product_id', $collectionItem->product_id)
+                    ->first();
+                    
+                if (!$existing) {
+                    $card = $collectionItem->card;
+                    $price = $card->prices->first()->price ?? null;
+                    
+                    \App\Models\DeckCard::create([
+                        'deck_id' => $deck->id,
+                        'product_id' => $collectionItem->product_id,
+                        'quantity' => 1,
+                        'cached_price' => $price,
+                        'cached_price_currency' => 'USD',
+                        'cached_price_updated_at' => $price ? now() : null,
+                    ]);
+                    $cardsAdded++;
+                }
+            }
+        }
+        
+        Log::info('Cards added to deck', [
+            'deck_id' => $deck->id,
+            'cards_added' => $cardsAdded,
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'cards_added' => $cardsAdded,
+            'deck_id' => $deck->id,
+        ]);
+    }
+
+    /**
+     * Create deck and add filtered collection cards
+     */
+    public function createDeckWithFiltered(Request $request)
+    {
+        $validated = $request->validate([
+            'deck_name' => 'required|string|max:255',
+            'filters' => 'array',
+        ]);
+        
+        // Check if user can create another deck
+        if (!Auth::user()->canCreateAnotherDeck()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('decks/index.limit_reached'),
+            ], 403);
+        }
+        
+        $currentGame = $request->attributes->get('currentGame');
+        
+        // Create deck
+        $deck = \App\Models\Deck::create([
+            'user_id' => Auth::id(),
+            'game_id' => $currentGame ? $currentGame->id : 1,
+            'name' => $validated['deck_name'],
+        ]);
+        
+        // Add filtered cards to deck
+        $addRequest = new Request([
+            'deck_id' => $deck->id,
+            'filters' => $validated['filters'],
+        ]);
+        $addRequest->attributes->add(['currentGame' => $currentGame]);
+        
+        $result = $this->addFilteredToDeck($addRequest);
+        $resultData = $result->getData(true);
+        
+        return response()->json([
+            'success' => true,
+            'deck_id' => $deck->id,
+            'cards_added' => $resultData['cards_added'],
+        ]);
+    }
 }

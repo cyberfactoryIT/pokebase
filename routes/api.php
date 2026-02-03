@@ -90,6 +90,22 @@ Route::middleware(['web', 'auth'])->get('/user/popular-sets', [ExpansionControll
     ->name('api.user.popular-sets');
 
 /**
+ * Add filtered collection cards to deck
+ * POST /api/collection/add-filtered-to-deck
+ * Adds all cards matching current filters to specified deck
+ */
+Route::middleware(['web', 'auth'])->post('/collection/add-filtered-to-deck', [\App\Http\Controllers\CollectionController::class, 'addFilteredToDeck'])
+    ->name('api.collection.add-filtered-to-deck');
+
+/**
+ * Create deck and add filtered collection cards
+ * POST /api/collection/create-deck-with-filtered
+ * Creates new deck and adds all cards matching current filters
+ */
+Route::middleware(['web', 'auth'])->post('/collection/create-deck-with-filtered', [\App\Http\Controllers\CollectionController::class, 'createDeckWithFiltered'])
+    ->name('api.collection.create-deck-with-filtered');
+
+/**
  * Stripe Webhook endpoint
  * POST /api/stripe/webhook
  * Handles subscription events from Stripe (renewals, cancellations, failures)
