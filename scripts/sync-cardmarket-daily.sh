@@ -5,8 +5,10 @@
 
 set -e  # Exit on error
 
+# Get project root (parent of scripts directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT"
 
 LOG_FILE="storage/logs/cardmarket-sync-$(date +%Y%m%d).log"
 
