@@ -15,7 +15,14 @@ class SetCurrentGame
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Initialize with null to prevent undefined variable errors
+        $currentGame = null;
+        $availableGames = collect();
+        
         if (!Auth::check()) {
+            // Share empty values for guests
+            view()->share('currentGame', $currentGame);
+            view()->share('availableGames', $availableGames);
             return $next($request);
         }
 

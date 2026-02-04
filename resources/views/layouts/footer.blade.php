@@ -12,7 +12,7 @@
             @if(! auth()->user()->hasRole('superadmin'))
             <div class="relative" x-data="{ gameOpen: false }">
                 <button @click="gameOpen = !gameOpen" class="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition">
-                    @if($currentGame)
+                    @if(isset($currentGame) && $currentGame)
                         @if($currentGame->code === 'pokemon')
                             <img src="/images/logos/logo_pokemon.png" alt="{{ $currentGame->name }}" class="w-5 h-5 object-contain">
                         @elseif($currentGame->code === 'mtg')
@@ -30,7 +30,7 @@
                 </button>
                 
                 <div x-show="gameOpen" @click.away="gameOpen = false" x-cloak class="absolute bottom-full left-0 mb-2 w-64 bg-[#1a1a19] border border-white/20 rounded-lg shadow-xl z-50">
-                    @if($availableGames->isEmpty())
+                    @if(!isset($availableGames) || $availableGames->isEmpty())
                         <div class="px-4 py-6 text-center">
                             <p class="text-gray-400 text-sm mb-3">No games activated</p>
                             <a href="{{ route('profile.edit') }}" class="inline-block px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition">
