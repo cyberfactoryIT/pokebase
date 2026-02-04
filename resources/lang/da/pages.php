@@ -81,6 +81,7 @@ return [
     'pricing_header' => 'PRISER',
     'pricing_title' => 'Enkle, gennemsigtige priser',
     'pricing_subtitle' => 'Start gratis, skaler mens du vokser. Drevet af pålidelig fakturering.',
+    'pricing_currency_note' => 'Alle priser er vist i Danske Kroner (DKK)',
     'pricing_period' => 'md',
     'pricing_recommended' => 'ANBEFALET',
     

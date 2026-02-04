@@ -13,7 +13,7 @@ class CmapiInteractionController extends Controller
     /**
      * Toggle like on a CMAPI card
      */
-    public function toggleLike(Request $request, string $game, int $cardId): JsonResponse
+    public function toggleLike(Request $request, string $game, int $cardId)
     {
         $user = Auth::user();
         $card = CmapiCard::findOrFail($cardId);
@@ -51,27 +51,40 @@ class CmapiInteractionController extends Controller
                 ->where('cmapi_card_id', $card->cmapi_id)
                 ->count();
 
-            return response()->json([
-                'status' => $status,
-                'count' => $likesCount,
-                'message' => $status === 'liked' 
-                    ? __('tcg/interactions.like_liked') 
-                    : __('tcg/interactions.like_unliked'),
-            ]);
+            $message = $status === 'liked' 
+                ? __('tcg/interactions.like_liked') 
+                : __('tcg/interactions.like_unliked');
+
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'count' => $likesCount,
+                    'message' => $message,
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 
     /**
      * Toggle wishlist on a CMAPI card
      */
-    public function toggleWishlist(Request $request, string $game, int $cardId): JsonResponse
+    public function toggleWishlist(Request $request, string $game, int $cardId)
     {
         $user = Auth::user();
         $card = CmapiCard::findOrFail($cardId);
@@ -104,26 +117,39 @@ class CmapiInteractionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => $status,
-                'message' => $status === 'added'
-                    ? __('tcg/interactions.wishlist_added')
-                    : __('tcg/interactions.wishlist_removed'),
-            ]);
+            $message = $status === 'added'
+                ? __('tcg/interactions.wishlist_added')
+                : __('tcg/interactions.wishlist_removed');
+
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'message' => $message,
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 
     /**
      * Toggle watch on a CMAPI card
      */
-    public function toggleWatch(Request $request, string $game, int $cardId): JsonResponse
+    public function toggleWatch(Request $request, string $game, int $cardId)
     {
         $user = Auth::user();
         $card = CmapiCard::findOrFail($cardId);
@@ -156,19 +182,32 @@ class CmapiInteractionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => $status,
-                'message' => $status === 'watched'
-                    ? __('tcg/interactions.watch_watched')
-                    : __('tcg/interactions.watch_unwatched'),
-            ]);
+            $message = $status === 'watched'
+                ? __('tcg/interactions.watch_watched')
+                : __('tcg/interactions.watch_unwatched');
+
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'message' => $message,
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 }

@@ -16,7 +16,7 @@ class TcgItemInteractionController extends Controller
     /**
      * Toggle like on a product
      */
-    public function toggleLike(Request $request, int $productId): JsonResponse
+    public function toggleLike(Request $request, int $productId)
     {
         $user = Auth::user();
         $product = TcgcsvProduct::where('product_id', $productId)->firstOrFail();
@@ -54,25 +54,36 @@ class TcgItemInteractionController extends Controller
                 ->where('product_id', $productId)
                 ->count();
 
-            return response()->json([
-                'status' => $status,
-                'count' => $likesCount,
-                'message' => __('tcg/interactions.like_' . $status),
-            ]);
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'count' => $likesCount,
+                    'message' => __('tcg/interactions.like_' . $status),
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', __('tcg/interactions.like_' . $status));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 
     /**
      * Toggle wishlist on a product
      */
-    public function toggleWishlist(Request $request, int $productId): JsonResponse
+    public function toggleWishlist(Request $request, int $productId)
     {
         $user = Auth::user();
         $product = TcgcsvProduct::where('product_id', $productId)->firstOrFail();
@@ -105,24 +116,35 @@ class TcgItemInteractionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => $status,
-                'message' => __('tcg/interactions.wishlist_' . $status),
-            ]);
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'message' => __('tcg/interactions.wishlist_' . $status),
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', __('tcg/interactions.wishlist_' . $status));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 
     /**
      * Toggle watch on a product
      */
-    public function toggleWatch(Request $request, int $productId): JsonResponse
+    public function toggleWatch(Request $request, int $productId)
     {
         $user = Auth::user();
         $product = TcgcsvProduct::where('product_id', $productId)->firstOrFail();
@@ -155,17 +177,28 @@ class TcgItemInteractionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => $status,
-                'message' => __('tcg/interactions.watch_' . $status),
-            ]);
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'message' => __('tcg/interactions.watch_' . $status),
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', __('tcg/interactions.watch_' . $status));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 
@@ -342,7 +375,7 @@ class TcgItemInteractionController extends Controller
     /**
      * Toggle like on a TCGDEX card
      */
-    public function toggleLikeTcgdex(Request $request, string $cardId): JsonResponse
+    public function toggleLikeTcgdex(Request $request, string $cardId)
     {
         $user = Auth::user();
         $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
@@ -375,24 +408,35 @@ class TcgItemInteractionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => $status,
-                'message' => __('tcg/interactions.like_' . $status),
-            ]);
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'message' => __('tcg/interactions.like_' . $status),
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', __('tcg/interactions.like_' . $status));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 
     /**
      * Toggle wishlist on a TCGDEX card
      */
-    public function toggleWishlistTcgdex(Request $request, string $cardId): JsonResponse
+    public function toggleWishlistTcgdex(Request $request, string $cardId)
     {
         $user = Auth::user();
         $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
@@ -425,24 +469,35 @@ class TcgItemInteractionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => $status,
-                'message' => __('tcg/interactions.wishlist_' . $status),
-            ]);
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'message' => __('tcg/interactions.wishlist_' . $status),
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', __('tcg/interactions.wishlist_' . $status));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 
     /**
      * Toggle watch on a TCGDEX card
      */
-    public function toggleWatchTcgdex(Request $request, string $cardId): JsonResponse
+    public function toggleWatchTcgdex(Request $request, string $cardId)
     {
         $user = Auth::user();
         $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
@@ -475,17 +530,28 @@ class TcgItemInteractionController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'status' => $status,
-                'message' => __('tcg/interactions.watch_' . $status),
-            ]);
+            // Check if request expects JSON (AJAX)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => $status,
+                    'message' => __('tcg/interactions.watch_' . $status),
+                ]);
+            }
+
+            // Otherwise redirect back with message
+            return redirect()->back()->with('success', __('tcg/interactions.watch_' . $status));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => __('tcg/interactions.error_generic'),
-                'message' => $e->getMessage()
-            ], 500);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => __('tcg/interactions.error_generic'),
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', __('tcg/interactions.error_generic'));
         }
     }
 }

@@ -11,8 +11,8 @@ return [
     'order_summary' => 'Ordreoversigt',
     
     // Form Fields
-    'company_name' => 'Firmanavn',
-    'company_name_placeholder' => 'Dit Firma ApS',
+    'company_name' => 'Navn eller Firma',
+    'company_name_placeholder' => 'Dit navn eller firma',
     'billing_email' => 'Faktura Email',
     'billing_email_placeholder' => 'faktura@firma.dk',
     'vat_number' => 'CVR-nummer',

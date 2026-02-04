@@ -39,9 +39,10 @@ return [
     
     // Quick Stats
     'different_sets' => 'Set Differenti',
-    'with_notes' => 'Con Note',
+    'with_photos' => 'Con Foto',
     'duplicates' => 'Duplicati',
-    'avg_per_set' => 'Media per Set',
+    'foil_cards' => 'Carte Foil',
+    'rare_cards' => 'Carte Rare',
     
     // Timeline
     'collection_growth' => 'Crescita Collezione (Ultimi 6 Mesi)',

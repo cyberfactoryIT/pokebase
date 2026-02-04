@@ -81,7 +81,7 @@ return [
         'title' => 'Dati di Fatturazione',
         'subtitle' => 'Gestisci i tuoi dati di fatturazione e informazioni aziendali',
         'edit' => 'Modifica',
-        'company' => 'Azienda',
+        'company' => 'Nome o Azienda',
         'billing_email' => 'Email di Fatturazione',
         'vat' => 'Partita IVA',
         'country' => 'Paese',

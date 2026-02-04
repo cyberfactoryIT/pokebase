@@ -79,7 +79,7 @@ return [
         'title' => 'Faktureringsinformation',
         'subtitle' => 'Administrer dine faktureringsoplysninger og firmaoplysninger',
         'edit' => 'Rediger',
-        'company' => 'Firma',
+        'company' => 'Navn eller Firma',
         'billing_email' => 'Fakturerings E-mail',
         'vat' => 'Momsnummer',
         'country' => 'Land',

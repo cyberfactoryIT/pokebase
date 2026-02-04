@@ -73,6 +73,10 @@ Route::get('/superadmin/dashboard', [\App\Http\Controllers\Superadmin\DashboardC
     ->middleware(['auth'])
     ->name('superadmin.dashboard');
 
+Route::post('/superadmin/refresh-prices', [\App\Http\Controllers\Superadmin\DashboardController::class, 'refreshPrices'])
+    ->middleware(['auth'])
+    ->name('superadmin.refresh-prices');
+
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

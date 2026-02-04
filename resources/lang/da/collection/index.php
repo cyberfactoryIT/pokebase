@@ -40,9 +40,10 @@ return [
     // Quick Stats
     'collection_value' => 'Samlingens Værdi',
     'different_sets' => 'Forskellige Sæt',
-    'with_notes' => 'Med Noter',
+    'with_photos' => 'Med Foto',
     'duplicates' => 'Dubletter',
-    'avg_per_set' => 'Gns. pr. Sæt',
+    'foil_cards' => 'Foil Kort',
+    'rare_cards' => 'Sjældne Kort',
     'prices_from_cardmarket' => 'Priser fra Cardmarket (EUR)',
     
     // Timeline

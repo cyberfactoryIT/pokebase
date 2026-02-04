@@ -81,7 +81,7 @@ return [
         'title' => 'Billing Information',
         'subtitle' => 'Manage your billing details and company information',
         'edit' => 'Edit',
-        'company' => 'Company',
+        'company' => 'Name or Company',
         'billing_email' => 'Billing Email',
         'vat' => 'VAT Number',
         'country' => 'Country',

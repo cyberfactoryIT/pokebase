@@ -76,6 +76,8 @@ return [
     'pricing_period' => 'mo',
     'pricing_recommended' => 'RECOMMENDED',
     
+    'pricing_currency_note' => 'All prices are shown in Danish Kroner (DKK)',
+    
     // Basic Plan
     'pricing_basic_name' => 'Basic',
     'pricing_basic_desc' => 'For getting started',

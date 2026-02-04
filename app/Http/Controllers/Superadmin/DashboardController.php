@@ -16,7 +16,9 @@ use App\Models\UserCollection;
 use App\Models\DeckCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
 {
@@ -116,5 +118,32 @@ class DashboardController extends Controller
             'activeSubscriptions',
             'gameStats'
         ));
+    }
+    
+    /**
+     * Refresh cached prices for all cards in collections and decks
+     */
+    public function refreshPrices(Request $request): RedirectResponse
+    {
+        // Check superadmin role
+        $user = auth()->user();
+        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
+        if (!$user->hasRole('superadmin')) {
+            abort(403, 'Unauthorized. SuperAdmin access required.');
+        }
+        
+        try {
+            // Run the command
+            Artisan::call('prices:refresh', ['--force' => true]);
+            
+            $output = Artisan::output();
+            
+            return redirect()->route('superadmin.dashboard')
+                ->with('success', 'Prices refreshed successfully! ' . $output);
+        } catch (\Exception $e) {
+            return redirect()->route('superadmin.dashboard')
+                ->with('error', 'Error refreshing prices: ' . $e->getMessage());
+        }
     }
 }

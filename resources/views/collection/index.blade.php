@@ -746,7 +746,22 @@
                     </div>
                     <div class="flex items-center justify-between">
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-gray-400 text-xs">{{ __('collection/index.qty_label') }}: {{ $item->quantity }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-400 text-xs">{{ __('collection/index.qty_label') }}:</span>
+                                <div class="flex items-center gap-1 bg-black/30 rounded px-1.5 py-0.5">
+                                    <button onclick="updateQuantity({{ $item->id }}, -1, this)" 
+                                            class="text-gray-400 hover:text-white text-xs font-bold px-1 transition"
+                                            title="Decrease quantity">
+                                        −
+                                    </button>
+                                    <span class="text-white text-xs font-semibold min-w-[20px] text-center" id="qty-{{ $item->id }}">{{ $item->quantity }}</span>
+                                    <button onclick="updateQuantity({{ $item->id }}, 1, this)" 
+                                            class="text-gray-400 hover:text-white text-xs font-bold px-1 transition"
+                                            title="Increase quantity">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
                             @if(auth()->user()->isAdvanced() || auth()->user()->isPremium())
                                 @if($item->cached_price && $item->cached_price > 0)
                                     @php
@@ -960,7 +975,7 @@
 
                     <!-- Row 3: Quick Stats -->
                     <h3 class="text-lg font-semibold text-white">{{ __('stats_insights.section_labels.collection_overview') }}</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
                         <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
                             <div class="bg-blue-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                                 <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -974,11 +989,11 @@
                         <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
                             <div class="bg-purple-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                                 <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400 text-sm">{{ __('collection/index.with_notes') }}</p>
-                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['cards_with_notes'] }}</p>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.with_photos') }}</p>
+                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['cards_with_photos'] }}</p>
                         </div>
 
                         <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
@@ -992,13 +1007,23 @@
                         </div>
 
                         <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
-                            <div class="bg-yellow-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            <div class="bg-cyan-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400 text-sm">{{ __('collection/index.avg_per_set') }}</p>
-                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['total_sets'] > 0 ? round($stats['unique_cards'] / $detailedStats['total_sets'], 1) : 0 }}</p>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.foil_cards') }}</p>
+                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['foil_cards'] }}</p>
+                        </div>
+
+                        <div class="bg-[#161615] border border-white/15 rounded-xl p-6 text-center">
+                            <div class="bg-pink-500/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-400 text-sm">{{ __('collection/index.rare_cards') }}</p>
+                            <p class="text-white text-2xl font-bold mt-1">{{ $detailedStats['rare_cards'] }}</p>
                         </div>
                     </div>
 
@@ -1465,6 +1490,51 @@ function selectAllCards() {
         selectedCards.add(JSON.stringify({ collectionId, cardId, backend }));
     });
     updateSelectionBar();
+}
+
+async function updateQuantity(collectionId, change, button) {
+    const qtySpan = document.getElementById('qty-' + collectionId);
+    const currentQty = parseInt(qtySpan.textContent);
+    const newQty = currentQty + change;
+    
+    // Don't allow quantity below 1
+    if (newQty < 1) {
+        if (confirm('Remove this card from your collection?')) {
+            // Remove from collection
+            window.location.href = '/collection/' + collectionId + '/delete';
+        }
+        return;
+    }
+    
+    // Disable buttons during update
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/api/collection/' + collectionId + '/update-quantity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                quantity: newQty
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            qtySpan.textContent = newQty;
+        } else {
+            alert(data.message || 'Failed to update quantity');
+        }
+    } catch (error) {
+        console.error('Error updating quantity:', error);
+        alert('Failed to update quantity');
+    } finally {
+        button.disabled = false;
+    }
 }
 
 // Add selected cards to deck

@@ -392,6 +392,9 @@
                         {{ __('subscriptions.available_plans', [], 'Available Plans') }}
                     </h2>
                     <p class="text-gray-400">{{ __('subscriptions.available_plans_subtitle', [], 'Choose the plan that fits your needs') }}</p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        * {{ __('pages.pricing_currency_note') }}
+                    </p>
                 </div>
                 
                 <!-- Billing Period Toggle -->
@@ -418,7 +421,7 @@
                     $isCurrentPlan = strtolower($plan->name) === $currentTier;
                     $monthlyPrice = $plan->monthly_price_cents / 100;
                     $yearlyPrice = $plan->yearly_price_cents / 100;
-                    $currency = '€';
+                    $currency = $plan->currency === 'DKK' ? 'kr.' : '€';
                     $savings = $yearlyPrice > 0 ? round((1 - ($yearlyPrice / 12) / $monthlyPrice) * 100) : 0;
                     
                     // Determine if this is an upgrade or downgrade
@@ -535,16 +538,6 @@
                                 <i class="fas fa-arrow-up mr-2"></i>
                                 Upgrade to {{ $plan->name }}
                             </a>
-                        @elseif($isDowngrade)
-                            <form method="POST" action="{{ route('billing.confirmChangePlan') }}" onsubmit="return confirm('Are you sure you want to downgrade to {{ $plan->name }}? You will lose access to premium features.')">
-                                @csrf
-                                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                                <input type="hidden" name="billing_period" class="billing-period-input" value="monthly">
-                                <button type="submit" class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-gray-300 hover:text-white rounded-lg font-semibold transition">
-                                    <i class="fas fa-arrow-down mr-2"></i>
-                                    Downgrade to {{ $plan->name }}
-                                </button>
-                            </form>
                         @endif
                     </div>
                 </div>
@@ -663,11 +656,15 @@
                             <option value="">Choose a plan...</option>
                             @foreach($plans as $plan)
                                 @if($plan->name !== 'Free')
+                                    @php
+                                        $planCurrency = $plan->currency === 'DKK' ? 'kr.' : '€';
+                                    @endphp
                                     <option value="{{ $plan->id }}" 
                                             data-monthly="{{ number_format($plan->monthly_price_cents / 100, 2) }}" 
                                             data-yearly="{{ number_format($plan->yearly_price_cents / 100, 2) }}"
+                                            data-currency="{{ $planCurrency }}"
                                             {{ strtolower($plan->name) === $membershipStatus['tier'] ? 'disabled' : '' }}>
-                                        {{ $plan->name }} - €{{ number_format($plan->monthly_price_cents / 100, 2) }}/month
+                                        {{ $plan->name }} - {{ number_format($plan->monthly_price_cents / 100, 2) }} {{ $planCurrency }}/month
                                         {{ strtolower($plan->name) === $membershipStatus['tier'] ? '(Current)' : '' }}
                                     </option>
                                 @endif
@@ -709,9 +706,10 @@ document.addEventListener('DOMContentLoaded', function() {
         Array.from(planSelect.options).forEach(opt => {
             if (!opt.value) return;
             const price = period === 'yearly' ? opt.getAttribute('data-yearly') : opt.getAttribute('data-monthly');
+            const currency = opt.getAttribute('data-currency') || 'kr.';
             const planName = opt.textContent.split(' - ')[0];
             const current = opt.textContent.includes('(Current)') ? ' (Current)' : '';
-            opt.textContent = `${planName} - €${price}/${period === 'yearly' ? 'year' : 'month'}${current}`;
+            opt.textContent = `${planName} - ${price} ${currency}/${period === 'yearly' ? 'year' : 'month'}${current}`;
         });
     }
     

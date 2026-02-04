@@ -77,6 +77,7 @@ return [
     'pricing_subtitle' => 'Inizia gratis, scala man mano che cresci. Fatturazione affidabile e senza sorprese.',
     'pricing_period' => 'mese',
     'pricing_recommended' => 'CONSIGLIATO',
+    'pricing_currency_note' => 'Tutti i prezzi sono mostrati in Corone Danesi (DKK)',
     
     // Basic Plan
     'pricing_basic_name' => 'Basic',

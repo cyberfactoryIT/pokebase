@@ -28,6 +28,13 @@
         </div>
 
         <!-- Pricing Cards -->
+        <!-- Currency Note -->
+        <div class="text-center mb-8">
+            <p class="text-sm text-gray-500">
+                * {{ __('pages.pricing_currency_note') }}
+            </p>
+        </div>
+
         <!-- Pricing Cards -->
         <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-24">
             @php
@@ -50,7 +57,7 @@
                 $isRecommended = $plan->code === 'advanced';
                 $monthlyPrice = $plan->monthly_price_cents / 100;
                 $yearlyPrice = $plan->yearly_price_cents ? $plan->yearly_price_cents / 100 : 0;
-                $currency = $plan->currency === 'DKK' ? 'kr' : '€';
+                $currency = $plan->currency === 'DKK' ? 'kr.' : '€';
                 $savings = $yearlyPrice > 0 && $monthlyPrice > 0 ? round((1 - ($yearlyPrice / 12) / $monthlyPrice) * 100) : 0;
                 
                 $colors = [

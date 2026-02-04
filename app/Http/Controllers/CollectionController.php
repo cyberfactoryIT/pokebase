@@ -607,32 +607,55 @@ class CollectionController extends Controller
         $conditionDistribution = $conditionQuery
             ->get();
         
-        // Cards with notes
-        $cardsWithNotesQuery = UserCollection::where('user_id', $userId)
-            ->whereNotNull('notes')
-            ->where('notes', '!=', '');
-        if ($currentGame) {
-            $cardsWithNotesQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
+        // Cards with photos
+        $cardsWithPhotosQuery = UserCollection::where('user_id', $userId)
+            ->whereHas('photos');
+        
         // Filter by catalog backend
         if ($catalogBackend === 'tcgdex') {
-            $cardsWithNotesQuery->whereNotNull('tcgdex_card_id');
+            $cardsWithPhotosQuery->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $cardsWithPhotosQuery->whereHas('tcgdexCard', function($q) use ($currentGame) {
+                    $q->whereHas('set', fn($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $cardsWithPhotosQuery->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                $cardsWithPhotosQuery->whereHas('cmapiCard', fn($q) => $q->where('game_id', $currentGame->id));
+            }
         } else {
-            $cardsWithNotesQuery->whereNotNull('product_id');
+            // TCGCSV
+            $cardsWithPhotosQuery->whereNotNull('product_id');
+            if ($currentGame) {
+                $cardsWithPhotosQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+            }
         }
-        $cardsWithNotes = $cardsWithNotesQuery->count();
+        $cardsWithPhotos = $cardsWithPhotosQuery->count();
         
         // Duplicate cards (quantity > 1)
         $duplicateCardsQuery = UserCollection::where('user_id', $userId)
             ->where('quantity', '>', 1);
-        if ($currentGame) {
-            $duplicateCardsQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
+        
         // Filter by catalog backend
         if ($catalogBackend === 'tcgdex') {
             $duplicateCardsQuery->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $duplicateCardsQuery->whereHas('tcgdexCard', function($q) use ($currentGame) {
+                    $q->whereHas('set', fn($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $duplicateCardsQuery->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                $duplicateCardsQuery->whereHas('cmapiCard', fn($q) => $q->where('game_id', $currentGame->id));
+            }
         } else {
+            // TCGCSV
             $duplicateCardsQuery->whereNotNull('product_id');
+            if ($currentGame) {
+                $duplicateCardsQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+            }
         }
         $duplicateCards = $duplicateCardsQuery->count();
         
@@ -728,10 +751,84 @@ class CollectionController extends Controller
         }
         $timeline = $timelineQuery->get();
         
+        // Foil cards count
+        $foilCardsQuery = UserCollection::where('user_id', $userId)
+            ->where('is_foil', true);
+        
+        // Filter by catalog backend
+        if ($catalogBackend === 'tcgdex') {
+            $foilCardsQuery->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $foilCardsQuery->whereHas('tcgdexCard', function($q) use ($currentGame) {
+                    $q->whereHas('set', fn($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $foilCardsQuery->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                $foilCardsQuery->whereHas('cmapiCard', fn($q) => $q->where('game_id', $currentGame->id));
+            }
+        } else {
+            // TCGCSV
+            $foilCardsQuery->whereNotNull('product_id');
+            if ($currentGame) {
+                $foilCardsQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
+            }
+        }
+        $foilCards = $foilCardsQuery->sum('quantity');
+        
+        // Rare cards count (rarity contains 'rare', 'ultra', 'secret', 'holo')
+        $rareCardsQuery = UserCollection::where('user_id', $userId);
+        
+        if ($catalogBackend === 'tcgdex') {
+            $rareCardsQuery->whereNotNull('tcgdex_card_id')
+                ->whereHas('tcgdexCard', function($q) use ($currentGame) {
+                    $q->where(function($rq) {
+                        $rq->where('rarity', 'like', '%rare%')
+                          ->orWhere('rarity', 'like', '%ultra%')
+                          ->orWhere('rarity', 'like', '%secret%')
+                          ->orWhere('rarity', 'like', '%holo%');
+                    });
+                    if ($currentGame) {
+                        $q->whereHas('set', fn($sq) => $sq->where('game_id', $currentGame->id));
+                    }
+                });
+        } elseif ($catalogBackend === 'cmapi') {
+            $rareCardsQuery->whereNotNull('cmapi_card_id')
+                ->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where(function($rq) {
+                        $rq->where('rarity', 'like', '%rare%')
+                          ->orWhere('rarity', 'like', '%legendary%')
+                          ->orWhere('rarity', 'like', '%enchanted%')
+                          ->orWhere('rarity', 'like', '%super%');
+                    });
+                    if ($currentGame) {
+                        $q->where('game_id', $currentGame->id);
+                    }
+                });
+        } else {
+            // TCGCSV
+            $rareCardsQuery->whereNotNull('product_id')
+                ->whereHas('card', function($q) use ($currentGame) {
+                    $q->where(function($rq) {
+                        $rq->where('rarity', 'like', '%rare%')
+                          ->orWhere('rarity', 'like', '%ultra%')
+                          ->orWhere('rarity', 'like', '%secret%')
+                          ->orWhere('rarity', 'like', '%holo%');
+                    });
+                    if ($currentGame) {
+                        $q->where('game_id', $currentGame->id);
+                    }
+                });
+        }
+        $rareCards = $rareCardsQuery->sum('quantity');
+        
         return [
             'condition_distribution' => $conditionDistribution,
-            'cards_with_notes' => $cardsWithNotes,
+            'cards_with_photos' => $cardsWithPhotos,
             'duplicate_cards' => $duplicateCards,
+            'foil_cards' => $foilCards,
+            'rare_cards' => $rareCards,
             'total_sets' => $setStats->total_sets ?? 0,
             'top_sets' => $topSets,
             'timeline' => $timeline
@@ -1312,11 +1409,46 @@ class CollectionController extends Controller
                 ]);
             } else {
                 // Create new collection entry
+                $price = null;
+                $currency = 'USD';
+                
+                // Fetch price based on backend
+                if ($isTcgdex) {
+                    $card = \App\Models\Tcgdx\TcgdxCard::where('id', $validated['tcgdex_card_id'])->first();
+                    if ($card) {
+                        if ($card->price_eur && $card->price_eur > 0) {
+                            $price = $card->price_eur;
+                            $currency = 'EUR';
+                        } elseif ($card->price_usd && $card->price_usd > 0) {
+                            $price = $card->price_usd;
+                            $currency = 'USD';
+                        }
+                    }
+                } elseif ($isCmapi) {
+                    $card = \App\Models\Cmapi\CmapiCard::where('cmapi_id', $validated['cmapi_card_id'])->first();
+                    if ($card && $card->price_eur && $card->price_eur > 0) {
+                        $price = $card->price_eur;
+                        $currency = 'EUR';
+                    }
+                } else {
+                    $card = \App\Models\TcgcsvProduct::where('product_id', $validated['card_id'])->first();
+                    if ($card) {
+                        $latestPrice = $card->prices()->orderBy('updated_at', 'desc')->first();
+                        if ($latestPrice && $latestPrice->market_price) {
+                            $price = $latestPrice->market_price;
+                            $currency = 'USD';
+                        }
+                    }
+                }
+                
                 $data = [
                     'user_id' => Auth::id(),
                     'quantity' => $validated['quantity'],
                     'condition' => $validated['condition'],
                     'is_foil' => false, // Default to non-foil for quick add
+                    'cached_price' => $price,
+                    'cached_price_currency' => $currency,
+                    'cached_price_updated_at' => $price ? now() : null,
                 ];
                 
                 if ($isTcgdex) {
@@ -1668,10 +1800,27 @@ class CollectionController extends Controller
                     $existing->quantity += 1;
                     $existing->save();
                 } else {
+                    $card = \App\Models\Tcgdx\TcgdxCard::where('tcgdex_id', $cardId)->first();
+                    $price = null;
+                    $currency = 'USD';
+                    
+                    if ($card) {
+                        if ($card->price_eur && $card->price_eur > 0) {
+                            $price = $card->price_eur;
+                            $currency = 'EUR';
+                        } elseif ($card->price_usd && $card->price_usd > 0) {
+                            $price = $card->price_usd;
+                            $currency = 'USD';
+                        }
+                    }
+                    
                     \App\Models\DeckCard::create([
                         'deck_id' => $deck->id,
                         'tcgdex_card_id' => $cardId,
                         'quantity' => 1,
+                        'cached_price' => $price,
+                        'cached_price_currency' => $currency,
+                        'cached_price_updated_at' => $price ? now() : null,
                     ]);
                 }
                 $cardsAdded++;
@@ -1730,6 +1879,29 @@ class CollectionController extends Controller
         ]);
     }
 
+    /**
+     * Update quantity of a collection item
+     */
+    public function updateQuantity(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:1|max:100',
+        ]);
+        
+        $item = UserCollection::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+        
+        $item->quantity = $validated['quantity'];
+        $item->save();
+        
+        return response()->json([
+            'success' => true,
+            'quantity' => $item->quantity,
+            'message' => 'Quantity updated successfully',
+        ]);
+    }
+    
     /**
      * Create deck and add selected collection cards
      */

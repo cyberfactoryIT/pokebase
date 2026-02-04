@@ -184,6 +184,12 @@ Route::middleware(['web', 'auth'])->post('/collection/create-deck-with-selected'
     ->name('api.collection.create-deck-with-selected');
 
 /**
+ * Update quantity of a collection item
+ */
+Route::middleware(['web', 'auth'])->post('/collection/{id}/update-quantity', [\App\Http\Controllers\CollectionController::class, 'updateQuantity'])
+    ->name('api.collection.update-quantity');
+
+/**
  * Stripe Webhook endpoint
  * POST /api/stripe/webhook
  * Handles subscription events from Stripe (renewals, cancellations, failures)

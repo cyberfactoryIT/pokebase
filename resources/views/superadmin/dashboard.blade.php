@@ -6,15 +6,51 @@
     <div class="max-w-7xl mx-auto px-6">
         <div class="bg-[#161615] border border-white/15 rounded-2xl shadow-xl p-8">
             <!-- Header -->
-            <div class="mb-8">
-                <h2 class="font-semibold text-3xl text-white mb-2">
-                    <i class="fa fa-crown text-yellow-400 mr-2"></i>
-                    {{ __('messages.superadmin_dashboard') }}
-                </h2>
-                <p class="text-gray-400">
-                    {{ __('messages.superadmin_dashboard_subtitle') }}
-                </p>
+            <div class="mb-8 flex items-center justify-between">
+                <div>
+                    <h2 class="font-semibold text-3xl text-white mb-2">
+                        <i class="fa fa-crown text-yellow-400 mr-2"></i>
+                        {{ __('messages.superadmin_dashboard') }}
+                    </h2>
+                    <p class="text-gray-400">
+                        {{ __('messages.superadmin_dashboard_subtitle') }}
+                    </p>
+                </div>
+                
+                <!-- Refresh Prices Button -->
+                <form action="{{ route('superadmin.refresh-prices') }}" method="POST" onsubmit="return confirm('This will refresh all cached prices. It may take a few minutes. Continue?');">
+                    @csrf
+                    <button type="submit" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition shadow-lg hover:shadow-xl">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span class="font-semibold">Refresh All Prices</span>
+                    </button>
+                </form>
             </div>
+            
+            <!-- Success/Error Messages -->
+            @if(session('success'))
+                <div class="mb-6 bg-green-900/30 border border-green-500/50 text-green-300 px-4 py-3 rounded-lg">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <p>{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div class="mb-6 bg-red-900/30 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                        <p>{{ session('error') }}</p>
+                    </div>
+                </div>
+            @endif
 
             <!-- System Overview -->
             <div class="mb-8">
