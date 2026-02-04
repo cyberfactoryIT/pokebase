@@ -34,6 +34,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        \Log::info('Registration attempt started', ['email' => $request->input('email')]);
+        
         if(!config('organizations.enabled')) {
             $request->merge([
                 'organization_name' => $request->input('name') . ' Org',
@@ -44,7 +46,10 @@ class RegisteredUserController extends Controller
             ]);
         }
 
-
+        \Log::info('Validating registration data', [
+            'has_preferred_game' => $request->has('preferred_game_id'),
+            'preferred_game_value' => $request->input('preferred_game_id')
+        ]);
 
         $validated = $request->validate([
             'organization_cvr' => ['nullable', 'string', 'max:20'],
@@ -58,6 +63,8 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', 'min:8'],
             'preferred_game_id' => ['required', 'exists:games,id'],
         ]);
+        
+        \Log::info('Validation passed', ['validated_keys' => array_keys($validated)]);
 
         // Validazione composita manuale
         if (\App\Models\Organization::where('name', $validated['organization_name'])
@@ -68,7 +75,10 @@ class RegisteredUserController extends Controller
                 ->withErrors(['organization_name' => 'This organization already exists.']);
         }
 
+        \Log::info('Starting user creation transaction');
+        
         $user = \DB::transaction(function () use ($validated, $request) {
+            \Log::info('Inside transaction - creating organization');
             
                 // 1. Crea organizzazione
                 $organization = \App\Models\Organization::create([
@@ -95,10 +105,14 @@ class RegisteredUserController extends Controller
                 'default_game_id' => $validated['preferred_game_id'],
             ];
             
+            \Log::info('Creating user', ['email' => $userData['email']]);
             $user = \App\Models\User::create($userData);
+            \Log::info('User created', ['user_id' => $user->id]);
             
             // 2b. Aggiungi il gioco preferito ai giochi attivi dell'utente
+            \Log::info('Attaching game to user', ['game_id' => $validated['preferred_game_id']]);
             $user->games()->attach($validated['preferred_game_id']);
+            \Log::info('Game attached');
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
@@ -106,8 +120,12 @@ class RegisteredUserController extends Controller
             );
             $user->assignRole($saRole);
 
+            \Log::info('Assigning role to user');
             return $user;
         });
+        
+        \Log::info('Transaction completed', ['user_id' => $user->id]);
+        
         // Invio mail di verifica DOPO la transazione
         try {
             \Log::info('Sending verification email to user', [
@@ -132,8 +150,13 @@ class RegisteredUserController extends Controller
             config('organizations.enabled') ? $user->organization_id : null,
             $user->id
         );
+        \Log::info('Firing Registered event');
         event(new Registered($user));
+        
+        \Log::info('Logging in user');
         Auth::login($user);
+
+        \Log::info('Registration process complete, redirecting to dashboard');
 
         // Claim guest deck evaluation data if exists
         $guestToken = $request->cookie('deck_eval_guest_token');
