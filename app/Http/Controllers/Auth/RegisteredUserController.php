@@ -20,7 +20,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        $games = \App\Models\Game::orderBy('name')->get();
+        $games = \App\Models\Game::where('is_active', true)
+            ->orderBy('name')
+            ->get();
             
         return view('auth.register', compact('games'));
     }
