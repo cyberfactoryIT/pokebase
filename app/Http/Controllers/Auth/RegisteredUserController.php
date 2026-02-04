@@ -67,13 +67,24 @@ class RegisteredUserController extends Controller
         \Log::info('Validation passed', ['validated_keys' => array_keys($validated)]);
 
         // Validazione composita manuale
+        \Log::info('Checking for duplicate organization', [
+            'name' => $validated['organization_name'],
+            'code' => $validated['organization_code']
+        ]);
+        
         if (\App\Models\Organization::where('name', $validated['organization_name'])
             ->where('code', $validated['organization_code'])
             ->exists()) {
+            \Log::warning('Organization already exists - registration aborted', [
+                'name' => $validated['organization_name'],
+                'code' => $validated['organization_code']
+            ]);
             return back()
                 ->withInput()
                 ->withErrors(['organization_name' => 'This organization already exists.']);
         }
+        
+        \Log::info('Organization check passed - unique organization');
 
         \Log::info('Starting user creation transaction');
         
