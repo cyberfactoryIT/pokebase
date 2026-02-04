@@ -123,8 +123,12 @@ class RegisteredUserController extends Controller
             
             // 2b. Aggiungi il gioco preferito ai giochi attivi dell'utente
             \Log::info('Attaching game to user', ['game_id' => $validated['preferred_game_id']]);
-            $user->games()->attach($validated['preferred_game_id']);
-            \Log::info('Game attached');
+            $user->games()->attach($validated['preferred_game_id'], [
+                'is_enabled' => true,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            \Log::info('Game attached with is_enabled=true');
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(
