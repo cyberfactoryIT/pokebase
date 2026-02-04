@@ -20,9 +20,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        $games = \App\Models\Game::where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        $games = \App\Models\Game::orderBy('name')->get();
             
         return view('auth.register', compact('games'));
     }
@@ -109,14 +107,22 @@ class RegisteredUserController extends Controller
             return $user;
         });
         // Invio mail di verifica DOPO la transazione
-        \Log::info('Sending verification email to user', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'token' => $user->email_verification_token,
-            'expires_at' => $user->email_verification_expires_at,
-        ]);
-        $user->notify(new \App\Notifications\VerifyEmailNotification($user->email_verification_token));
-        \Log::info('Verification email sent', ['user_id' => $user->id, 'email' => $user->email]);
+        try {
+            \Log::info('Sending verification email to user', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'token' => $user->email_verification_token,
+                'expires_at' => $user->email_verification_expires_at,
+            ]);
+            $user->notify(new \App\Notifications\VerifyEmailNotification($user->email_verification_token));
+            \Log::info('Verification email sent', ['user_id' => $user->id, 'email' => $user->email]);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send verification email', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            // Continue anyway - user is registered
+        }
         ActivityLog::logActivity(
             'user',
             'create',
@@ -130,14 +136,22 @@ class RegisteredUserController extends Controller
         // Claim guest deck evaluation data if exists
         $guestToken = $request->cookie('deck_eval_guest_token');
         if ($guestToken) {
-            $entitlementService = app(DeckEvaluationEntitlementService::class);
-            $result = $entitlementService->claimGuestData($user->id, $guestToken);
-            
-            if ($result['sessions_claimed'] > 0 || $result['purchases_claimed'] > 0) {
-                session()->flash('success', __(
-                    'deck_evaluation.claim.success',
-                    ['count' => $result['purchases_claimed']]
-                ));
+            try {
+                $entitlementService = app(\App\Services\DeckEvaluationEntitlementService::class);
+                $result = $entitlementService->claimGuestData($user->id, $guestToken);
+                
+                if ($result['sessions_claimed'] > 0 || $result['purchases_claimed'] > 0) {
+                    session()->flash('success', __(
+                        'deck_evaluation.claim.success',
+                        ['count' => $result['purchases_claimed']]
+                    ));
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to claim guest data', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]);
+                // Continue anyway
             }
         }
 
