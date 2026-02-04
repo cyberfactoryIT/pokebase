@@ -90,6 +90,21 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <!-- Preferred Game -->
+        <div class="mt-4">
+            <x-input-label for="preferred_game_id" :value="__('auth.preferred_game')" class="text-gray-300" />
+            <select id="preferred_game_id" name="preferred_game_id" class="block mt-1 w-full bg-black/50 border-white/20 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                <option value="">{{ __('auth.select_game') }}</option>
+                @foreach($games as $game)
+                    <option value="{{ $game->id }}" {{ old('preferred_game_id') == $game->id ? 'selected' : '' }}>
+                        {{ $game->name }}
+                    </option>
+                @endforeach
+            </select>
+            <x-input-error :messages="$errors->get('preferred_game_id')" class="mt-2" />
+            <p class="mt-1 text-sm text-gray-400">{{ __('auth.preferred_game_description') }}</p>
+        </div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-400 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('login') }}">
                 {{ __('auth.already_registered') }}

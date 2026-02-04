@@ -20,7 +20,11 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $games = \App\Models\Game::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+            
+        return view('auth.register', compact('games'));
     }
 
     /**
@@ -52,6 +56,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
+            'preferred_game_id' => ['required', 'exists:games,id'],
         ]);
 
         // Validazione composita manuale
@@ -80,9 +85,6 @@ class RegisteredUserController extends Controller
             $token = \Str::random(32);
             $expires = now()->addHours(24);
             
-            // Recupera l'ID del gioco Pokemon come default (se esiste)
-            $pokemonGameId = 1;
-            
             $userData = [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -90,14 +92,13 @@ class RegisteredUserController extends Controller
                 'organization_id' => $organization ? $organization->id : null,
                 'email_verification_token' => $token,
                 'email_verification_expires_at' => $expires,
+                'default_game_id' => $validated['preferred_game_id'],
             ];
             
-            // Aggiungi default_game_id solo se il gioco Pokemon esiste
-            if ($pokemonGameId) {
-                $userData['default_game_id'] = $pokemonGameId;
-            }
-            
             $user = \App\Models\User::create($userData);
+            
+            // 2b. Aggiungi il gioco preferito ai giochi attivi dell'utente
+            $user->games()->attach($validated['preferred_game_id']);
 
             $saRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(

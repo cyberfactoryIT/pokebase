@@ -28,6 +28,9 @@ return [
     // Registration & Auth links
     'already_registered' => 'Allerede registreret?',
     'back' => 'Tilbage',
+    'preferred_game' => 'Foretrukket Spil',
+    'select_game' => '-- Vælg et spil --',
+    'preferred_game_description' => 'Dette vil være dit standardspil, når du logger ind.',
     
     // Two-Factor Authentication
     'two_factor_authentication' => 'To-faktor autentificering',

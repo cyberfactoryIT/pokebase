@@ -28,6 +28,9 @@ return [
     // Registration & Auth links
     'already_registered' => 'Already registered?',
     'back' => 'Back',
+    'preferred_game' => 'Preferred Game',
+    'select_game' => '-- Select a game --',
+    'preferred_game_description' => 'This will be your default game when you log in.',
     
     // Two-Factor Authentication
     'two_factor_authentication' => 'Two-Factor Authentication',
