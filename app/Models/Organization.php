@@ -51,6 +51,10 @@ class Organization extends Model
     'city',
     'postcode',
     'country',
+    // Trial fields
+    'trial_plan_id',
+    'trial_expires_at',
+    'trial_promotion_id',
     ];
 
     protected $casts = [
@@ -61,6 +65,7 @@ class Organization extends Model
         'end_promotion_date' => 'datetime',
         'cancellation_subscription_date' => 'datetime',
         'reactivate_subscription_date' => 'datetime',
+        'trial_expires_at' => 'datetime',
     ];
 
     /**
@@ -106,5 +111,92 @@ class Organization extends Model
                 'coupon_code' => $this->promotion_code,
             ]);
         }
+    }
+    
+    /**
+     * Trial plan relationship
+     */
+    public function trialPlan()
+    {
+        return $this->belongsTo(PricingPlan::class, 'trial_plan_id');
+    }
+    
+    /**
+     * Trial promotion relationship
+     */
+    public function trialPromotion()
+    {
+        return $this->belongsTo(Promotion::class, 'trial_promotion_id');
+    }
+    
+    /**
+     * Check if organization is currently on a trial
+     */
+    public function isOnTrial(): bool
+    {
+        return $this->trial_plan_id !== null 
+            && $this->trial_expires_at !== null 
+            && $this->trial_expires_at->isFuture();
+    }
+    
+    /**
+     * Check if trial has expired
+     */
+    public function hasExpiredTrial(): bool
+    {
+        return $this->trial_plan_id !== null 
+            && $this->trial_expires_at !== null 
+            && $this->trial_expires_at->isPast();
+    }
+    
+    /**
+     * Activate a trial promotion
+     */
+    public function activateTrial(Promotion $promotion): void
+    {
+        if (!$promotion->isTrial()) {
+            throw new \Exception('Promotion is not a trial type');
+        }
+        
+        $this->update([
+            'trial_plan_id' => $promotion->trial_plan_id,
+            'trial_expires_at' => now()->addDays($promotion->trial_duration_days),
+            'trial_promotion_id' => $promotion->id,
+        ]);
+        
+        \Log::info('Trial activated', [
+            'organization_id' => $this->id,
+            'promotion_id' => $promotion->id,
+            'trial_plan_id' => $promotion->trial_plan_id,
+            'expires_at' => $this->trial_expires_at,
+        ]);
+    }
+    
+    /**
+     * End trial and revert to free plan
+     */
+    public function endTrial(): void
+    {
+        $this->update([
+            'trial_plan_id' => null,
+            'trial_expires_at' => null,
+            'trial_promotion_id' => null,
+        ]);
+        
+        \Log::info('Trial ended', [
+            'organization_id' => $this->id,
+        ]);
+    }
+    
+    /**
+     * Get effective pricing plan (trial plan if active, otherwise current plan)
+     */
+    public function getEffectivePlan(): ?PricingPlan
+    {
+        if ($this->isOnTrial()) {
+            return $this->trialPlan;
+        }
+        
+        return $this->pricingPlan;
     }
 }

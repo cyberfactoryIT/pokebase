@@ -4,6 +4,11 @@
 
 <div class="bg-black min-h-screen py-8">
     <div class="max-w-6xl mx-auto px-6">
+        <!-- Trial Banner -->
+        @if(Auth::user()->organization)
+            <x-trial-banner :organization="Auth::user()->organization" />
+        @endif
+        
         <!-- Welcome Header with License Badge and Quick Actions -->
         <div class="flex items-center justify-between mb-4">
             <h2 class="font-semibold text-xl text-white">

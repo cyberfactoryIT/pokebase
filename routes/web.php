@@ -99,6 +99,10 @@ Route::middleware('auth')->group(function () {
     
     // Current game switch
     Route::post('/current-game', [\App\Http\Controllers\CurrentGameController::class, 'update'])->name('current-game.update');
+    
+    // Trial Code Redemption
+    Route::get('/trial/redeem', [\App\Http\Controllers\TrialCodeController::class, 'show'])->name('trial.show');
+    Route::post('/trial/redeem', [\App\Http\Controllers\TrialCodeController::class, 'redeem'])->name('trial.redeem');
 
     // Deck Management
     Route::resource('decks', \App\Http\Controllers\DeckController::class);

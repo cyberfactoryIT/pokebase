@@ -96,6 +96,13 @@ Schedule::command('cardmarket:sync-lorcana-prices --force')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Expire Trials: Run daily at 00:30 AM (Europe/Copenhagen)
+Schedule::command('trials:expire')
+    ->dailyAt('00:30')
+    ->timezone('Europe/Copenhagen')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 // Artisan Commands
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

@@ -248,6 +248,16 @@ class CheckoutController extends Controller
             
             $org->subscription_cancelled = 0;
             $org->save();
+            
+            // End trial if user was on one (they're now paying)
+            if ($org->isOnTrial()) {
+                \Log::info('Ending trial - user upgraded to paid subscription', [
+                    'organization_id' => $org->id,
+                    'trial_plan_id' => $org->trial_plan_id,
+                    'trial_expires_at' => $org->trial_expires_at,
+                ]);
+                $org->endTrial();
+            }
 
             // Create invoice
             $priceInCents = $request->billing_period === 'yearly' 

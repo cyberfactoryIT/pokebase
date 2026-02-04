@@ -9,7 +9,8 @@ class Promotion extends Model
 {
     protected $fillable = [
         'name','code','type','value','starts_at','ends_at','active',
-        'max_redemptions','per_org_limit','new_orgs_only','stackable','meta'
+        'max_redemptions','per_org_limit','new_orgs_only','stackable','meta',
+        'trial_plan_id', 'trial_duration_days'
     ];
     protected $casts = [
         'starts_at' => 'datetime',
@@ -46,5 +47,21 @@ class Promotion extends Model
     {
         if (!$plan) return false;
         return $this->plans()->where('pricing_plan_id', $plan->id)->exists();
+    }
+    
+    /**
+     * Get the trial plan for this promotion (if type is 'trial')
+     */
+    public function trialPlan()
+    {
+        return $this->belongsTo(PricingPlan::class, 'trial_plan_id');
+    }
+    
+    /**
+     * Check if this is a trial promotion
+     */
+    public function isTrial(): bool
+    {
+        return $this->type === 'trial';
     }
 }
