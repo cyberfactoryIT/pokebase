@@ -72,6 +72,15 @@ log "📊 Statistics:"
 log "   Total Lorcana cards: ${CARD_COUNT}"
 log "   Price history records: ${PRICE_HISTORY_COUNT}"
 
+# Step 5: Refresh cached prices for user collections and decks
+log ""
+log "Step 5: Refreshing cached prices for users..."
+if $PHP_CMD artisan prices:refresh-cache --force >> "$LOG_FILE" 2>&1; then
+    log "✅ Price cache refreshed"
+else
+    log "⚠️  Price cache refresh failed (non-critical)"
+fi
+
 log ""
 log "========================================="
 log "Daily Lorcana Sync Complete!"

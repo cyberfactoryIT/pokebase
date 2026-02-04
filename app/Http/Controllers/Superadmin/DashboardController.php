@@ -135,7 +135,7 @@ class DashboardController extends Controller
         
         try {
             // Run the command
-            Artisan::call('prices:refresh', ['--force' => true]);
+            Artisan::call('prices:refresh-cache', ['--force' => true]);
             
             $output = Artisan::output();
             
