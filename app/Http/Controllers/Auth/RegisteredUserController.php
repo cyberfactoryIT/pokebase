@@ -37,9 +37,10 @@ class RegisteredUserController extends Controller
         \Log::info('Registration attempt started', ['email' => $request->input('email')]);
         
         if(!config('organizations.enabled')) {
+            // Use email as unique organization name to prevent duplicates
             $request->merge([
-                'organization_name' => $request->input('name') . ' Org',
-                'organization_code' => 'DEFAULT',
+                'organization_name' => $request->input('email'),
+                'organization_code' => 'USER_' . strtoupper(substr(md5($request->input('email')), 0, 8)),
                 'organization_address' => 'N/A',
                 'organization_zipcode' => '00000',
                 'organization_city' => 'N/A',
