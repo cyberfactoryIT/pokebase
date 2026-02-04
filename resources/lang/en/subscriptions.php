@@ -18,9 +18,13 @@ return [
         'status' => 'Status',
         'billing_period' => 'Billing Period',
         'next_renewal' => 'Next Renewal',
+        'expires_on' => 'Expires on',
         'renews_today' => 'Renews today',
         'renews_tomorrow' => 'Renews tomorrow',
         'renews_in_days' => 'Renews in :days days',
+        'expires_today' => 'Expires today',
+        'valid_for_1_day' => 'Valid for 1 more day',
+        'valid_for_days' => 'Valid for :days more days',
         'no_active_membership' => 'No active membership subscription',
         'explanation' => 'Your membership subscription provides access to premium features with recurring billing.',
         

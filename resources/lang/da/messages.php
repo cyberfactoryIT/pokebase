@@ -519,7 +519,7 @@ return [
 'Postcode' => 'Postnummer',
 'Country' => 'Land',
 'Timezone' => 'Tidszone',
-'Billing_Plans' => 'Fakturering & Planer',
+'Billing_Plans' => 'Fakturering & Abonnement',
 'none' => 'Ingen',
 'welcome_dashboard' => 'Dashboard',
 'welcome_login' => 'Log ind',

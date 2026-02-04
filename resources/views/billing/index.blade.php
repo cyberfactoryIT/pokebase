@@ -99,19 +99,35 @@
 
                         @if($membershipStatus['next_renewal'])
                         <div class="bg-white/5 border border-white/10 rounded-lg p-3">
-                            <div class="text-gray-400 text-xs mb-1">{{ __('subscriptions.membership.next_renewal') }}</div>
+                            <div class="text-gray-400 text-xs mb-1">
+                                @if($membershipStatus['is_cancelled'])
+                                    {{ __('subscriptions.membership.expires_on') }}
+                                @else
+                                    {{ __('subscriptions.membership.next_renewal') }}
+                                @endif
+                            </div>
                             <div class="text-white font-medium">{{ $membershipStatus['next_renewal']->format('M d, Y') }}</div>
                             @php
-                                $daysUntilRenewal = now()->diffInDays($membershipStatus['next_renewal'], false);
+                                $daysUntilRenewal = round(now()->diffInDays($membershipStatus['next_renewal'], false));
                             @endphp
                             @if($daysUntilRenewal >= 0)
                             <div class="text-gray-400 text-xs mt-1">
-                                @if($daysUntilRenewal == 0)
-                                    {{ __('subscriptions.membership.renews_today') }}
-                                @elseif($daysUntilRenewal == 1)
-                                    {{ __('subscriptions.membership.renews_tomorrow') }}
+                                @if($membershipStatus['is_cancelled'])
+                                    @if($daysUntilRenewal == 0)
+                                        {{ __('subscriptions.membership.expires_today') }}
+                                    @elseif($daysUntilRenewal == 1)
+                                        {{ __('subscriptions.membership.valid_for_1_day') }}
+                                    @else
+                                        {{ __('subscriptions.membership.valid_for_days', ['days' => $daysUntilRenewal]) }}
+                                    @endif
                                 @else
-                                    {{ __('subscriptions.membership.renews_in_days', ['days' => $daysUntilRenewal]) }}
+                                    @if($daysUntilRenewal == 0)
+                                        {{ __('subscriptions.membership.renews_today') }}
+                                    @elseif($daysUntilRenewal == 1)
+                                        {{ __('subscriptions.membership.renews_tomorrow') }}
+                                    @else
+                                        {{ __('subscriptions.membership.renews_in_days', ['days' => $daysUntilRenewal]) }}
+                                    @endif
                                 @endif
                             </div>
                             @endif

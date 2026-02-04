@@ -18,9 +18,13 @@ return [
         'status' => 'Status',
         'billing_period' => 'Faktureringsperiode',
         'next_renewal' => 'Næste Fornyelse',
+        'expires_on' => 'Udløber den',
         'renews_today' => 'Fornyes i dag',
         'renews_tomorrow' => 'Fornyes i morgen',
         'renews_in_days' => 'Fornyes om :days dage',
+        'expires_today' => 'Udløber i dag',
+        'valid_for_1_day' => 'Gyldig i 1 dag mere',
+        'valid_for_days' => 'Gyldig i :days dage mere',
         'no_active_membership' => 'Intet aktivt medlemskab',
         'explanation' => 'Dit medlemskabsabonnement giver adgang til premium-funktioner med gentagen fakturering.',
         

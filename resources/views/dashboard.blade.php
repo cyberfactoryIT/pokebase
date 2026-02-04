@@ -46,8 +46,9 @@
                 <!-- License Badge -->
                 @php
                     $user = Auth::user();
-                    $isPremium = $user->organization && $user->organization->pricingPlan && $user->organization->pricingPlan->slug === 'premium';
-                    $planName = $isPremium ? 'Premium' : ($user->organization && $user->organization->pricingPlan ? $user->organization->pricingPlan->name : 'Free');
+                    $userTier = $user->subscriptionTier();
+                    $isPremium = $userTier === 'premium';
+                    $planName = ucfirst($userTier);
                 @endphp
                 
                 <div class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5">

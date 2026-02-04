@@ -14,7 +14,7 @@ echo ""
 mkdir -p storage/logs
 
 # Run in background, redirect output to log
-nohup ./simulate-etl-pipeline.sh > "$LOG_FILE" 2>&1 &
+nohup scripts/simulate-etl-pipeline.sh > "$LOG_FILE" 2>&1 &
 
 PID=$!
 echo "✅ Pipeline started with PID: $PID"
