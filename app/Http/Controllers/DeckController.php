@@ -495,9 +495,10 @@ class DeckController extends Controller
         $deck = Deck::where('shared_token', $token)
             ->where('is_shared', true)
             ->with([
-                'deckCards.card.group',  // TCGCSV
-                'deckCards.tcgdexCard',  // TCGDEX
-                'deckCards.cmapiCard',   // CMAPI
+                'deckCards.card.group',    // TCGCSV
+                'deckCards.tcgdexCard',    // TCGDEX
+                'deckCards.cmapiCard',     // CMAPI
+                'deckCards.photos',        // User uploaded photos
                 'game',
                 'user'
             ])

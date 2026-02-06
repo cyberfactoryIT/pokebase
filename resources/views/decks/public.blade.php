@@ -128,21 +128,53 @@
 
                     <!-- Card Info -->
                     <div class="col-span-5 flex items-center gap-4">
-                        @if($card->image_small ?? $card->images['small'] ?? null)
+                        @php
+                            // Check for user-uploaded photos first, then fall back to card images
+                            $hasPhotos = $deckCard->photos->count() > 0;
+                            $primaryImage = $hasPhotos 
+                                ? route('decks.photos.serve', $deckCard->photos->first())
+                                : ($card->image_small ?? $card->images['small'] ?? null);
+                            $hoverImage = $hasPhotos
+                                ? route('decks.photos.serve', $deckCard->photos->first())
+                                : ($card->image_large ?? $card->images['large'] ?? $card->images['small'] ?? null);
+                        @endphp
+                        
+                        @if($primaryImage)
                         <div class="relative group/image">
                             <img 
-                                src="{{ $card->image_small ?? $card->images['small'] ?? '' }}" 
+                                src="{{ $primaryImage }}" 
                                 alt="{{ $card->name }}"
-                                class="w-12 h-16 rounded object-cover border border-white/15"
+                                class="w-12 h-16 rounded object-cover border border-white/15 {{ $hasPhotos ? 'ring-2 ring-blue-500/50' : '' }}"
                                 loading="lazy"
                             >
+                            <!-- Photo count badge -->
+                            @if($hasPhotos && $deckCard->photos->count() > 1)
+                            <div class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                {{ $deckCard->photos->count() }}
+                            </div>
+                            @endif
+                            
                             <!-- Hover Preview -->
                             <div class="absolute left-full ml-4 top-0 z-50 opacity-0 group-hover/image:opacity-100 transition-opacity pointer-events-none">
-                                <img 
-                                    src="{{ $card->image_large ?? $card->images['large'] ?? $card->images['small'] ?? '' }}" 
-                                    alt="{{ $card->name }}"
-                                    class="w-64 rounded-lg shadow-2xl border-2 border-white/30"
-                                >
+                                @if($hasPhotos)
+                                    <!-- Show all uploaded photos -->
+                                    <div class="flex gap-2">
+                                        @foreach($deckCard->photos as $photo)
+                                        <img 
+                                            src="{{ route('decks.photos.serve', $photo) }}" 
+                                            alt="{{ $card->name }}"
+                                            class="w-64 rounded-lg shadow-2xl border-2 border-blue-500/50"
+                                        >
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <!-- Show card image -->
+                                    <img 
+                                        src="{{ $hoverImage }}" 
+                                        alt="{{ $card->name }}"
+                                        class="w-64 rounded-lg shadow-2xl border-2 border-white/30"
+                                    >
+                                @endif
                             </div>
                         </div>
                         @endif
