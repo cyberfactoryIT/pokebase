@@ -131,12 +131,31 @@
                         @php
                             // Check for user-uploaded photos first, then fall back to card images
                             $hasPhotos = $deckCard->photos->count() > 0;
+                            
+                            // Handle different backend image formats
+                            $cardImageSmall = null;
+                            $cardImageLarge = null;
+                            
+                            if (isset($card->image_small)) {
+                                // TCGCSV format (string properties)
+                                $cardImageSmall = $card->image_small;
+                                $cardImageLarge = $card->image_large ?? $card->image_small;
+                            } elseif (isset($card->image_small_url)) {
+                                // TCGDEX format (string URL properties with /low.webp and /high.webp)
+                                $cardImageSmall = $card->getLowQualityImageUrl();
+                                $cardImageLarge = $card->getHighQualityImageUrl();
+                            } elseif (isset($card->images) && is_array($card->images)) {
+                                // CMAPI format (array)
+                                $cardImageSmall = $card->images['small'] ?? null;
+                                $cardImageLarge = $card->images['large'] ?? $card->images['small'] ?? null;
+                            }
+                            
                             $primaryImage = $hasPhotos 
                                 ? route('decks.photos.serve', $deckCard->photos->first())
-                                : ($card->image_small ?? $card->images['small'] ?? null);
+                                : $cardImageSmall;
                             $hoverImage = $hasPhotos
                                 ? route('decks.photos.serve', $deckCard->photos->first())
-                                : ($card->image_large ?? $card->images['large'] ?? $card->images['small'] ?? null);
+                                : $cardImageLarge;
                         @endphp
                         
                         @if($primaryImage)
