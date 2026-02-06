@@ -1502,7 +1502,7 @@ async function updateQuantity(collectionId, change, button) {
         if (confirm('Remove this card from your collection?')) {
             // Remove from collection using DELETE method
             try {
-                const response = await fetch('/collection/' + collectionId, {
+                const response = await fetch('{{ url('collection') }}/' + collectionId, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
