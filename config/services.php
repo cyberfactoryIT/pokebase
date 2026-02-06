@@ -47,4 +47,10 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
+    'analytics' => [
+        'type' => env('ANALYTICS_TYPE', 'plausible'), // 'google', 'plausible', or 'none'
+        'id' => env('ANALYTICS_ID'), // GA ID (G-XXXXXXXXXX) or Plausible domain
+        'enabled' => env('ANALYTICS_ENABLED', false),
+    ],
+
 ];

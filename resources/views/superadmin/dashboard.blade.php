@@ -157,6 +157,67 @@
                 </div>
             </div>
 
+            <!-- User Engagement & Trial Statistics -->
+            <div class="mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- User Engagement -->
+                    <div>
+                        <h3 class="font-semibold text-xl text-white mb-4">
+                            <i class="fa fa-chart-line mr-2 text-blue-400"></i>
+                            User Engagement (Last 30 Days)
+                        </h3>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-6 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Active Users</span>
+                                <span class="text-2xl font-bold text-blue-400">{{ number_format($engagementStats['active_users']) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">New Registrations</span>
+                                <span class="text-2xl font-bold text-green-400">{{ number_format($engagementStats['new_users_30d']) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Collections Created</span>
+                                <span class="text-2xl font-bold text-purple-400">{{ number_format($engagementStats['collections_created_30d']) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-white/10 pt-4">
+                                <span class="text-gray-400">Total Collections</span>
+                                <span class="text-xl font-bold text-white">{{ number_format($engagementStats['total_collections']) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trial Statistics -->
+                    <div>
+                        <h3 class="font-semibold text-xl text-white mb-4">
+                            <i class="fa fa-clock mr-2 text-yellow-400"></i>
+                            Trial Statistics
+                        </h3>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-6 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Active Trials</span>
+                                <span class="text-2xl font-bold text-yellow-400">{{ number_format($trialStats['active_trials']) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Expired Trials</span>
+                                <span class="text-2xl font-bold text-gray-500">{{ number_format($trialStats['expired_trials']) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Converted to Paid</span>
+                                <span class="text-2xl font-bold text-green-400">{{ number_format($trialStats['converted_from_trial']) }}</span>
+                            </div>
+                            @if($trialStats['active_trials'] + $trialStats['expired_trials'] > 0)
+                                <div class="flex justify-between items-center border-t border-white/10 pt-4">
+                                    <span class="text-gray-400">Conversion Rate</span>
+                                    <span class="text-xl font-bold text-green-400">
+                                        {{ round(($trialStats['converted_from_trial'] / ($trialStats['active_trials'] + $trialStats['expired_trials'])) * 100, 1) }}%
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Mapping Statistics -->
             <div class="mb-8">
                 <h3 class="font-semibold text-xl text-white mb-4">{{ __('messages.data_mapping_status') }}</h3>

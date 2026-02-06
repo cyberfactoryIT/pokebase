@@ -109,6 +109,27 @@ class DashboardController extends Controller
             ];
         });
 
+        // User engagement stats (last 30 days)
+        $engagementStats = [
+            'active_users' => User::where('last_login_at', '>=', now()->subDays(30))->count(),
+            'new_users_30d' => User::where('created_at', '>=', now()->subDays(30))->count(),
+            'collections_created_30d' => UserCollection::where('created_at', '>=', now()->subDays(30))->count(),
+            'total_collections' => UserCollection::count(),
+        ];
+
+        // Trial statistics
+        $trialStats = [
+            'active_trials' => Organization::whereNotNull('trial_plan_id')
+                ->where('trial_expires_at', '>', now())
+                ->count(),
+            'expired_trials' => Organization::whereNotNull('trial_plan_id')
+                ->where('trial_expires_at', '<=', now())
+                ->count(),
+            'converted_from_trial' => Organization::whereNotNull('trial_plan_id')
+                ->whereNotNull('pricing_plan_id')
+                ->count(),
+        ];
+
         return view('superadmin.dashboard', compact(
             'stats',
             'mappingStats',
@@ -116,7 +137,9 @@ class DashboardController extends Controller
             'recentUsers',
             'revenueStats',
             'activeSubscriptions',
-            'gameStats'
+            'gameStats',
+            'engagementStats',
+            'trialStats'
         ));
     }
     
