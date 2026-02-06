@@ -17,8 +17,8 @@ return new class extends Migration
             $table->enum('type', ['percent', 'fixed', 'trial'])->default('percent')->change();
             
             // Trial-specific fields
-            $table->unsignedBigInteger('trial_plan_id')->nullable()->after('value');
-            $table->integer('trial_duration_days')->nullable()->after('trial_plan_id');
+            $table->unsignedBigInteger('trial_plan_id')->nullable();
+            $table->integer('trial_duration_days')->nullable();
             
             // Foreign key
             $table->foreign('trial_plan_id')->references('id')->on('pricing_plans')->onDelete('set null');
@@ -26,9 +26,9 @@ return new class extends Migration
         
         // Add trial tracking to organizations table
         Schema::table('organizations', function (Blueprint $table) {
-            $table->unsignedBigInteger('trial_plan_id')->nullable()->after('current_plan_id');
-            $table->timestamp('trial_expires_at')->nullable()->after('trial_plan_id');
-            $table->unsignedBigInteger('trial_promotion_id')->nullable()->after('trial_expires_at');
+            $table->unsignedBigInteger('trial_plan_id')->nullable();
+            $table->timestamp('trial_expires_at')->nullable();
+            $table->unsignedBigInteger('trial_promotion_id')->nullable();
             
             // Foreign keys
             $table->foreign('trial_plan_id')->references('id')->on('pricing_plans')->onDelete('set null');
