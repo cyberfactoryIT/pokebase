@@ -75,18 +75,21 @@
                 </div>
             </div>
 
-            <!-- Unique Cards -->
+            <!-- Rarity Distribution -->
             <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-400 text-sm">Unique Cards</p>
-                        <p class="text-3xl font-bold text-white mt-1">{{ $stats['unique_cards'] }}</p>
-                    </div>
-                    <div class="bg-purple-500/20 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
-                        </svg>
-                    </div>
+                <h3 class="text-gray-400 text-sm mb-3">Rarity Distribution</h3>
+                <div class="space-y-2">
+                    @forelse($topStats['rarity_distribution'] as $rarity => $data)
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-300 text-sm">{{ $rarity }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-white font-semibold">{{ $data['total_quantity'] }}</span>
+                                <span class="text-gray-500 text-xs">({{ $data['count'] }} unique)</span>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-gray-500 text-sm">No rarity data</p>
+                    @endforelse
                 </div>
             </div>
         </div>
