@@ -156,13 +156,29 @@
                             $hoverImage = $hasPhotos
                                 ? route('decks.photos.serve', $deckCard->photos->first())
                                 : $cardImageLarge;
+                            
+                            // Handle multilingual fields (TCGDEX returns arrays)
+                            $cardName = $card->name;
+                            if (is_array($cardName)) {
+                                $cardName = $cardName['en'] ?? $cardName['da'] ?? $cardName['fr'] ?? 'Unknown';
+                            }
+                            
+                            $cardType = $card->supertype ?? $card->type ?? null;
+                            if (is_array($cardType)) {
+                                $cardType = $cardType['en'] ?? $cardType['da'] ?? '';
+                            }
+                            
+                            $setName = $card->set_name ?? $card->setName ?? null;
+                            if (is_array($setName)) {
+                                $setName = $setName['en'] ?? $setName['da'] ?? 'Unknown';
+                            }
                         @endphp
                         
                         @if($primaryImage)
                         <div class="relative group/image">
                             <img 
                                 src="{{ $primaryImage }}" 
-                                alt="{{ $card->name }}"
+                                alt="{{ $cardName }}"
                                 class="w-12 h-16 rounded object-cover border border-white/15 {{ $hasPhotos ? 'ring-2 ring-blue-500/50' : '' }}"
                                 loading="lazy"
                             >
@@ -181,7 +197,7 @@
                                         @foreach($deckCard->photos as $photo)
                                         <img 
                                             src="{{ route('decks.photos.serve', $photo) }}" 
-                                            alt="{{ $card->name }}"
+                                            alt="{{ $cardName }}"
                                             class="w-64 rounded-lg shadow-2xl border-2 border-blue-500/50"
                                         >
                                         @endforeach
@@ -190,7 +206,7 @@
                                     <!-- Show card image -->
                                     <img 
                                         src="{{ $hoverImage }}" 
-                                        alt="{{ $card->name }}"
+                                        alt="{{ $cardName }}"
                                         class="w-64 rounded-lg shadow-2xl border-2 border-white/30"
                                     >
                                 @endif
@@ -199,17 +215,17 @@
                         @endif
                         <div class="flex-1 min-w-0">
                             <p class="text-white font-medium group-hover:text-blue-400 transition truncate">
-                                {{ $card->name }}
+                                {{ $cardName }}
                             </p>
-                            @if($card->supertype ?? $card->type ?? null)
-                            <p class="text-gray-500 text-sm">{{ $card->supertype ?? $card->type ?? '' }}</p>
+                            @if($cardType)
+                            <p class="text-gray-500 text-sm">{{ $cardType }}</p>
                             @endif
                         </div>
                     </div>
 
                     <!-- Set -->
                     <div class="col-span-2 flex items-center">
-                        <span class="text-gray-300 text-sm">{{ $card->set_name ?? $card->setName ?? '-' }}</span>
+                        <span class="text-gray-300 text-sm">{{ $setName ?? '-' }}</span>
                     </div>
 
                     <!-- Rarity -->
