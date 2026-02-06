@@ -526,9 +526,14 @@ class DeckController extends Controller
             $totalValue = $topStats['total_value_usd'];
             $cardsWithPrices = $topStats['cards_with_prices_usd'];
         } else {
-            // Default to EUR for all other currencies (will be converted in view if needed)
+            // Use EUR value as base
             $totalValue = $topStats['total_value_eur'];
             $cardsWithPrices = $topStats['cards_with_prices_eur'];
+            
+            // Convert to preferred currency if not EUR
+            if ($preferredCurrency !== 'EUR' && $totalValue > 0) {
+                $totalValue = \App\Services\CurrencyService::convert($totalValue, 'EUR', $preferredCurrency);
+            }
         }
         
         return [
