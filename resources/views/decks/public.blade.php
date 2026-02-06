@@ -168,10 +168,23 @@
                                 $cardType = $cardType['en'] ?? $cardType['da'] ?? '';
                             }
                             
-                            $setName = $card->set_name ?? $card->setName ?? null;
-                            if (is_array($setName)) {
-                                $setName = $setName['en'] ?? $setName['da'] ?? 'Unknown';
+                            // Handle set names from different backends
+                            $setName = null;
+                            if (isset($card->set_name)) {
+                                // TCGCSV format (direct property)
+                                $setName = $card->set_name;
+                            } elseif (isset($card->set) && $card->set) {
+                                // TCGDEX/CMAPI format (relationship)
+                                $setNameData = $card->set->name ?? null;
+                                if (is_array($setNameData)) {
+                                    // Multilingual (TCGDEX)
+                                    $setName = $setNameData['en'] ?? $setNameData['da'] ?? $setNameData['fr'] ?? null;
+                                } else {
+                                    // String (CMAPI)
+                                    $setName = $setNameData;
+                                }
                             }
+                            $setName = $setName ?? '-';
                         @endphp
                         
                         @if($primaryImage)
