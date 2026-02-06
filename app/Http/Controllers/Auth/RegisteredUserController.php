@@ -200,9 +200,12 @@ class RegisteredUserController extends Controller
         // Apply trial code if provided
         if ($request->filled('trial_code')) {
             try {
+                // Normalize code: trim whitespace and convert to uppercase for consistency
+                $trialCode = strtoupper(trim($request->input('trial_code')));
+                
                 $promotionEngine = app(\App\Services\PromotionEngine::class);
                 $promotion = $promotionEngine->redeemTrialCode(
-                    $request->input('trial_code'),
+                    $trialCode,
                     $user->organization
                 );
                 

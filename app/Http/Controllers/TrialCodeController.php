@@ -43,9 +43,12 @@ class TrialCodeController extends Controller
         $user = Auth::user();
         $org = $user->organization;
         
+        // Normalize code: trim whitespace and convert to uppercase for consistency
+        $code = strtoupper(trim($request->input('code')));
+        
         try {
             $promotion = $this->promotionEngine->redeemTrialCode(
-                $request->input('code'),
+                $code,
                 $org
             );
             
