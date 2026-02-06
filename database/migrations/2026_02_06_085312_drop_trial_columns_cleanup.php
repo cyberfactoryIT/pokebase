@@ -12,28 +12,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop everything trial-related from organizations
-        Schema::table('organizations', function (Blueprint $table) {
-            // Drop foreign keys if they exist
-            try {
-                $table->dropForeign(['trial_plan_id']);
-            } catch (\Exception $e) {
-                // Foreign key doesn't exist, continue
-            }
-            
-            try {
-                $table->dropForeign(['trial_promotion_id']);
-            } catch (\Exception $e) {
-                // Foreign key doesn't exist, continue
-            }
-            
-            // Drop index if exists
-            try {
-                $table->dropIndex(['trial_expires_at']);
-            } catch (\Exception $e) {
-                // Index doesn't exist, continue
-            }
-        });
+        // Drop foreign keys from organizations (using raw SQL to ignore errors)
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        
+        try {
+            DB::statement('ALTER TABLE organizations DROP FOREIGN KEY organizations_trial_plan_id_foreign');
+        } catch (\Exception $e) {
+            // FK doesn't exist, continue
+        }
+        
+        try {
+            DB::statement('ALTER TABLE organizations DROP FOREIGN KEY organizations_trial_promotion_id_foreign');
+        } catch (\Exception $e) {
+            // FK doesn't exist, continue
+        }
+        
+        // Drop index from organizations
+        try {
+            DB::statement('ALTER TABLE organizations DROP INDEX organizations_trial_expires_at_index');
+        } catch (\Exception $e) {
+            // Index doesn't exist, continue
+        }
         
         // Drop columns from organizations if they exist
         if (Schema::hasColumn('organizations', 'trial_plan_id')) {
@@ -52,15 +51,12 @@ return new class extends Migration
             });
         }
         
-        // Drop everything trial-related from promotions
-        Schema::table('promotions', function (Blueprint $table) {
-            // Drop foreign key if exists
-            try {
-                $table->dropForeign(['trial_plan_id']);
-            } catch (\Exception $e) {
-                // Foreign key doesn't exist, continue
-            }
-        });
+        // Drop foreign key from promotions
+        try {
+            DB::statement('ALTER TABLE promotions DROP FOREIGN KEY promotions_trial_plan_id_foreign');
+        } catch (\Exception $e) {
+            // FK doesn't exist, continue
+        }
         
         // Drop columns from promotions if they exist
         if (Schema::hasColumn('promotions', 'trial_plan_id')) {
@@ -74,8 +70,14 @@ return new class extends Migration
             });
         }
         
-        // Reset type enum to original (percent, fixed)
-        DB::statement("ALTER TABLE promotions MODIFY COLUMN type ENUM('percent', 'fixed') NOT NULL DEFAULT 'percent'");
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        
+        // Reset type enum to original (percent, fixed) - only if 'trial' exists
+        try {
+            DB::statement("ALTER TABLE promotions MODIFY COLUMN type ENUM('percent', 'fixed') NOT NULL DEFAULT 'percent'");
+        } catch (\Exception $e) {
+            // Enum doesn't need reset, continue
+        }
     }
 
     /**
