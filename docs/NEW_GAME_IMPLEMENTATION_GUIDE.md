@@ -2498,10 +2498,83 @@ php artisan {backend}:import --cards-only
 - [ ] Translations complete
 - [ ] Config values set in production .env
 - [ ] API keys configured
+- [ ] **Deck sharing tested with all card types**
 
 ---
 
-### 11.2 Deploy Steps
+### 11.2 Deck Sharing Multi-Backend Support
+
+**CRITICAL**: Shared deck view must support all backends!
+
+**File**: `app/Http/Controllers/DeckController.php` → `publicView()`
+
+```php
+public function publicView(string $token): View
+{
+    $deck = Deck::where('shared_token', $token)
+        ->where('is_shared', true)
+        ->with([
+            'deckCards.card.group',         // TCGCSV (MTG/YGO)
+            'deckCards.tcgdexCard.set',     // TCGDEX (Pokemon)
+            'deckCards.cmapiCard.set',      // CMAPI (Lorcana/One Piece)
+            'deckCards.{yourBackend}Card.set', // ← ADD YOUR BACKEND HERE
+            'deckCards.photos',             // User photos
+            'game',
+            'user'
+        ])
+        ->firstOrFail();
+}
+```
+
+**File**: `resources/views/decks/public.blade.php`
+
+Handle multilingual fields (if your backend uses JSON arrays):
+
+```php
+@php
+    // Handle multilingual fields (arrays)
+    $cardName = $card->name;
+    if (is_array($cardName)) {
+        $cardName = $cardName['en'] ?? $cardName['da'] ?? 'Unknown';
+    }
+    
+    // Handle image formats
+    if (isset($card->image_small)) {
+        // TCGCSV format
+        $cardImageSmall = $card->image_small;
+    } elseif (isset($card->image_small_url)) {
+        // TCGDEX format
+        $cardImageSmall = $card->getLowQualityImageUrl();
+    } elseif (isset($card->images) && is_array($card->images)) {
+        // CMAPI format
+        $cardImageSmall = $card->images['small'] ?? null;
+    }
+    // ← ADD YOUR BACKEND IMAGE LOGIC HERE
+@endphp
+```
+
+**Testing Checklist**:
+- [ ] Create deck with cards from your game
+- [ ] Share deck (click "Share Deck" button)
+- [ ] Open shared link in incognito/private window
+- [ ] Verify card images display correctly
+- [ ] Verify card names are strings (not arrays)
+- [ ] Verify set names display correctly
+- [ ] Verify user-uploaded photos display (if any)
+- [ ] Test hover preview on card images
+- [ ] Check no PHP errors in logs
+
+**Common Issues**:
+- ❌ `htmlspecialchars(): Argument #1 must be string, array given`
+  - **Fix**: Extract string from multilingual array fields
+- ❌ Images not showing
+  - **Fix**: Add image URL logic in `@php` block
+- ❌ Set names missing
+  - **Fix**: Add `.set` to eager loading in controller
+
+---
+
+### 11.3 Deploy Steps
 
 ```bash
 # On server
@@ -2523,10 +2596,11 @@ php artisan {backend}:import
 - [ ] Caches cleared
 - [ ] Import completed
 - [ ] Site tested in production
+- [ ] **Shared deck link tested**
 
 ---
 
-### 11.3 Scheduler Update
+### 11.4 Scheduler Update
 
 Verify scheduler includes new import:
 
