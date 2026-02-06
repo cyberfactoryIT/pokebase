@@ -11,6 +11,15 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <!-- Analytics Config -->
+        <script>
+            window.appConfig = {
+                analyticsType: '{{ config("services.analytics.type") }}',
+                analyticsId: '{{ config("services.analytics.id") }}',
+                analyticsEnabled: {{ config("services.analytics.enabled") ? 'true' : 'false' }}
+            };
+        </script>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
