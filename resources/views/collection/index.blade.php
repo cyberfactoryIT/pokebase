@@ -1500,8 +1500,29 @@ async function updateQuantity(collectionId, change, button) {
     // Don't allow quantity below 1
     if (newQty < 1) {
         if (confirm('Remove this card from your collection?')) {
-            // Remove from collection
-            window.location.href = '/collection/' + collectionId + '/delete';
+            // Remove from collection using DELETE method
+            try {
+                const response = await fetch('/collection/' + collectionId, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Remove the card element from DOM or reload the page
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to remove card');
+                }
+            } catch (error) {
+                console.error('Error removing card:', error);
+                alert('Failed to remove card');
+            }
         }
         return;
     }
