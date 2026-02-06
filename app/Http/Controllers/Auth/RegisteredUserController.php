@@ -108,6 +108,17 @@ class RegisteredUserController extends Controller
             $token = \Str::random(32);
             $expires = now()->addHours(24);
             
+            // Detect browser language
+            $supportedLocales = ['da', 'en', 'it'];
+            $browserLocale = $request->getPreferredLanguage($supportedLocales);
+            $detectedLocale = $browserLocale ?: config('app.locale', 'da');
+            
+            \Log::info('Detected browser locale', [
+                'browser_locale' => $browserLocale,
+                'final_locale' => $detectedLocale,
+                'accept_language' => $request->header('Accept-Language')
+            ]);
+            
             $userData = [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -116,6 +127,7 @@ class RegisteredUserController extends Controller
                 'email_verification_token' => $token,
                 'email_verification_expires_at' => $expires,
                 'default_game_id' => $validated['preferred_game_id'],
+                'locale' => $detectedLocale,
             ];
             
             \Log::info('Creating user', ['email' => $userData['email']]);

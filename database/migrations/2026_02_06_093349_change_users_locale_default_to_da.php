@@ -12,11 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Change default locale from 'en' to 'da'
-        DB::statement("ALTER TABLE users MODIFY COLUMN locale VARCHAR(8) DEFAULT 'da'");
-        
-        // Update existing users with 'en' to 'da' (optional - uncomment if needed)
-        // DB::table('users')->where('locale', 'en')->update(['locale' => 'da']);
+        // Change default to NULL - will be set dynamically based on browser language
+        DB::statement("ALTER TABLE users MODIFY COLUMN locale VARCHAR(8) DEFAULT NULL");
     }
 
     /**
@@ -24,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back to 'en' default
+        // Revert back to original 'en' default
         DB::statement("ALTER TABLE users MODIFY COLUMN locale VARCHAR(8) DEFAULT 'en'");
     }
 };
