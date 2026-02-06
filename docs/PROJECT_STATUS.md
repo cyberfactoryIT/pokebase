@@ -1,6 +1,6 @@
 # 📊 Basecard - Project Status
 
-*Last Updated: 1 February 2026 - 10:30 CET*
+*Last Updated: 6 February 2026 - 15:00 CET*
 
 ---
 
@@ -356,6 +356,54 @@ TCGDX_BASE_URL=https://api.tcgdex.net/v2
 ---
 
 ## 📝 Recent Major Updates
+
+### February 6, 2026: Pre-Production Final Push
+**Analytics, Cookie Consent, and Trial System Bug Fixes**
+
+#### Implemented:
+1. **Cookie Consent Banner (GDPR Compliant)**
+   - ✅ Alpine.js component con 3 categorie (Necessari, Statistiche, Marketing)
+   - ✅ localStorage persistence delle preferenze utente
+   - ✅ Multilingua completo (da/en/it) in `resources/lang/{locale}/cookies.php`
+   - ✅ Incluso in tutti i layout: app.blade.php, guest.blade.php, welcome_new.blade.php
+   - ✅ Design matching UI con gradient purple/indigo
+
+2. **Analytics Integration**
+   - ✅ Plausible Analytics (recommended) - cookieless, <1KB, GDPR-native
+   - ✅ Google Analytics 4 (alternative) - con IP anonymization
+   - ✅ Config-driven: `ANALYTICS_TYPE`, `ANALYTICS_ID`, `ANALYTICS_ENABLED` in .env
+   - ✅ Conditional script loading: scripts caricati solo con consenso utente
+   - ✅ window.appConfig per passare config a frontend
+
+3. **Trial System Bug Fix** ⚠️ CRITICAL
+   - 🐛 **Bug Found**: Organizations con trial attivi mostravano "free" invece del piano trial
+   - ✅ **Root Cause**: `User::subscriptionTier()` controllava solo `pricingPlan`, ignorando trial
+   - ✅ **Fix Applied**: Modificato per usare `Organization::getEffectivePlan()` che restituisce trial se attivo
+   - ✅ Updated `User::membershipStatus()` per includere `is_trial` e `trial_expires_at`
+   - ✅ Trial banner ora mostra correttamente il piano e i giorni rimanenti
+
+4. **Documentation**
+   - ✅ `docs/ANALYTICS_COOKIE_SETUP.md` - Setup guide completa per Plausible/GA
+   - ✅ `docs/PLAUSIBLE_SETUP_GUIDE.md` - Guida specifica Plausible
+   - ✅ `docs/PREPRODUCTION_FINAL_CHECKLIST.md` - Checklist deployment
+
+#### Files Modified: 12+
+- Models: `User.php` (subscriptionTier fix per trial detection)
+- Views: `layouts/app.blade.php`, `layouts/guest.blade.php`, `welcome_new.blade.php` (window.appConfig + cookie banner)
+- Components: `resources/views/components/cookie-consent.blade.php` (nuovo)
+- JavaScript: `resources/js/app.js` (Alpine.data cookieConsent registration)
+- Config: `config/services.php` (analytics config), `.env` e `.env.example`
+- Translations: `resources/lang/{da,en,it}/cookies.php` (nuovo)
+- Docs: 3 nuove guide markdown
+
+#### Production Ready Checklist:
+- ✅ Cookie consent banner funzionante
+- ✅ Analytics integration pronta (richiede solo .env in prod)
+- ✅ Trial system fix applicato
+- ✅ Traduzioni complete
+- ⏳ **Next**: Deploy + test Plausible in produzione
+
+---
 
 ### February 1, 2026: UX Improvements & Deck Refactoring
 **Enhanced user experience with keyboard navigation and cleaner architecture**
