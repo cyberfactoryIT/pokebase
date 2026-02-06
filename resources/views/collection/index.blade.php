@@ -1502,7 +1502,10 @@ async function updateQuantity(collectionId, change, button) {
         if (confirm('Remove this card from your collection?')) {
             // Remove from collection using DELETE method
             try {
-                const response = await fetch('{{ url('collection') }}/' + collectionId, {
+                const url = '{{ url('collection') }}/' + collectionId;
+                console.log('Deleting collection item:', collectionId, 'URL:', url);
+                
+                const response = await fetch(url, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1510,6 +1513,14 @@ async function updateQuantity(collectionId, change, button) {
                         'Accept': 'application/json',
                     }
                 });
+                
+                console.log('Delete response:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Delete failed:', errorText);
+                    throw new Error('Delete failed: ' + response.status);
+                }
                 
                 const data = await response.json();
                 
