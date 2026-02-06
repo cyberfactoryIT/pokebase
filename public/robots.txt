@@ -12,4 +12,4 @@ Disallow: /api
 
 Allow: /
 
-Sitemap: https://basecard.dk/sitemap.xml
+Sitemap: https://app.basecard.dk/sitemap.xml

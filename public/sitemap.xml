@@ -4,7 +4,7 @@
     
     <!-- Homepage -->
     <url>
-        <loc>https://basecard.dk/</loc>
+        <loc>https://app.basecard.dk/</loc>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
         <lastmod>2026-02-06</lastmod>
@@ -12,35 +12,35 @@
     
     <!-- Public Pages -->
     <url>
-        <loc>https://basecard.dk/about</loc>
+        <loc>https://app.basecard.dk/about</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
         <lastmod>2026-02-06</lastmod>
     </url>
     
     <url>
-        <loc>https://basecard.dk/features</loc>
+        <loc>https://app.basecard.dk/features</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
         <lastmod>2026-02-06</lastmod>
     </url>
     
     <url>
-        <loc>https://basecard.dk/pricing</loc>
+        <loc>https://app.basecard.dk/pricing</loc>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
         <lastmod>2026-02-06</lastmod>
     </url>
     
     <url>
-        <loc>https://basecard.dk/contact</loc>
+        <loc>https://app.basecard.dk/contact</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
         <lastmod>2026-02-06</lastmod>
     </url>
     
     <url>
-        <loc>https://basecard.dk/faq</loc>
+        <loc>https://app.basecard.dk/faq</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
         <lastmod>2026-02-06</lastmod>
@@ -48,21 +48,21 @@
     
     <!-- Legal Pages -->
     <url>
-        <loc>https://basecard.dk/terms</loc>
+        <loc>https://app.basecard.dk/terms</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
         <lastmod>2026-02-06</lastmod>
     </url>
     
     <url>
-        <loc>https://basecard.dk/privacy</loc>
+        <loc>https://app.basecard.dk/privacy</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
         <lastmod>2026-02-06</lastmod>
     </url>
     
     <url>
-        <loc>https://basecard.dk/handelsbetingelser</loc>
+        <loc>https://app.basecard.dk/handelsbetingelser</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
         <lastmod>2026-02-06</lastmod>
@@ -70,14 +70,14 @@
     
     <!-- Auth Pages (accessible to non-logged users) -->
     <url>
-        <loc>https://basecard.dk/login</loc>
+        <loc>https://app.basecard.dk/login</loc>
         <changefreq>yearly</changefreq>
         <priority>0.6</priority>
         <lastmod>2026-02-06</lastmod>
     </url>
     
     <url>
-        <loc>https://basecard.dk/register</loc>
+        <loc>https://app.basecard.dk/register</loc>
         <changefreq>yearly</changefreq>
         <priority>0.6</priority>
         <lastmod>2026-02-06</lastmod>
