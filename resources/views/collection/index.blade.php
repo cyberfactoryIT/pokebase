@@ -1500,40 +1500,28 @@ async function updateQuantity(collectionId, change, button) {
     // Don't allow quantity below 1
     if (newQty < 1) {
         if (confirm('Remove this card from your collection?')) {
-            // Remove from collection using DELETE method
-            try {
-                const url = '{{ url('collection') }}/' + collectionId;
-                console.log('Deleting collection item:', collectionId, 'URL:', url);
-                
-                const response = await fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    }
-                });
-                
-                console.log('Delete response:', response.status);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Delete failed:', errorText);
-                    throw new Error('Delete failed: ' + response.status);
-                }
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    // Remove the card element from DOM or reload the page
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Failed to remove card');
-                }
-            } catch (error) {
-                console.error('Error removing card:', error);
-                alert('Failed to remove card');
-            }
+            // Remove from collection using form submission (traditional Laravel way)
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url('collection') }}/' + collectionId;
+            
+            // Add CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = document.querySelector('meta[name="csrf-token"]').content;
+            form.appendChild(csrfInput);
+            
+            // Add method spoofing for DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
         }
         return;
     }
