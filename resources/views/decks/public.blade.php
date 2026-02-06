@@ -118,6 +118,8 @@
                 @php
                     $card = $deckCard->product;
                 @endphp
+                
+                @if($card)
                 <div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-white/5 transition group">
                     <!-- Quantity -->
                     <div class="col-span-1 flex items-center">
@@ -126,10 +128,10 @@
 
                     <!-- Card Info -->
                     <div class="col-span-5 flex items-center gap-4">
-                        @if($card->image_small)
+                        @if($card->image_small ?? $card->images['small'] ?? null)
                         <div class="relative group/image">
                             <img 
-                                src="{{ $card->image_small }}" 
+                                src="{{ $card->image_small ?? $card->images['small'] ?? '' }}" 
                                 alt="{{ $card->name }}"
                                 class="w-12 h-16 rounded object-cover border border-white/15"
                                 loading="lazy"
@@ -137,7 +139,7 @@
                             <!-- Hover Preview -->
                             <div class="absolute left-full ml-4 top-0 z-50 opacity-0 group-hover/image:opacity-100 transition-opacity pointer-events-none">
                                 <img 
-                                    src="{{ $card->image_large }}" 
+                                    src="{{ $card->image_large ?? $card->images['large'] ?? $card->images['small'] ?? '' }}" 
                                     alt="{{ $card->name }}"
                                     class="w-64 rounded-lg shadow-2xl border-2 border-white/30"
                                 >
@@ -148,20 +150,20 @@
                             <p class="text-white font-medium group-hover:text-blue-400 transition truncate">
                                 {{ $card->name }}
                             </p>
-                            @if($card->supertype)
-                            <p class="text-gray-500 text-sm">{{ $card->supertype }}</p>
+                            @if($card->supertype ?? $card->type ?? null)
+                            <p class="text-gray-500 text-sm">{{ $card->supertype ?? $card->type ?? '' }}</p>
                             @endif
                         </div>
                     </div>
 
                     <!-- Set -->
                     <div class="col-span-2 flex items-center">
-                        <span class="text-gray-300 text-sm">{{ $card->set_name ?? '-' }}</span>
+                        <span class="text-gray-300 text-sm">{{ $card->set_name ?? $card->setName ?? '-' }}</span>
                     </div>
 
                     <!-- Rarity -->
                     <div class="col-span-2 flex items-center">
-                        @if($card->rarity)
+                        @if($card->rarity ?? null)
                         <span class="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded">
                             {{ $card->rarity }}
                         </span>
@@ -172,9 +174,10 @@
 
                     <!-- Number -->
                     <div class="col-span-2 flex items-center">
-                        <span class="text-gray-400 text-sm">{{ $card->number ?? '-' }}</span>
+                        <span class="text-gray-400 text-sm">{{ $card->number ?? $card->local_id ?? '-' }}</span>
                     </div>
                 </div>
+                @endif
                 @endforeach
             </div>
         </div>

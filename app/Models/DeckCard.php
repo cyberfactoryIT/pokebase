@@ -62,4 +62,25 @@ class DeckCard extends Model
     {
         return $this->hasMany(DeckCardPhoto::class, 'deck_card_id');
     }
+
+    /**
+     * Get the product/card regardless of backend (accessor for unified access)
+     * Returns the card from whichever backend is populated
+     */
+    public function getProductAttribute()
+    {
+        if ($this->tcgdex_card_id) {
+            return $this->tcgdexCard;
+        }
+        
+        if ($this->cmapi_card_id) {
+            return $this->cmapiCard;
+        }
+        
+        if ($this->product_id) {
+            return $this->card;
+        }
+        
+        return null;
+    }
 }
