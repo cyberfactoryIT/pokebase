@@ -52,7 +52,7 @@
                         </p>
                     @endif
                     
-                    <a href="{{ route('pages.pricing') }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition shadow-lg">
+                    <a href="{{ route('pricing') }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition shadow-lg">
                         {{ __('trial.banner.upgrade_now') }}
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
@@ -87,7 +87,7 @@
                     </p>
                     
                     <div class="flex gap-3">
-                        <a href="{{ route('pages.pricing') }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition shadow-lg">
+                        <a href="{{ route('pricing') }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition shadow-lg">
                             {{ __('trial.banner.subscribe_now') }}
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>

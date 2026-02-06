@@ -97,7 +97,7 @@
                         <div class="mt-6 pt-6 border-t border-gray-700">
                             <p class="text-sm text-gray-400 text-center">
                                 {{ __('trial.no_code_question') }}
-                                <a href="{{ route('pages.pricing') }}" class="text-blue-400 hover:text-blue-300">
+                                <a href="{{ route('pricing') }}" class="text-blue-400 hover:text-blue-300">
                                     {{ __('trial.view_plans') }}
                                 </a>
                             </p>
