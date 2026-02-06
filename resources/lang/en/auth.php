@@ -31,6 +31,9 @@ return [
     'preferred_game' => 'Preferred Game',
     'select_game' => '-- Select a game --',
     'preferred_game_description' => 'This will be your default game when you log in.',
+    'trial_code' => 'Trial Code (Optional)',
+    'trial_code_placeholder' => 'WELCOME30',
+    'trial_code_description' => 'Have a promo code? Enter it to unlock premium features for free!',
     
     // Two-Factor Authentication
     'two_factor_authentication' => 'Two-Factor Authentication',

@@ -31,6 +31,9 @@ return [
     'preferred_game' => 'Foretrukket Spil',
     'select_game' => '-- Vælg et spil --',
     'preferred_game_description' => 'Dette vil være dit standardspil, når du logger ind.',
+    'trial_code' => 'Prøvekode (Valgfri)',
+    'trial_code_placeholder' => 'WELCOME30',
+    'trial_code_description' => 'Har du en kampagnekode? Indtast den for at låse op for premium-funktioner gratis!',
     
     // Two-Factor Authentication
     'two_factor_authentication' => 'To-faktor autentificering',

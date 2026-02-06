@@ -13,6 +13,7 @@ return [
     
     // Success message
     'redeemed_success' => 'Prova attivata! Ora hai accesso a :plan per :days giorni (scade il :expires)',
+    'redemption_failed' => 'Impossibile attivare il codice prova',
     
     // Already subscribed
     'already_subscribed_title' => 'Hai Già un Abbonamento',

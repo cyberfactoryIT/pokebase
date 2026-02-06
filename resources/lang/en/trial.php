@@ -13,6 +13,7 @@ return [
     
     // Success message
     'redeemed_success' => 'Trial activated! You now have access to :plan for :days days (expires :expires)',
+    'redemption_failed' => 'Could not activate trial code',
     
     // Already subscribed
     'already_subscribed_title' => 'You Already Have a Subscription',

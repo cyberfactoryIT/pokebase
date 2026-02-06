@@ -13,6 +13,7 @@ return [
     
     // Success message
     'redeemed_success' => 'Prøveperiode aktiveret! Du har nu adgang til :plan i :days dage (udløber :expires)',
+    'redemption_failed' => 'Kunne ikke aktivere prøvekode',
     
     // Already subscribed
     'already_subscribed_title' => 'Du Har Allerede et Abonnement',

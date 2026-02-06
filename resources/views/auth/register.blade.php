@@ -105,6 +105,14 @@
             <p class="mt-1 text-sm text-gray-400">{{ __('auth.preferred_game_description') }}</p>
         </div>
 
+        <!-- Trial Code (Optional) -->
+        <div class="mt-4">
+            <x-input-label for="trial_code" :value="__('auth.trial_code')" class="text-gray-300" />
+            <x-text-input id="trial_code" class="block mt-1 w-full bg-black/50 border-white/20 text-white uppercase" type="text" name="trial_code" :value="old('trial_code')" placeholder="{{ __('auth.trial_code_placeholder') }}" maxlength="50" />
+            <x-input-error :messages="$errors->get('trial_code')" class="mt-2" />
+            <p class="mt-1 text-sm text-gray-400">{{ __('auth.trial_code_description') }}</p>
+        </div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-400 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('login') }}">
                 {{ __('auth.already_registered') }}

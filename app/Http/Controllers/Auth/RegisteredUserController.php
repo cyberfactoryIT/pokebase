@@ -63,6 +63,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
             'preferred_game_id' => ['required', 'exists:games,id'],
+            'trial_code' => ['nullable', 'string', 'max:50'],
         ]);
         
         \Log::info('Validation passed', ['validated_keys' => array_keys($validated)]);
@@ -193,6 +194,41 @@ class RegisteredUserController extends Controller
                     'error' => $e->getMessage()
                 ]);
                 // Continue anyway
+            }
+        }
+        
+        // Apply trial code if provided
+        if ($request->filled('trial_code')) {
+            try {
+                $promotionEngine = app(\App\Services\PromotionEngine::class);
+                $promotion = $promotionEngine->redeemTrialCode(
+                    $request->input('trial_code'),
+                    $user->organization
+                );
+                
+                \Log::info('Trial code redeemed during registration', [
+                    'user_id' => $user->id,
+                    'organization_id' => $user->organization_id,
+                    'code' => $request->input('trial_code'),
+                    'promotion_id' => $promotion->id,
+                ]);
+                
+                session()->flash('success', __(
+                    'trial.redeemed_success',
+                    [
+                        'plan' => $promotion->trialPlan->name,
+                        'days' => $promotion->trial_duration_days,
+                        'expires' => $user->organization->trial_expires_at->format('d/m/Y'),
+                    ]
+                ));
+            } catch (\Exception $e) {
+                \Log::warning('Failed to redeem trial code during registration', [
+                    'user_id' => $user->id,
+                    'code' => $request->input('trial_code'),
+                    'error' => $e->getMessage()
+                ]);
+                // Don't block registration, just show error message
+                session()->flash('warning', __('trial.redemption_failed') . ': ' . $e->getMessage());
             }
         }
 
