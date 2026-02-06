@@ -518,9 +518,29 @@ class DeckController extends Controller
         $totalCards = $deck->deckCards->sum('quantity');
         $uniqueCards = $deck->deckCards->count();
         
+        // Calculate total value in owner's preferred currency
+        $preferredCurrency = $deck->user->preferred_currency ?? 'EUR';
+        $totalValue = 0;
+        $cardsWithPrices = 0;
+        
+        foreach ($deck->deckCards as $deckCard) {
+            if ($deckCard->cached_price && $deckCard->cached_price > 0) {
+                $priceValue = $deckCard->cached_price * $deckCard->quantity;
+                
+                // Only count if matches preferred currency
+                if ($deckCard->cached_price_currency === $preferredCurrency) {
+                    $totalValue += $priceValue;
+                    $cardsWithPrices++;
+                }
+            }
+        }
+        
         return [
             'total_cards' => $totalCards,
             'unique_cards' => $uniqueCards,
+            'total_value' => round($totalValue, 2),
+            'currency' => $preferredCurrency,
+            'cards_with_prices' => $cardsWithPrices,
         ];
     }
 

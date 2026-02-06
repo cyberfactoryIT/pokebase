@@ -59,7 +59,7 @@
 
         <!-- Deck Statistics (No Prices for Public View) -->
         @if(!$deck->deckCards->isEmpty())
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <!-- Total Cards -->
             <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
                 <div class="flex items-center justify-between">
@@ -70,6 +70,30 @@
                     <div class="bg-blue-500/20 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Value -->
+            <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Value</p>
+                        <p class="text-3xl font-bold text-white mt-1">
+                            @if($stats['total_value'] > 0)
+                                {{ number_format($stats['total_value'], 2, ',', '.') }} {{ $stats['currency'] }}
+                            @else
+                                <span class="text-gray-500">N/A</span>
+                            @endif
+                        </p>
+                        @if($stats['cards_with_prices'] > 0)
+                            <p class="text-gray-500 text-xs mt-1">{{ $stats['cards_with_prices'] }} cards priced</p>
+                        @endif
+                    </div>
+                    <div class="bg-green-500/20 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
                 </div>
