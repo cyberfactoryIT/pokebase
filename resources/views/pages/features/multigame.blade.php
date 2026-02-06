@@ -9,7 +9,7 @@
             <p class="text-xl text-gray-400 max-w-3xl mx-auto">{{ __('features/multigame.subtitle') }}</p>
         </div>
         
-        <div class="grid md:grid-cols-3 gap-8 mb-12">
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
             <!-- Pokémon -->
             <div class="bg-gradient-to-br from-red-600/10 to-yellow-600/10 border border-red-600/20 rounded-2xl p-8 hover:border-red-600/40 transition">
                 <div class="text-center mb-6">
@@ -28,37 +28,19 @@
                 </ul>
             </div>
             
-            <!-- Magic -->
+            <!-- Lorcana -->
             <div class="bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-blue-600/20 rounded-2xl p-8 hover:border-blue-600/40 transition">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">🔮</span>
+                        <span class="text-3xl">✨</span>
                     </div>
-                    <h3 class="text-2xl font-bold mb-2">Magic: The Gathering</h3>
+                    <h3 class="text-2xl font-bold mb-2">Disney Lorcana</h3>
                 </div>
                 <ul class="space-y-3 text-gray-400">
                     @foreach(['feat1', 'feat2', 'feat3'] as $feat)
                     <li class="flex items-start">
                         <span class="text-blue-400 mr-2">•</span>
-                        {{ __('features/multigame.magic_' . $feat) }}
-                    </li>
-                    @endforeach
-                </ul>
-            </div>
-            
-            <!-- Yu-Gi-Oh! -->
-            <div class="bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-purple-600/20 rounded-2xl p-8 hover:border-purple-600/40 transition">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">🎴</span>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-2">Yu-Gi-Oh!</h3>
-                </div>
-                <ul class="space-y-3 text-gray-400">
-                    @foreach(['feat1', 'feat2', 'feat3'] as $feat)
-                    <li class="flex items-start">
-                        <span class="text-purple-400 mr-2">•</span>
-                        {{ __('features/multigame.yugioh_' . $feat) }}
+                        {{ __('features/multigame.lorcana_' . $feat) }}
                     </li>
                     @endforeach
                 </ul>
@@ -67,13 +49,8 @@
         
         <!-- Coming soon -->
         <div class="text-center bg-gradient-to-r from-pink-600/10 to-purple-600/10 border border-pink-600/20 rounded-2xl p-8">
-            <p class="text-gray-400 mb-2">{{ __('features/multigame.coming_label') }}</p>
-            <div class="flex flex-wrap justify-center gap-4 text-lg font-semibold">
-                <span class="px-4 py-2 bg-white/5 rounded-lg">One Piece TCG</span>
-                <span class="px-4 py-2 bg-white/5 rounded-lg">Digimon</span>
-                <span class="px-4 py-2 bg-white/5 rounded-lg">Disney Lorcana</span>
-                <span class="px-4 py-2 bg-white/5 rounded-lg">{{ __('features/multigame.coming_more') }}</span>
-            </div>
+            <p class="text-gray-400 mb-4 text-lg">{{ __('features/multigame.coming_label') }}</p>
+            <p class="text-gray-500 text-sm">{{ __('features/multigame.coming_more') }}</p>
         </div>
         
         <p class="text-3xl font-bold text-pink-400 text-center mt-12">{{ __('features/multigame.tagline') }}</p>

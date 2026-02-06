@@ -32,7 +32,7 @@ return [
     'feature4_title' => 'Avancerede analyser',
     'feature4_text' => 'Grafer, rapporter og statistikker for at forstå din samlings udvikling over tid.',
     'feature5_title' => 'Multi-Game Support',
-    'feature5_text' => 'Pokémon, Magic: The Gathering, Yu-Gi-Oh! og meget mere på vej.',
+    'feature5_text' => 'Pokémon og Lorcana, med flere spil på vej.',
     'feature6_title' => 'Flersproget',
     'feature6_text' => 'Interface tilgængelig på dansk, engelsk og italiensk.',
     'features_cta_title' => 'Klar til at komme i gang?',

@@ -29,7 +29,7 @@ return [
     'feature4_title' => 'Advanced Analytics',
     'feature4_text' => 'Charts, reports, and statistics to understand your collection\'s evolution over time.',
     'feature5_title' => 'Multi-Game Support',
-    'feature5_text' => 'Pokémon, Magic: The Gathering, Yu-Gi-Oh! and many more coming.',
+    'feature5_text' => 'Pokémon and Lorcana, with more games coming soon.',
     'feature6_title' => 'Multi-Language',
     'feature6_text' => 'Interface available in Danish, English, and Italian.',
     'features_cta_title' => 'Ready to get started?',

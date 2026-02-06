@@ -169,7 +169,7 @@ return [
     
     // Hero Section - Updated Copy
     'hero_title' => 'Know your card portfolio value – without guessing.',
-    'hero_subtitle' => 'Track market value of Pokémon, Magic and One Piece based on European Cardmarket prices.',
+    'hero_subtitle' => 'Track market value of Pokémon and Lorcana based on European Cardmarket prices.',
     'cta_create_profile' => 'Create free profile – see your value',
     'cta_start_free' => 'Start free',
     'cta_learn_more' => 'Learn more',

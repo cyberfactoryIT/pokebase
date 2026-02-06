@@ -3,7 +3,7 @@
 return [
     // Home / Welcome
     'home_title' => 'Basecard - Track your trading card collection value',
-    'home_description' => 'Manage your Pokemon, Yu-Gi-Oh!, Magic and other trading cards. See market values, build decks and get full overview of your collection - all in one place.',
+    'home_description' => 'Manage your Pokemon and Lorcana trading cards. Track market values, build decks and get full overview of your collection - all in one place.',
     
     // Pricing
     'pricing_title' => 'Pricing & Plans - Basecard',

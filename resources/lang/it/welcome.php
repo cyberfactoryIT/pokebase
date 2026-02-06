@@ -169,7 +169,7 @@ return [
     
     // Hero Section - Updated Copy
     'hero_title' => 'Conosci il valore del tuo portafoglio di carte – senza indovinare.',
-    'hero_subtitle' => 'Segui il valore di mercato di Pokémon, Magic e One Piece basato sui prezzi europei di Cardmarket.',
+    'hero_subtitle' => 'Segui il valore di mercato di Pokémon e Lorcana basato sui prezzi europei di Cardmarket.',
     'cta_create_profile' => 'Crea profilo gratis – scopri il tuo valore',
     'cta_start_free' => 'Inizia gratis',
     'cta_learn_more' => 'Scopri di più',

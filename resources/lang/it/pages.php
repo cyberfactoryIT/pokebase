@@ -29,7 +29,7 @@ return [
     'feature4_title' => 'Analisi Avanzate',
     'feature4_text' => 'Grafici, report e statistiche per comprendere l\'evoluzione della tua collezione nel tempo.',
     'feature5_title' => 'Supporto Multi-Gioco',
-    'feature5_text' => 'Pokémon, Magic: The Gathering, Yu-Gi-Oh! e molto altro in arrivo.',
+    'feature5_text' => 'Pokémon e Lorcana, con altri giochi in arrivo.',
     'feature6_title' => 'Multi-Lingua',
     'feature6_text' => 'Interfaccia disponibile in danese, inglese e italiano.',
     'features_cta_title' => 'Pronto per iniziare?',

@@ -2,7 +2,7 @@
 return [
     // Hero Section - New Copy
     'hero_title' => 'Kend værdien af din kortportefølje – uden gæt.',
-    'hero_subtitle' => 'Følg markedsværdi på Pokémon, Magic og One Piece baseret på europæiske Cardmarket-priser.',
+    'hero_subtitle' => 'Følg markedsværdi på Pokémon, Lorcana og andre baseret på europæiske Cardmarket-priser.',
     'cta_create_profile' => 'Opret gratis profil – se din værdi',
     'cta_learn_more' => 'Lær mere',
     'stat_games' => 'Data, ikke hype',
@@ -200,7 +200,7 @@ return [
     
     // Hero Section - Updated Copy
     'hero_title' => 'Kend værdien af din kortportefølje – uden gæt.',
-    'hero_subtitle' => 'Følg markedsværdi på Pokémon, Magic og One Piece baseret på europæiske Cardmarket-priser.',
+    'hero_subtitle' => 'Følg markedsværdi på Pokémon, Lorcana og andre baseret på europæiske Cardmarket-priser.',
     'cta_create_profile' => 'Opret gratis profil – se din værdi',
     'cta_start_free' => 'Start gratis',
     'cta_learn_more' => 'Lær mere',

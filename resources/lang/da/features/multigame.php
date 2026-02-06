@@ -9,13 +9,9 @@ return [
     'pokemon_feat2' => 'Priser fra Japan og internationale markeder',
     'pokemon_feat3' => 'Grading tracking (PSA, CGC, Beckett)',
     
-    'magic_feat1' => 'Alle formater: Standard, Modern, Commander',
-    'magic_feat2' => 'Integration med MTGO og Arena',
-    'magic_feat3' => 'Reserved List tracking',
-    
-    'yugioh_feat1' => 'Opdateret til de nyeste sæt',
-    'yugioh_feat2' => 'Duel Monsters, Rush Duel og Speed Duel',
-    'yugioh_feat3' => 'Deck-byggere til alle formater',
+    'lorcana_feat1' => 'Fuld Disney Lorcana kortdatabase',
+    'lorcana_feat2' => 'Cardmarket prisintegration',
+    'lorcana_feat3' => 'Deck-bygger og samlingsregistrering',
     
     'coming_label' => 'Kommer snart:',
     'coming_more' => 'og flere...',

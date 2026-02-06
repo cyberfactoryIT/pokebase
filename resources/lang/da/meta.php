@@ -3,7 +3,7 @@
 return [
     // Home / Welcome
     'home_title' => 'Basecard - Spor værdien af dine samlekort',
-    'home_description' => 'Hold styr på dine Pokemon, Yu-Gi-Oh!, Magic og andre samlekort. Se markedsværdier, byg decks og få overblik over din samling - alt ét sted.',
+    'home_description' => 'Hold styr på dine Pokemon og Lorcana samlekort. Følg markedsværdier, byg decks og få overblik over din samling - alt ét sted.',
     
     // Pricing
     'pricing_title' => 'Priser og planer - Basecard',

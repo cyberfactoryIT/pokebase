@@ -9,13 +9,9 @@ return [
     'pokemon_feat2' => 'Prezzi da Giappone e mercati internazionali',
     'pokemon_feat3' => 'Tracking grading (PSA, CGC, Beckett)',
     
-    'magic_feat1' => 'Tutti i formati: Standard, Modern, Commander',
-    'magic_feat2' => 'Integrazione con MTGO e Arena',
-    'magic_feat3' => 'Tracking Reserved List',
-    
-    'yugioh_feat1' => 'Aggiornato agli ultimi set',
-    'yugioh_feat2' => 'Duel Monsters, Rush Duel e Speed Duel',
-    'yugioh_feat3' => 'Costruttori mazzi per tutti i formati',
+    'lorcana_feat1' => 'Database completo carte Disney Lorcana',
+    'lorcana_feat2' => 'Integrazione prezzi Cardmarket',
+    'lorcana_feat3' => 'Costruttore mazzi e tracker collezione',
     
     'coming_label' => 'Prossimamente:',
     'coming_more' => 'e altri...',
