@@ -4,6 +4,40 @@
 
 ---
 
+## ✅ Recently Completed (Feb 2026)
+
+### Trial Codes System ✨
+- **Descrizione**: Sistema codici promozionali per trial gratuiti piani Premium/Advanced
+- **Features**:
+  - ✅ Codici trial configurabili (durata, piano, limiti)
+  - ✅ Riscatto durante registrazione o dopo login
+  - ✅ Banner countdown scadenza trial
+  - ✅ Conversione automatica a Free dopo scadenza
+  - ✅ Upgrade a Stripe durante trial
+  - ✅ Cron job scadenza automatica
+  - ✅ Traduzioni en/it/da
+- **Completato**: 4 Feb 2026
+- **Documentazione**: `docs/TRIAL_CODES_GUIDE.md`
+
+### User Locale Detection 🌍
+- **Descrizione**: Rilevamento automatico lingua utente
+- **Features**:
+  - ✅ Locale da sessione (language selector)
+  - ✅ Salvataggio locale in user profile
+  - ✅ Fallback a APP_LOCALE configurabile
+- **Completato**: 6 Feb 2026
+
+### Registration Improvements 📝
+- **Descrizione**: Miglioramenti al flusso di registrazione
+- **Features**:
+  - ✅ Selezione gioco preferito
+  - ✅ Campo trial code opzionale
+  - ✅ Validazione robusta con fallback
+  - ✅ Logging dettagliato per debugging
+- **Completato**: 4-6 Feb 2026
+
+---
+
 ## 🎯 High Priority
 
 ### 1. Advanced Analytics Dashboard
