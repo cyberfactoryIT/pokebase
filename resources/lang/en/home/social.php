@@ -21,7 +21,7 @@ return [
     'test1_quote' => 'We built Basecard because we needed a modern tool for our own collections. Now we want to share it with all of Scandinavia.',
     'test1_initials' => 'BM',
     'test1_name' => 'Barbara M.',
-    'test1_role' => 'Co-founder & CEO',
+    'test1_role' => 'Co-founder & CTO',
     
     'test2_quote' => 'As the first beta tester, I\'ve followed Basecard from day one. It\'s amazing to see the product grow and improve every week.',
     'test2_initials' => 'A',
@@ -31,5 +31,5 @@ return [
     'test3_quote' => 'Our mission is clear: build the best tool for card collectors in Scandinavia. We listen to users and build features they truly need.',
     'test3_initials' => 'SBP',
     'test3_name' => 'Simon BP',
-    'test3_role' => 'Co-founder & CTO',
+    'test3_role' => 'Co-founder & CEO',
 ];
