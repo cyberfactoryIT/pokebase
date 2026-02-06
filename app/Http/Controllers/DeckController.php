@@ -128,8 +128,8 @@ class DeckController extends Controller
         ]);
 
         // Calculate deck statistics
-        $stats = $this->getDeckStats($deck);
         $topStats = $this->getDeckTopStats($deck);
+        $stats = $this->getDeckStats($deck, $topStats);
 
         return view('decks.show', compact('deck', 'stats', 'topStats', 'catalogBackend', 'currentGame'));
     }
@@ -504,8 +504,8 @@ class DeckController extends Controller
             ])
             ->firstOrFail();
 
-        $stats = $this->getDeckStats($deck);
         $topStats = $this->getDeckTopStats($deck);
+        $stats = $this->getDeckStats($deck, $topStats);
 
         return view('decks.public', compact('deck', 'stats', 'topStats'));
     }
@@ -513,32 +513,28 @@ class DeckController extends Controller
     /**
      * Get basic deck statistics
      */
-    private function getDeckStats(Deck $deck): array
+    private function getDeckStats(Deck $deck, array $topStats): array
     {
         $totalCards = $deck->deckCards->sum('quantity');
         $uniqueCards = $deck->deckCards->count();
         
-        // Calculate total value in owner's preferred currency
+        // Get owner's preferred currency (default to EUR)
         $preferredCurrency = $deck->user->preferred_currency ?? 'EUR';
-        $totalValue = 0;
-        $cardsWithPrices = 0;
         
-        foreach ($deck->deckCards as $deckCard) {
-            if ($deckCard->cached_price && $deckCard->cached_price > 0) {
-                $priceValue = $deckCard->cached_price * $deckCard->quantity;
-                
-                // Only count if matches preferred currency
-                if ($deckCard->cached_price_currency === $preferredCurrency) {
-                    $totalValue += $priceValue;
-                    $cardsWithPrices++;
-                }
-            }
+        // Use the appropriate value based on preferred currency
+        if ($preferredCurrency === 'USD') {
+            $totalValue = $topStats['total_value_usd'];
+            $cardsWithPrices = $topStats['cards_with_prices_usd'];
+        } else {
+            // Default to EUR for all other currencies (will be converted in view if needed)
+            $totalValue = $topStats['total_value_eur'];
+            $cardsWithPrices = $topStats['cards_with_prices_eur'];
         }
         
         return [
             'total_cards' => $totalCards,
             'unique_cards' => $uniqueCards,
-            'total_value' => round($totalValue, 2),
+            'total_value' => $totalValue,
             'currency' => $preferredCurrency,
             'cards_with_prices' => $cardsWithPrices,
         ];
