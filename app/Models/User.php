@@ -474,6 +474,7 @@ class User extends Authenticatable
 
     /**
      * Get subscription tier (free, advanced, premium)
+     * Uses getEffectivePlan() to consider trial plans if active
      */
     public function subscriptionTier(): string
     {
@@ -481,14 +482,19 @@ class User extends Authenticatable
             return 'free';
         }
 
-        // Get fresh organization with pricing plan
-        $org = Organization::with('pricingPlan')->find($this->organization_id);
+        // Get fresh organization with trial plan included
+        $org = Organization::with(['pricingPlan', 'trialPlan'])->find($this->organization_id);
         
-        if (!$org || !$org->pricingPlan) {
+        if (!$org) {
             return 'free';
         }
         
-        $plan = $org->pricingPlan;
+        // Use effective plan (trial if active, otherwise regular plan)
+        $plan = $org->getEffectivePlan();
+        
+        if (!$plan) {
+            return 'free';
+        }
 
         // Map pricing plan names to tiers
         $planName = strtolower($plan->name ?? '');
@@ -575,8 +581,8 @@ class User extends Authenticatable
             ];
         }
 
-        // Get fresh organization with pricing plan
-        $org = Organization::with('pricingPlan')->find($this->organization_id);
+        // Get fresh organization with trial plan included
+        $org = Organization::with(['pricingPlan', 'trialPlan'])->find($this->organization_id);
         
         if (!$org) {
             return [
@@ -588,7 +594,8 @@ class User extends Authenticatable
             ];
         }
         
-        $plan = $org->pricingPlan;
+        // Use effective plan (trial if active, otherwise regular plan)
+        $plan = $org->getEffectivePlan();
 
         return [
             'tier' => $this->subscriptionTier(),
@@ -598,6 +605,8 @@ class User extends Authenticatable
             'next_renewal' => $org->renew_date,
             'is_cancelled' => (bool) $org->subscription_cancelled,
             'cancellation_date' => $org->cancellation_subscription_date,
+            'is_trial' => $org->isOnTrial(),
+            'trial_expires_at' => $org->trial_expires_at,
         ];
     }
 
