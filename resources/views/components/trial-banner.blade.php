@@ -8,7 +8,8 @@
         return; // Don't show banner if not relevant
     }
     
-    $daysLeft = $isOnTrial ? now()->diffInDays($organization->trial_expires_at, false) : 0;
+    // Round up days left (if 29.9 days, show 30)
+    $daysLeft = $isOnTrial ? (int) ceil(now()->diffInDays($organization->trial_expires_at, false)) : 0;
     $showUrgent = $daysLeft <= 3 && $daysLeft >= 0;
 @endphp
 
