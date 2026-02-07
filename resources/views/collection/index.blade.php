@@ -193,6 +193,7 @@
                     <a href="{{ route('billing.index') }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-center">
                         {{ __('stats.upsell.cta_upgrade') }}
                     </a>
+                   
                 </div>
             </div>
             @endif
