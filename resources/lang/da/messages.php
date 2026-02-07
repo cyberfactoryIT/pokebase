@@ -59,6 +59,8 @@ return [
     'all_organizations' => 'Alle organisationer',
     'all_invoices' => 'Alle fakturaer',
     'support' => 'Support',
+    'support_sent' => 'Tak for din besked! Vi vender tilbage hurtigst muligt.',
+    'support_error' => 'Der opstod en fejl ved afsendelse af beskeden. Prøv venligst igen eller kontakt os direkte via email.',
     'log_out' => 'Log ud',
     'profile' => 'Profil',
     'billing' => 'Fakturering',

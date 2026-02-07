@@ -20,21 +20,39 @@ class SupportController extends Controller
         $request->validate([
             'name' => 'required|string|max:64',
             'email' => 'required|email',
+            'subject' => 'nullable|string|max:255',
             'message' => 'required|string|max:2000',
         ]);
-        // Invio mail di supporto con template Blade
-        \Log::info('Sending support email', ['from' => $request->email, 'name' => $request->name]);
-        Mail::send('emails.support', [
-            'subject' => 'Support request from ' . $request->name,
-            'body' => $request->message,
-            'actionUrl' => null,
-            'actionText' => null,
-        ], function($mail) use ($request) {
-            $mail->to(config('mail.support_address', 'support@example.com'))
-                ->subject('Support request from ' . $request->name)
-                ->replyTo($request->email);
-        });
-        \Log::info('Support email sent', ['from' => $request->email, 'name' => $request->name]);
-        return back()->with('success', __('messages.support_sent'));
+        
+        try {
+            // Invio mail di supporto con template Blade
+            \Log::info('Sending support email', ['from' => $request->email, 'name' => $request->name]);
+            
+            $subject = $request->subject ?? 'Support request from ' . $request->name;
+            
+            Mail::send('emails.support', [
+                'subject' => $subject,
+                'body' => $request->message,
+                'actionUrl' => null,
+                'actionText' => null,
+            ], function($mail) use ($request, $subject) {
+                $mail->to(config('mail.support_address', 'support@example.com'))
+                    ->subject($subject)
+                    ->replyTo($request->email);
+            });
+            
+            \Log::info('Support email sent', ['from' => $request->email, 'name' => $request->name]);
+            
+            return back()->with('contact_success', __('messages.support_sent'));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send support email', [
+                'error' => $e->getMessage(),
+                'from' => $request->email,
+                'name' => $request->name
+            ]);
+            
+            return back()->with('contact_error', __('messages.support_error'))
+                ->withInput();
+        }
     }
 }

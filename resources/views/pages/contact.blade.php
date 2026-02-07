@@ -139,6 +139,22 @@
                             {{ session('contact_success') }}
                         </div>
                     @endif
+                    
+                    @if(session('contact_error'))
+                        <div class="mt-4 p-4 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400">
+                            {{ session('contact_error') }}
+                        </div>
+                    @endif
+                    
+                    @if($errors->any())
+                        <div class="mt-4 p-4 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400">
+                            <ul class="list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Contact Information -->

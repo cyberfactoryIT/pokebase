@@ -64,6 +64,8 @@ return [
     'all_organizations' => 'All Organizations',
     'all_invoices' => 'All Invoices',
     'support' => 'Support',
+    'support_sent' => 'Thank you for your message! We will get back to you as soon as possible.',
+    'support_error' => 'An error occurred while sending your message. Please try again or contact us directly via email.',
     'support_management' => 'Support Management',
     'help_management' => 'Help Management',
     'log_out' => 'Log Out',
