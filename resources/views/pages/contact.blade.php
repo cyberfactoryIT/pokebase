@@ -101,7 +101,7 @@
     </div>
 
     <!-- Contact Form Section -->
-    <div class="bg-[#161615] border-t border-white/15 py-16">
+    <div class="bg-[#161615] border-t border-white/15 py-16" id="contact-form-section">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold mb-4">{{ __('pages.contact_or_contact') }}</h2>
@@ -111,6 +111,30 @@
                 <!-- Contact Form -->
                 <div>
                     <h3 class="text-2xl font-bold mb-6">{{ __('pages.contact_form_title') }}</h3>
+                    
+                    <!-- Feedback Messages ABOVE form -->
+                    @if(session('contact_success'))
+                        <div class="mb-6 p-4 bg-green-600/20 border border-green-500/50 rounded-lg text-green-400">
+                            {{ session('contact_success') }}
+                        </div>
+                    @endif
+                    
+                    @if(session('contact_error'))
+                        <div class="mb-6 p-4 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400">
+                            {{ session('contact_error') }}
+                        </div>
+                    @endif
+                    
+                    @if($errors->any())
+                        <div class="mb-6 p-4 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400">
+                            <ul class="list-disc list-inside space-y-1">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    
                     <form action="{{ route('support.contact') }}" method="POST" class="space-y-6">
                         @csrf
                         <div>
@@ -133,28 +157,6 @@
                             {{ __('pages.contact_form_send') }}
                         </button>
                     </form>
-
-                    @if(session('contact_success'))
-                        <div class="mt-4 p-4 bg-green-600/20 border border-green-500/50 rounded-lg text-green-400">
-                            {{ session('contact_success') }}
-                        </div>
-                    @endif
-                    
-                    @if(session('contact_error'))
-                        <div class="mt-4 p-4 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400">
-                            {{ session('contact_error') }}
-                        </div>
-                    @endif
-                    
-                    @if($errors->any())
-                        <div class="mt-4 p-4 bg-red-600/20 border border-red-500/50 rounded-lg text-red-400">
-                            <ul class="list-disc list-inside">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
                 </div>
 
                 <!-- Contact Information -->
@@ -226,6 +228,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Auto-scroll to contact form if there are feedback messages
+    @if(session('contact_success') || session('contact_error') || $errors->any())
+        setTimeout(function() {
+            const formSection = document.getElementById('contact-form-section');
+            if (formSection) {
+                formSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    @endif
 });
 </script>
 @endsection
