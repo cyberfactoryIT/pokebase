@@ -108,8 +108,11 @@ class DashboardController extends Controller
             
             switch ($game->catalog_backend) {
                 case 'tcgdex':
-                    $cardsCount = TcgdxCard::where('game_id', $game->id)->count();
+                    // TCGDEX: Sets have game_id, cards need join through sets
                     $setsCount = TcgdxSet::where('game_id', $game->id)->count();
+                    $cardsCount = TcgdxCard::whereHas('set', function($q) use ($game) {
+                        $q->where('game_id', $game->id);
+                    })->count();
                     break;
                     
                 case 'cmapi':
