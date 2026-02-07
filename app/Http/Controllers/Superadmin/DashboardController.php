@@ -8,6 +8,10 @@ use App\Models\User;
 use App\Models\Organization;
 use App\Models\TcgcsvProduct;
 use App\Models\TcgcsvGroup;
+use App\Models\Tcgdx\TcgdxCard;
+use App\Models\Tcgdx\TcgdxSet;
+use App\Models\Cmapi\CmapiCard;
+use App\Models\Cmapi\CmapiSet;
 use App\Models\RapidapiEpisode;
 use App\Models\Article;
 use App\Models\Invoice;
@@ -97,15 +101,37 @@ class DashboardController extends Controller
             })
             ->count();
 
-        // Games breakdown - manual counting since tcgcsvGroups/Products aren't true relations
+        // Games breakdown - count based on catalog_backend
         $gameStats = Game::with('articles')->get()->map(function($game) {
+            $cardsCount = 0;
+            $setsCount = 0;
+            
+            switch ($game->catalog_backend) {
+                case 'tcgdex':
+                    $cardsCount = TcgdxCard::where('game_id', $game->id)->count();
+                    $setsCount = TcgdxSet::where('game_id', $game->id)->count();
+                    break;
+                    
+                case 'cmapi':
+                    $cardsCount = CmapiCard::where('game_id', $game->id)->count();
+                    $setsCount = CmapiSet::where('game_id', $game->id)->count();
+                    break;
+                    
+                case 'tcgcsv':
+                default:
+                    $cardsCount = TcgcsvProduct::where('category_id', $game->tcgcsv_category_id)->count();
+                    $setsCount = TcgcsvGroup::where('category_id', $game->tcgcsv_category_id)->count();
+                    break;
+            }
+            
             return [
                 'id' => $game->id,
                 'name' => $game->name,
                 'code' => $game->code,
+                'catalog_backend' => $game->catalog_backend,
                 'articles_count' => $game->articles->count(),
-                'tcgcsv_groups_count' => TcgcsvGroup::where('category_id', $game->tcgcsv_category_id)->count(),
-                'tcgcsv_products_count' => TcgcsvProduct::where('category_id', $game->tcgcsv_category_id)->count(),
+                'cards_count' => $cardsCount,
+                'sets_count' => $setsCount,
             ];
         });
 

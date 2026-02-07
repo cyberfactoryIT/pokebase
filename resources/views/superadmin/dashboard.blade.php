@@ -323,8 +323,8 @@
                                         <span class="text-white font-medium">{{ $game['name'] }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-right text-white">{{ number_format($game['tcgcsv_products_count']) }}</td>
-                                <td class="px-6 py-4 text-right text-white">{{ number_format($game['tcgcsv_groups_count']) }}</td>
+                                <td class="px-6 py-4 text-right text-white">{{ number_format($game['cards_count']) }}</td>
+                                <td class="px-6 py-4 text-right text-white">{{ number_format($game['sets_count']) }}</td>
                                 <td class="px-6 py-4 text-right text-white">{{ number_format($game['articles_count']) }}</td>
                             </tr>
                             @endforeach
