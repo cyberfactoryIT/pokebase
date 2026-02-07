@@ -111,7 +111,11 @@ class DashboardController extends Controller
 
         // User engagement stats (last 30 days)
         $engagementStats = [
-            'active_users' => User::where('last_login_at', '>=', now()->subDays(30))->count(),
+            'active_users' => DB::table('sessions')
+                ->where('last_activity', '>=', now()->subDays(30)->timestamp)
+                ->distinct('user_id')
+                ->whereNotNull('user_id')
+                ->count('user_id'),
             'new_users_30d' => User::where('created_at', '>=', now()->subDays(30))->count(),
             'collections_created_30d' => UserCollection::where('created_at', '>=', now()->subDays(30))->count(),
             'total_collections' => UserCollection::count(),
