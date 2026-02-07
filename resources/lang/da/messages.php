@@ -86,6 +86,11 @@ return [
 'support_error' => 'Der opstod en fejl ved afsendelse af beskeden. Prøv venligst igen eller kontakt os direkte via email.',
 'support_email_from' => 'fra',
 'support_email_subject_request' => 'Supportanmodning fra :name',
+'support_email_label_from' => 'Fra:',
+'support_email_label_subject' => 'Emne:',
+'support_email_label_message' => 'Besked:',
+'support_email_footer_line1' => 'Dette er en supportanmodning sendt via kontaktformularen på :app_name.',
+'support_email_footer_line2' => 'Du kan svare direkte på denne email for at kontakte afsenderen.',
 
     'users' => 'Brugere',
     'activity_log' => 'Aktivitetslog',

@@ -88,6 +88,11 @@ return [
 'support_error' => 'Si è verificato un errore durante l\'invio del messaggio. Riprova o contattaci direttamente via email.',
 'support_email_from' => 'da',
 'support_email_subject_request' => 'Richiesta di supporto da :name',
+'support_email_label_from' => 'Da:',
+'support_email_label_subject' => 'Oggetto:',
+'support_email_label_message' => 'Messaggio:',
+'support_email_footer_line1' => 'Questa è una richiesta di supporto inviata tramite il form di contatto su :app_name.',
+'support_email_footer_line2' => 'Puoi rispondere direttamente a questa email per contattare il mittente.',
 
     'users' => 'Utenti',
     'activity_log' => 'Registro Attività',

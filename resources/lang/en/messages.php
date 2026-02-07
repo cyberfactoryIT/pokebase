@@ -93,6 +93,11 @@ return [
 'support_error' => 'An error occurred while sending your message. Please try again or contact us directly via email.',
 'support_email_from' => 'from',
 'support_email_subject_request' => 'Support request from :name',
+'support_email_label_from' => 'From:',
+'support_email_label_subject' => 'Subject:',
+'support_email_label_message' => 'Message:',
+'support_email_footer_line1' => 'This is a support request sent via the contact form on :app_name.',
+'support_email_footer_line2' => 'You can reply directly to this email to contact the sender.',
 
     'users' => 'Users',
     'activity_log' => 'Activity Log',
