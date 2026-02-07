@@ -28,17 +28,31 @@ class SupportController extends Controller
             // Invio mail di supporto con template Blade
             \Log::info('Sending support email', ['from' => $request->email, 'name' => $request->name]);
             
-            $subject = $request->subject ?? 'Support request from ' . $request->name;
+            $contactSubject = $request->subject;
+            $emailSubject = $contactSubject 
+                ? '[Basecard] ' . $contactSubject 
+                : '[Basecard] Richiesta di supporto da ' . $request->name;
             
             Mail::send('emails.support', [
-                'subject' => $subject,
+                'subject' => $emailSubject,
                 'body' => $request->message,
+                'contactName' => $request->name,
+                'contactEmail' => $request->email,
+                'contactSubject' => $contactSubject,
                 'actionUrl' => null,
                 'actionText' => null,
-            ], function($mail) use ($request, $subject) {
+            ], function($mail) use ($request, $emailSubject) {
                 $mail->to(config('mail.support_address', 'support@example.com'))
-                    ->subject($subject)
-                    ->replyTo($request->email);
+                    ->subject($emailSubject)
+                    ->replyTo($request->email, $request->name)
+                    ->from(config('mail.from.address'), config('mail.from.name'))
+                    // Add headers to improve deliverability
+                    ->withSymfonyMessage(function ($message) use ($request) {
+                        $headers = $message->getHeaders();
+                        $headers->addTextHeader('X-Mailer', 'Basecard Support System');
+                        $headers->addTextHeader('X-Contact-Form', 'true');
+                        $headers->addTextHeader('X-Sender-IP', $request->ip());
+                    });
             });
             
             \Log::info('Support email sent', ['from' => $request->email, 'name' => $request->name]);
