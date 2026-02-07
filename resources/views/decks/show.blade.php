@@ -697,18 +697,28 @@ async function searchCatalogCards(query) {
     }
 }
 
-async function quickAddToCollection(productId, tcgdexCardId, cardName) {
+async function quickAddToCollection(productId, tcgdexCardId, cmapiCardId, cardName) {
     try {
         const formData = new FormData();
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-        if (productId) {
-            formData.append('product_id', productId);
-        } else if (tcgdexCardId) {
-            formData.append('tcgdex_card_id', tcgdexCardId);
-        }
         formData.append('quantity', 1);
         
-        const response = await fetch('{{ route("collection.add") }}', {
+        let url;
+        if (tcgdexCardId) {
+            formData.append('tcgdex_card_id', tcgdexCardId);
+            url = '{{ route("collection.add.tcgdex") }}';
+        } else if (cmapiCardId) {
+            formData.append('cmapi_card_id', cmapiCardId);
+            url = '{{ route("collection.add.cmapi") }}';
+        } else if (productId) {
+            formData.append('product_id', productId);
+            url = '{{ route("collection.add") }}';
+        } else {
+            alert('Invalid card data');
+            return;
+        }
+        
+        const response = await fetch(url, {
             method: 'POST',
             body: formData
         });
@@ -718,6 +728,8 @@ async function quickAddToCollection(productId, tcgdexCardId, cardName) {
                 userCollectionProductIds.add(productId);
             } else if (tcgdexCardId) {
                 userCollectionTcgdexIds.add(tcgdexCardId);
+            } else if (cmapiCardId) {
+                userCollectionCmapiIds.add(cmapiCardId);
             }
             location.reload(); // Reload to update the badge
         } else {
