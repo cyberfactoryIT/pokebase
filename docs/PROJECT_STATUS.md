@@ -1,6 +1,6 @@
 # 📊 Basecard - Project Status
 
-*Last Updated: 6 February 2026 - 15:00 CET*
+*Last Updated: 7 February 2026 - 14:30 CET*
 
 ---
 
@@ -402,6 +402,99 @@ TCGDX_BASE_URL=https://api.tcgdex.net/v2
 - ✅ Trial system fix applicato
 - ✅ Traduzioni complete
 - ⏳ **Next**: Deploy + test Plausible in produzione
+
+---
+
+### February 7, 2026: Pre-Production Contact Form & Email Improvements
+**Final fixes before production deployment - Complete email internationalization**
+
+#### Issues Fixed:
+1. **Contact Form Silent Failure**
+   - Form wasn't showing success/error feedback after submission
+   - Messages appeared below form requiring scroll
+   - Session key conflicts
+
+2. **Email Going to SPAM**
+   - Generic subject line without context
+   - Minimal email body with no sender information
+   - Missing reply-to configuration
+
+3. **Hardcoded Italian Text in Emails** (caught twice!)
+   - First: Subject line had hardcoded "da" and "Richiesta di supporto da"
+   - Second: Email body had hardcoded labels ("Da:", "Oggetto:", "Messaggio:") and footer text
+   - Not respecting user's language preference
+
+4. **Email Readability Issues**
+   - Text hard to read on dark theme background
+   - Complex inline styles difficult to maintain
+   - Inconsistent styling with app theme
+
+#### Changes Implemented:
+
+**1. Contact Form UX (`resources/views/pages/contact.blade.php`)**
+- Moved feedback messages ABOVE form for visibility
+- Added `id="contact-form-section"` for auto-scroll
+- JavaScript auto-scrolls to form when feedback exists
+- Changed session key from 'success' to 'contact_success'
+- Added validation error display
+
+**2. Email Controller (`app/Http/Controllers/SupportController.php`)**
+- Added try-catch block with error logging
+- Enhanced subject with sender name: `[Basecard] {subject} (from {name})`
+- Added replyTo configuration: `replyTo($email, $name)`
+- Removed `withSymfonyMessage()` (doesn't exist in Laravel 11)
+- All text uses translations: `__('messages.support_email_*')`
+
+**3. Email Template (`resources/views/emails/support.blade.php`)**
+- Simplified design using template classes (`.info-box`, `.divider`)
+- Removed complex inline styles
+- Adapted colors for dark theme readability
+- Shows sender info prominently (name, email, subject)
+- Footer explains email source and reply functionality
+
+**4. Translation System (`resources/lang/{da,en,it}/messages.php`)**
+- Added 7 new translation keys:
+  - `support_email_from` - "from"/"fra"/"da" for subject
+  - `support_email_subject_request` - Subject format with :name
+  - `support_email_label_from` - "From:"/"Fra:"/"Da:" label
+  - `support_email_label_subject` - "Subject:"/"Emne:"/"Oggetto:" label
+  - `support_email_label_message` - "Message:"/"Besked:"/"Messaggio:" label
+  - `support_email_footer_line1` - Email source explanation with :app_name
+  - `support_email_footer_line2` - Reply instructions
+- Fixed structure: Moved support_* keys outside 'nav' array
+
+**5. Mail Configuration (`config/mail.php`)**
+- Added `'support_address' => env('MAIL_SUPPORT_ADDRESS', 'support@example.com')`
+- Allows configurable support email destination
+
+**6. Environment Example (`.env.example`)**
+- Added `MAIL_SUPPORT_ADDRESS=support@example.com`
+- Documentation for support email configuration
+
+#### Email Flow (Final Version):
+1. User submits contact form → Shows success message above form
+2. Email sent to `MAIL_SUPPORT_ADDRESS` (info@basios.dk)
+3. Subject: `[Basecard] {user_subject} (from {user_name})`
+4. Body shows sender info in blue info box (name, email, optional subject)
+5. Message displayed with pre-wrap formatting
+6. Footer explains email source in user's language
+7. Reply-to configured for direct response to sender
+
+#### Files Modified: 6
+- `app/Http/Controllers/SupportController.php` - Enhanced email sending
+- `resources/views/pages/contact.blade.php` - Improved UX with auto-scroll
+- `resources/views/emails/support.blade.php` - Simplified, translated, readable
+- `resources/lang/da/messages.php` - Added 7 support_email_* keys
+- `resources/lang/en/messages.php` - Added 7 support_email_* keys  
+- `resources/lang/it/messages.php` - Added 7 support_email_* keys
+- `config/mail.php` - Added support_address config
+- `.env.example` - Added MAIL_SUPPORT_ADDRESS
+
+#### Production Deployment Notes:
+- Set `MAIL_SUPPORT_ADDRESS=info@basios.dk` in production .env
+- Test contact form in all 3 languages (da/en/it)
+- Verify emails don't go to SPAM (enhanced headers should prevent this)
+- Confirm reply-to functionality works
 
 ---
 
