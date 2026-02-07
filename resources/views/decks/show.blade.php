@@ -309,10 +309,7 @@
                         <a href="{{ route('billing.index') }}" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
                             {{ __('prices.hidden.cta_upgrade') }}
                         </a>
-                        <span class="text-gray-400 flex items-center">{{ __('prices.hidden.or') }}</span>
-                        <a href="{{ route('deck-evaluation.packages.index') }}" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition">
-                            {{ __('prices.hidden.cta_deck_evaluation') }}
-                        </a>
+                        
                     </div>
                 </div>
             </div>
