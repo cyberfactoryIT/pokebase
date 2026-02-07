@@ -61,8 +61,6 @@ return [
     'all_organizations' => 'Tutte le organizzazioni',
     'all_invoices' => 'Tutte le fatture',
     'support' => 'Supporto',
-    'support_sent' => 'Grazie per il tuo messaggio! Ti risponderemo il prima possibile.',
-    'support_error' => 'Si è verificato un errore durante l\'invio del messaggio. Riprova o contattaci direttamente via email.',
     'log_out' => 'Esci',
     'profile' => 'Profilo',
     'billing' => 'Fatturazione',
@@ -84,6 +82,10 @@ return [
 
 
     ],
+
+// Contact form messages
+'support_sent' => 'Grazie per il tuo messaggio! Ti risponderemo il prima possibile.',
+'support_error' => 'Si è verificato un errore durante l\'invio del messaggio. Riprova o contattaci direttamente via email.',
 
     'users' => 'Utenti',
     'activity_log' => 'Registro Attività',
