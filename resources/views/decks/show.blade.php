@@ -779,26 +779,6 @@ async function addCardToDeck(productId, tcgdexCardId, cmapiCardId, cardName) {
     }
 }
 
-// Quick add to collection from deck list
-async function quickAddCardToCollection(productId, cardName, form) {
-    try {
-        const response = await fetch('{{ route("collection.add") }}', {
-            method: 'POST',
-            body: new FormData(form)
-        });
-        
-        if (response.ok) {
-            userCollectionProductIds.add(productId);
-            location.reload(); // Reload to update the badge
-        } else {
-            alert('Failed to add card to collection');
-        }
-    } catch (error) {
-        console.error('Error adding to collection:', error);
-        alert('Failed to add card to collection');
-    }
-}
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');

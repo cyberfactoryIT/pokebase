@@ -22,18 +22,14 @@
         <!-- Not in Collection Badge -->
         @if(!$inCollection)
         <div class="absolute top-2 right-2 z-10">
-            <form method="POST" action="{{ route('collection.add') }}" class="inline" onsubmit="event.preventDefault(); quickAddCardToCollection(null, null, '{{ addslashes($card->name) }}', this);">
-                @csrf
-                <input type="hidden" name="cmapi_card_id" value="{{ $card->cmapi_id }}">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" 
-                    class="p-1.5 bg-orange-600/90 hover:bg-orange-600 rounded text-white transition"
-                    title="{{ __('decks/show.not_in_collection') }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                </button>
-            </form>
+            <button type="button" 
+                onclick="event.stopPropagation(); quickAddToCollection(null, null, '{{ $card->cmapi_id }}', '{{ addslashes($card->name) }}')"
+                class="p-1.5 bg-orange-600/90 hover:bg-orange-600 rounded text-white transition"
+                title="{{ __('decks/show.not_in_collection') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </button>
         </div>
         @endif
         
