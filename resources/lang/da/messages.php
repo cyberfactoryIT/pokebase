@@ -84,6 +84,8 @@ return [
 // Contact form messages
 'support_sent' => 'Tak for din besked! Vi vender tilbage hurtigst muligt.',
 'support_error' => 'Der opstod en fejl ved afsendelse af beskeden. Prøv venligst igen eller kontakt os direkte via email.',
+'support_email_from' => 'fra',
+'support_email_subject_request' => 'Supportanmodning fra :name',
 
     'users' => 'Brugere',
     'activity_log' => 'Aktivitetslog',

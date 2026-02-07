@@ -91,6 +91,8 @@ return [
 // Contact form messages
 'support_sent' => 'Thank you for your message! We will get back to you as soon as possible.',
 'support_error' => 'An error occurred while sending your message. Please try again or contact us directly via email.',
+'support_email_from' => 'from',
+'support_email_subject_request' => 'Support request from :name',
 
     'users' => 'Users',
     'activity_log' => 'Activity Log',

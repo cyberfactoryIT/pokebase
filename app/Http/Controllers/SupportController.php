@@ -29,9 +29,10 @@ class SupportController extends Controller
             \Log::info('Sending support email', ['from' => $request->email, 'name' => $request->name]);
             
             $contactSubject = $request->subject;
+            // Include sender name in subject so you know who to reply to
             $emailSubject = $contactSubject 
-                ? '[Basecard] ' . $contactSubject 
-                : '[Basecard] Richiesta di supporto da ' . $request->name;
+                ? '[Basecard] ' . $contactSubject . ' (' . __('messages.support_email_from') . ' ' . $request->name . ')' 
+                : '[Basecard] ' . __('messages.support_email_subject_request', ['name' => $request->name]);
             
             Mail::send('emails.support', [
                 'subject' => $emailSubject,
@@ -44,15 +45,7 @@ class SupportController extends Controller
             ], function($mail) use ($request, $emailSubject) {
                 $mail->to(config('mail.support_address', 'support@example.com'))
                     ->subject($emailSubject)
-                    ->replyTo($request->email, $request->name)
-                    ->from(config('mail.from.address'), config('mail.from.name'))
-                    // Add headers to improve deliverability
-                    ->withSymfonyMessage(function ($message) use ($request) {
-                        $headers = $message->getHeaders();
-                        $headers->addTextHeader('X-Mailer', 'Basecard Support System');
-                        $headers->addTextHeader('X-Contact-Form', 'true');
-                        $headers->addTextHeader('X-Sender-IP', $request->ip());
-                    });
+                    ->replyTo($request->email, $request->name);
             });
             
             \Log::info('Support email sent', ['from' => $request->email, 'name' => $request->name]);

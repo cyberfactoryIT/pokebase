@@ -86,6 +86,8 @@ return [
 // Contact form messages
 'support_sent' => 'Grazie per il tuo messaggio! Ti risponderemo il prima possibile.',
 'support_error' => 'Si è verificato un errore durante l\'invio del messaggio. Riprova o contattaci direttamente via email.',
+'support_email_from' => 'da',
+'support_email_subject_request' => 'Richiesta di supporto da :name',
 
     'users' => 'Utenti',
     'activity_log' => 'Registro Attività',
