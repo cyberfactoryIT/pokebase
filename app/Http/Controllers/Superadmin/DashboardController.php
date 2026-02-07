@@ -116,8 +116,10 @@ class DashboardController extends Controller
                     break;
                     
                 case 'cmapi':
-                    $cardsCount = CmapiCard::where('game_id', $game->id)->count();
-                    $setsCount = CmapiSet::where('game_id', $game->id)->count();
+                    // CMAPI: Uses 'game' string column (e.g. 'lorcana', 'onepiece'), not game_id
+                    $gameCode = $game->code; // 'lorcana' or 'onepiece'
+                    $cardsCount = CmapiCard::where('game', $gameCode)->count();
+                    $setsCount = CmapiSet::where('game', $gameCode)->count();
                     break;
                     
                 case 'tcgcsv':
