@@ -218,7 +218,8 @@
                 </div>
             </div>
 
-            <!-- Mapping Statistics -->
+            {{-- Mapping Statistics - DEPRECATED: Old TCGCSV/RapidAPI mapping logic --}}
+            @if(false)
             <div class="mb-8">
                 <h3 class="font-semibold text-xl text-white mb-4">{{ __('messages.data_mapping_status') }}</h3>
                 
@@ -283,6 +284,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Games Breakdown -->
             <div class="mb-8">
