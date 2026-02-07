@@ -147,6 +147,12 @@
 
         <!-- Deck Statistics -->
         @if(!$deck->deckCards->isEmpty())
+        @php
+            // Define currency variables for all users (used in card grids)
+            $user = auth()->user();
+            $preferredCurrency = $user->preferred_currency;
+            $defaultCurrency = $preferredCurrency ?: 'EUR';
+        @endphp
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <!-- Total Cards -->
             <div class="bg-[#161615] border border-white/15 rounded-xl p-6">
@@ -181,10 +187,6 @@
             @can('seePrices')
             <!-- Deck Value -->
             @php
-                $user = auth()->user();
-                $preferredCurrency = $user->preferred_currency;
-                $defaultCurrency = $preferredCurrency ?: 'EUR';
-                
                 // If user has a preferred currency, convert the prices
                 if ($preferredCurrency) {
                     $displayValueEur = \App\Services\CurrencyService::convert($topStats['total_value_eur'], 'EUR', $preferredCurrency);
