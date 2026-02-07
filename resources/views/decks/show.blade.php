@@ -361,7 +361,7 @@
             </div>
         </div>
         @else
-        <!-- Free tier - Show upsell badge for second row stats -->
+        <!-- Free tier - Show upsell badge for second row stats
         <div class="mb-6 bg-[#161615] border border-white/15 rounded-xl p-8 text-center">
             <div class="flex flex-col items-center">
                 <div class="bg-blue-500/20 p-4 rounded-full mb-4">
@@ -375,7 +375,7 @@
                     {{ __('stats.upsell.cta_upgrade') }}
                 </a>
             </div>
-        </div>
+        </div> -->
         @endif
         @endif
 
