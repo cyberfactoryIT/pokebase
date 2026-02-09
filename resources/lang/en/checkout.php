@@ -65,4 +65,8 @@ return [
     'try_again' => 'Try Again',
     'back_to_home' => 'Back to Home',
     'need_help' => 'Need help? Contact our support team:',
+    
+    // Sales Terms Acceptance
+    'accept_sales_terms_label' => 'I accept the Sales Terms',
+    'sales_terms_link_text' => 'handelsbetingelser',
 ];

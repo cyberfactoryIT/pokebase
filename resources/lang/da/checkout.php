@@ -65,4 +65,8 @@ return [
     'try_again' => 'Prøv Igen',
     'back_to_home' => 'Tilbage til Hjem',
     'need_help' => 'Brug for hjælp? Kontakt vores supportteam:',
+    
+    // Sales Terms Acceptance
+    'accept_sales_terms_label' => 'Jeg accepterer',
+    'sales_terms_link_text' => 'handelsbetingelserne',
 ];

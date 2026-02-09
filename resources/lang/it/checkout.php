@@ -65,4 +65,8 @@ return [
     'try_again' => 'Riprova',
     'back_to_home' => 'Torna alla Home',
     'need_help' => 'Hai bisogno di aiuto? Contatta il nostro team di supporto:',
+    
+    // Sales Terms Acceptance
+    'accept_sales_terms_label' => 'Accetto le',
+    'sales_terms_link_text' => 'condizioni di vendita',
 ];

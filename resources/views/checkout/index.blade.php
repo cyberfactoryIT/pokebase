@@ -146,6 +146,21 @@
                         <div id="card-errors" class="mt-2 text-red-500 text-sm"></div>
                     </div>
 
+                    <!-- Sales Terms Acceptance -->
+                    <div class="mb-6">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="accept_sales_terms" name="accept_sales_terms" value="1"
+                                class="mt-1 h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2">
+                            <label for="accept_sales_terms" class="ml-3 text-sm text-gray-300">
+                                {{ __('checkout.accept_sales_terms_label') }}
+                                <a href="{{ config('legal.sales_terms_url') }}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">
+                                    {{ __('checkout.sales_terms_link_text') }}
+                                </a>
+                            </label>
+                        </div>
+                        <div id="sales-terms-error" class="mt-2 text-red-500 text-sm hidden"></div>
+                    </div>
+
                     <!-- Submit Button -->
                     <button type="submit" id="submit-button"
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed">
@@ -347,12 +362,44 @@
         const buttonText = document.getElementById('button-text');
         const spinner = document.getElementById('spinner');
         const paymentErrors = document.getElementById('payment-errors');
+        const acceptSalesTermsCheckbox = document.getElementById('accept_sales_terms');
+        const salesTermsError = document.getElementById('sales-terms-error');
+
+        // Update submit button state based on checkbox
+        function updateSubmitButtonState() {
+            const isChecked = acceptSalesTermsCheckbox.checked;
+            submitButton.disabled = !isChecked;
+        }
+
+        // Initialize button state
+        updateSubmitButtonState();
+
+        // Listen for checkbox changes
+        acceptSalesTermsCheckbox.addEventListener('change', function() {
+            updateSubmitButtonState();
+            // Clear error when checkbox is checked
+            if (this.checked) {
+                salesTermsError.classList.add('hidden');
+                salesTermsError.textContent = '';
+            }
+        });
 
         console.log('Form listener ready');
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             console.log('Form submitted, preventing default');
+
+            // Validate sales terms acceptance
+            if (!acceptSalesTermsCheckbox.checked) {
+                salesTermsError.textContent = '{{ __("validation.accepted", ["attribute" => __("checkout.accept_sales_terms_label")]) }}';
+                salesTermsError.classList.remove('hidden');
+                return;
+            }
+
+            // Clear sales terms error
+            salesTermsError.classList.add('hidden');
+            salesTermsError.textContent = '';
 
             // Disable submit button
             submitButton.disabled = true;
@@ -438,14 +485,25 @@
                     address_line2: document.getElementById('address_line2').value,
                     city: document.getElementById('city').value,
                     postcode: document.getElementById('postcode').value,
-                    country: document.getElementById('country').value
+                    country: document.getElementById('country').value,
+                    accept_sales_terms: acceptSalesTermsCheckbox.checked ? '1' : '0'
                 })
             });
 
             const processData = await processResponse.json();
 
             if (!processResponse.ok) {
-                throw new Error(processData.error || 'Failed to process payment');
+                // Handle validation errors (Laravel returns 422 for validation failures)
+                if (processResponse.status === 422 && processData.errors) {
+                    if (processData.errors.accept_sales_terms) {
+                        salesTermsError.textContent = processData.errors.accept_sales_terms[0];
+                        salesTermsError.classList.remove('hidden');
+                    }
+                    // Show general validation error if no specific field error
+                    const errorMessage = processData.message || 'Validation failed. Please check the form.';
+                    throw new Error(errorMessage);
+                }
+                throw new Error(processData.error || processData.message || 'Failed to process payment');
             }
 
             // Redirect to success page
@@ -456,8 +514,8 @@
             paymentErrors.textContent = error.message;
             paymentErrors.classList.remove('hidden');
 
-            // Re-enable submit button
-            submitButton.disabled = false;
+            // Re-enable submit button (only if checkbox is checked)
+            updateSubmitButtonState();
             buttonText.classList.remove('hidden');
             spinner.classList.add('hidden');
         }
