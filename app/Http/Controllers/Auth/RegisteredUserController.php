@@ -64,6 +64,8 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', 'min:8'],
             'preferred_game_id' => ['required', 'exists:games,id'],
             'trial_code' => ['nullable', 'string', 'max:50'],
+            'accept_terms' => ['accepted'],
+            'accept_privacy' => ['accepted'],
         ]);
         
         \Log::info('Validation passed', ['validated_keys' => array_keys($validated)]);
@@ -90,7 +92,9 @@ class RegisteredUserController extends Controller
 
         \Log::info('Starting user creation transaction');
         
-        $user = \DB::transaction(function () use ($validated, $request) {
+        $legalAcceptedAt = now('UTC');
+
+        $user = \DB::transaction(function () use ($validated, $request, $legalAcceptedAt) {
             \Log::info('Inside transaction - creating organization');
             
                 // 1. Crea organizzazione
@@ -126,6 +130,10 @@ class RegisteredUserController extends Controller
                 'email_verification_expires_at' => $expires,
                 'default_game_id' => $validated['preferred_game_id'],
                 'locale' => $userLocale,
+                'terms_accepted_at' => $legalAcceptedAt,
+                'terms_version' => config('legal.terms_version'),
+                'privacy_accepted_at' => $legalAcceptedAt,
+                'privacy_version' => config('legal.privacy_version'),
             ];
             
             \Log::info('Creating user', ['email' => $userData['email']]);

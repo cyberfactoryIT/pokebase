@@ -34,6 +34,10 @@ return [
     'trial_code' => 'Prøvekode (Valgfri)',
     'trial_code_placeholder' => 'WELCOME30',
     'trial_code_description' => 'Har du en kampagnekode? Indtast den for at låse op for premium-funktioner gratis!',
+    'accept_terms_label' => 'Jeg accepterer',
+    'accept_privacy_label' => 'Jeg har læst',
+    'terms_link_text' => 'Servicevilkår',
+    'privacy_link_text' => 'Privatlivspolitik',
     
     // Two-Factor Authentication
     'two_factor_authentication' => 'To-faktor autentificering',

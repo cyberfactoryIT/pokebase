@@ -113,6 +113,46 @@
             <p class="mt-1 text-sm text-gray-400">{{ __('auth.trial_code_description') }}</p>
         </div>
 
+        <div class="mt-4">
+            <label for="accept_terms" class="inline-flex items-start gap-2 text-sm text-gray-300">
+                <input
+                    id="accept_terms"
+                    name="accept_terms"
+                    type="checkbox"
+                    value="1"
+                    class="mt-0.5 rounded border-white/20 bg-black/50 text-blue-500 focus:ring-blue-500"
+                    {{ old('accept_terms') ? 'checked' : '' }}
+                >
+                <span>
+                    {{ __('auth.accept_terms_label') }}
+                    <a href="{{ config('legal.terms_url') }}" target="_blank" rel="noopener noreferrer" class="underline hover:text-white">
+                        {{ __('auth.terms_link_text') }}
+                    </a>
+                </span>
+            </label>
+            <x-input-error :messages="$errors->get('accept_terms')" class="mt-2" />
+        </div>
+
+        <div class="mt-3">
+            <label for="accept_privacy" class="inline-flex items-start gap-2 text-sm text-gray-300">
+                <input
+                    id="accept_privacy"
+                    name="accept_privacy"
+                    type="checkbox"
+                    value="1"
+                    class="mt-0.5 rounded border-white/20 bg-black/50 text-blue-500 focus:ring-blue-500"
+                    {{ old('accept_privacy') ? 'checked' : '' }}
+                >
+                <span>
+                    {{ __('auth.accept_privacy_label') }}
+                    <a href="{{ config('legal.privacy_url') }}" target="_blank" rel="noopener noreferrer" class="underline hover:text-white">
+                        {{ __('auth.privacy_link_text') }}
+                    </a>
+                </span>
+            </label>
+            <x-input-error :messages="$errors->get('accept_privacy')" class="mt-2" />
+        </div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-400 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('login') }}">
                 {{ __('auth.already_registered') }}

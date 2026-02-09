@@ -16,5 +16,9 @@ return [
     'failed' => 'These credentials do not match our records.',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'accept_terms_label' => 'I accept the',
+    'accept_privacy_label' => 'I have read the',
+    'terms_link_text' => 'Terms of Service',
+    'privacy_link_text' => 'Privacy Policy',
 
 ];

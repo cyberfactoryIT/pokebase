@@ -34,6 +34,10 @@ return [
     'trial_code' => 'Trial Code (Optional)',
     'trial_code_placeholder' => 'WELCOME30',
     'trial_code_description' => 'Have a promo code? Enter it to unlock premium features for free!',
+    'accept_terms_label' => 'I accept the',
+    'accept_privacy_label' => 'I have read the',
+    'terms_link_text' => 'Terms of Service',
+    'privacy_link_text' => 'Privacy Policy',
     
     // Two-Factor Authentication
     'two_factor_authentication' => 'Two-Factor Authentication',

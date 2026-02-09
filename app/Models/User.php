@@ -28,6 +28,10 @@ class User extends Authenticatable
         'email_verification_token',
         'email_verification_expires_at',
         'default_game_id',
+        'terms_accepted_at',
+        'terms_version',
+        'privacy_accepted_at',
+        'privacy_version',
     ];
     /**
      * Get the user's preferred locale.
@@ -69,6 +73,8 @@ class User extends Authenticatable
             'two_factor_enabled' => 'boolean',
             'two_factor_recovery_codes' => 'array',
             'two_factor_confirmed_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
+            'privacy_accepted_at' => 'datetime',
         ];
     }
 
@@ -175,6 +181,14 @@ class User extends Authenticatable
     public function hasAnyGames(): bool
     {
         return $this->games()->count() > 0;
+    }
+
+    public function hasAcceptedLegal(): bool
+    {
+        return $this->terms_accepted_at !== null
+            && $this->privacy_accepted_at !== null
+            && !empty($this->terms_version)
+            && !empty($this->privacy_version);
     }
 
     /**
