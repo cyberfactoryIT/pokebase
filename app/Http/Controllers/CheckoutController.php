@@ -164,6 +164,7 @@ class CheckoutController extends Controller
             'country' => 'required|string|max:255',
             'vat_number' => 'nullable|string|max:255',
             'address_line2' => 'nullable|string|max:255',
+            'accept_sales_terms' => 'accepted',
         ]);
 
         try {
