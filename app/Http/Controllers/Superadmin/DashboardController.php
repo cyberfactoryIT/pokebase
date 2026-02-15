@@ -77,7 +77,7 @@ class DashboardController extends Controller
         ];
 
         // Recent users (last 10)
-        $recentUsers = User::with('organization')
+        $recentUsers = User::with(['organization.trialPromotion'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();

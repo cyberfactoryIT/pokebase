@@ -362,7 +362,24 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-300">
-                                    {{ $user->organization ? $user->organization->name : '-' }}
+                                    @if($user->organization)
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-white">{{ $user->organization->name }}</span>
+                                            <div class="mt-1">
+                                                @if($user->organization->isOnTrial())
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-600 text-black">Trial until {{ $user->organization->trial_expires_at->format('Y-m-d') }}</span>
+                                                @elseif(!empty($user->organization->promotion_code))
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">Promo: {{ $user->organization->promotion_code }}</span>
+                                                @elseif(!empty($user->organization->trial_promotion_id))
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-600 text-white">Trial promo applied</span>
+                                                @elseif($user->organization->trial_expires_at)
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-600 text-white">Trial expired {{ $user->organization->trial_expires_at->format('Y-m-d') }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-gray-300">
                                     {{ $user->created_at->diffForHumans() }}
