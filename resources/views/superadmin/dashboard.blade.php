@@ -335,7 +335,10 @@
 
             <!-- Recent Users -->
             <div class="mb-8">
-                <h3 class="font-semibold text-xl text-white mb-4">{{ __('messages.recent_users') }}</h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="font-semibold text-xl text-white mb-4">{{ __('messages.recent_users') }}</h3>
+                    <a href="{{ route('superadmin.users.index') }}" class="inline-flex items-center gap-2 px-3 py-1 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm">View all</a>
+                </div>
                 
                 <div class="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
                     <table class="w-full">
