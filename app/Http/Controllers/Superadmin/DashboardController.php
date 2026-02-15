@@ -76,7 +76,7 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
-        // Recent users (last 10)
+        // Recent users (last 5)
         $recentUsers = User::with(['organization.trialPromotion'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -177,22 +177,25 @@ class DashboardController extends Controller
             'trialStats'
         ));
     }
-
+    
     /**
-     * Display paginated list of all users for superadmin
+     * Display all users with pagination
      */
-    public function usersIndex(Request $request): View
+    public function users(Request $request): View
     {
+        // Check superadmin role with team context
         $user = auth()->user();
         app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+        
         if (!$user->hasRole('superadmin')) {
             abort(403, 'Unauthorized. SuperAdmin access required.');
         }
-
-        $users = User::with(['organization.trialPromotion'])
+        
+        // Get all users with organization, ordered by created_at desc
+        $users = User::with(['organization.trialPromotion', 'organization.pricingPlan'])
             ->orderBy('created_at', 'desc')
-            ->paginate(25);
-
+            ->paginate(50);
+        
         return view('superadmin.users.index', compact('users'));
     }
     

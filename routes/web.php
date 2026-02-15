@@ -73,6 +73,10 @@ Route::get('/superadmin/dashboard', [\App\Http\Controllers\Superadmin\DashboardC
     ->middleware(['auth'])
     ->name('superadmin.dashboard');
 
+Route::get('/superadmin/users', [\App\Http\Controllers\Superadmin\DashboardController::class, 'users'])
+    ->middleware(['auth'])
+    ->name('superadmin.users.index');
+
 Route::post('/superadmin/refresh-prices', [\App\Http\Controllers\Superadmin\DashboardController::class, 'refreshPrices'])
     ->middleware(['auth'])
     ->name('superadmin.refresh-prices');
@@ -182,7 +186,6 @@ Route::prefix('superadmin')->middleware(['auth'])->group(function () {
     Route::post('/promotions/{promotion}', [\App\Http\Controllers\Superadmin\PromotionsController::class, 'update'])->name('superadmin.promotions.update');
     
     Route::get('/organizations', [\App\Http\Controllers\Superadmin\OrganizationsController::class, 'index'])->name('superadmin.organizations.index');
-    Route::get('/users', [\App\Http\Controllers\Superadmin\DashboardController::class, 'usersIndex'])->name('superadmin.users.index');
     Route::get('/plans', [\App\Http\Controllers\Superadmin\PlansController::class, 'index'])->name('superadmin.plans.index');
     Route::get('/plans/create', [\App\Http\Controllers\Superadmin\PlansController::class, 'create'])->name('superadmin.plans.create');
     Route::post('/plans', [\App\Http\Controllers\Superadmin\PlansController::class, 'store'])->name('superadmin.plans.store');
