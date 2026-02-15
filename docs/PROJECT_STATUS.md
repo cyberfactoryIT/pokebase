@@ -498,6 +498,33 @@ TCGDX_BASE_URL=https://api.tcgdex.net/v2
 
 ---
 
+### February 8-9, 2026: Checkout Flow & Legal Acceptance
+**Improvements to subscription checkout and user legal acceptance tracking**
+
+#### Implemented:
+- ✅ **Legal acceptance tracking**: Added user-level acceptance timestamps and version fields (`terms_accepted_at`, `terms_version`, `privacy_accepted_at`, `privacy_version`) and validation during registration. Config `config/legal.php` now holds canonical `terms_version` / `privacy_version` (2026-02-07).
+- ✅ **Registration update**: Registration requires `accept_terms` and `accept_privacy`; controller sets acceptance timestamps and versions from `config('legal.*')` and auto-attaches preferred game and organization creation flow.
+- ✅ **Checkout / Billing flow**: New checkout controller uses Stripe SetupIntent + Subscription flow for recurring billing, creates Stripe Customer when needed, saves subscription IDs, and generates invoices in-app (including VAT calculation).
+- ✅ **Sales terms enforcement**: Checkout view enforces acceptance of sales terms (`accept_sales_terms`) before allowing subscription purchase.
+- ✅ **Translations and Views**: Updated checkout views and language files for EN/IT/DA; improved UX for billing form and order summary.
+
+#### Files Modified (high level):
+- `database/migrations/2026_02_07_160000_add_legal_acceptance_columns_to_users_table.php`
+- `app/Models/User.php`
+- `app/Http/Controllers/Auth/RegisteredUserController.php`
+- `app/Http/Controllers/CheckoutController.php`
+- `resources/views/checkout/index.blade.php`
+- `resources/lang/{en,it,da}/checkout.php`
+- `resources/lang/{en,it,da}/auth.php` (registration labels)
+- `resources/views/auth/register.blade.php`
+
+#### Production Notes:
+- Ensure `config/legal.php` versions are correct in production and migrate DB to include new acceptance columns.
+- Verify Stripe keys in `services.stripe` and run an end-to-end payment test (setup intent → subscription → invoice).
+- Confirm translations for checkout flow in all supported locales.
+
+---
+
 ### February 1, 2026: UX Improvements & Deck Refactoring
 **Enhanced user experience with keyboard navigation and cleaner architecture**
 
