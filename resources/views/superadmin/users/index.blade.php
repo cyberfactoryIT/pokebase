@@ -58,6 +58,9 @@
                                     User
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    Email Verified
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     Organization
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -65,6 +68,12 @@
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     Status
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    Total Cards
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                    Attività
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                                     Registered
@@ -82,6 +91,17 @@
                                         <p class="text-white font-medium">{{ $user->name }}</p>
                                         <p class="text-gray-400 text-sm">{{ $user->email }}</p>
                                     </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($user->email_verified_at)
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-600/80 text-white" title="Verified {{ $user->email_verified_at->format('Y-m-d H:i') }}">
+                                            <i class="fa fa-check-circle"></i> Verified
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-amber-600/80 text-white" title="Email not verified">
+                                            <i class="fa fa-exclamation-circle"></i> Unverified
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4">
                                     @if($user->organization)
@@ -141,6 +161,22 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
+                                    <span class="text-gray-300 font-mono">{{ number_format($user->total_cards ?? 0) }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-0.5">
+                                        @if($user->last_activity)
+                                            <p class="text-gray-300 text-sm" title="{{ \Carbon\Carbon::createFromTimestamp($user->last_activity)->format('Y-m-d H:i:s') }}">
+                                                {{ \Carbon\Carbon::createFromTimestamp($user->last_activity)->format('Y-m-d H:i') }}
+                                            </p>
+                                            <p class="text-gray-500 text-xs">{{ \Carbon\Carbon::createFromTimestamp($user->last_activity)->diffForHumans() }}</p>
+                                        @else
+                                            <span class="text-gray-500 text-sm">-</span>
+                                        @endif
+                                        <p class="text-gray-400 text-xs mt-1">{{ number_format($user->login_count ?? 0) }} login</p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
                                     <div>
                                         <p class="text-gray-300 text-sm">{{ $user->created_at->format('Y-m-d H:i') }}</p>
                                         <p class="text-gray-500 text-xs">{{ $user->created_at->diffForHumans() }}</p>
@@ -149,7 +185,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                                     No users found
                                 </td>
                             </tr>

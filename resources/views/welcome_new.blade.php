@@ -204,7 +204,7 @@
                                     <!-- Content placeholder -->
                                     <div class="aspect-[9/16] bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center">
                                         <div class="text-center p-8">
-                                            <div class="text-6xl font-bold mb-4">{{ __('welcome.mockup_value') }}</div>
+                                            <div class="text-6xl font-bold mb-4"><span id="hero-deck-value">0</span> kr</div>
                                             <div class="text-sm text-gray-400">{{ __('welcome.mockup_label') }}</div>
                                         </div>
                                     </div>
@@ -272,6 +272,40 @@
                 const menu = document.getElementById('mobile-menu');
                 menu.classList.toggle('hidden');
             }
+
+            // Animate hero deck value: 0 → 2.578 kr, ease-out (fast start, slow near end)
+            (function() {
+                const el = document.getElementById('hero-deck-value');
+                if (!el) return;
+                const target = 2578;
+                const duration = 2200; // ms
+                const startTime = performance.now() + 600; // delay to sync with fade-in
+
+                function easeOutCubic(t) {
+                    return 1 - Math.pow(1 - t, 3);
+                }
+
+                function formatNumber(n) {
+                    const s = Math.round(n).toString();
+                    return s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                }
+
+                function step(now) {
+                    const elapsed = now - startTime;
+                    if (elapsed < 0) {
+                        requestAnimationFrame(step);
+                        return;
+                    }
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = easeOutCubic(progress);
+                    const current = Math.round(target * eased);
+                    el.textContent = formatNumber(current);
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    }
+                }
+                requestAnimationFrame(step);
+            })();
         </script>
 
         <!-- Cookie Consent Banner -->

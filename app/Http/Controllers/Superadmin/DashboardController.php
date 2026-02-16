@@ -192,7 +192,14 @@ class DashboardController extends Controller
         }
         
         // Get all users with organization, ordered by created_at desc
+        // Include total cards (collection + deck), last_activity, login_count as subqueries
         $users = User::with(['organization.trialPromotion', 'organization.pricingPlan'])
+            ->selectRaw('users.*, (
+                COALESCE((SELECT SUM(quantity) FROM user_collection WHERE user_collection.user_id = users.id), 0) +
+                COALESCE((SELECT SUM(dc.quantity) FROM deck_cards dc INNER JOIN decks d ON dc.deck_id = d.id WHERE d.user_id = users.id), 0)
+            ) as total_cards,
+            (SELECT MAX(last_activity) FROM sessions WHERE sessions.user_id = users.id) as last_activity,
+            (SELECT COUNT(*) FROM activity_logs WHERE activity_logs.user_id = users.id AND activity_logs.type = ? AND activity_logs.action = ?) as login_count', ['login', 'user_login'])
             ->orderBy('created_at', 'desc')
             ->paginate(50);
         
