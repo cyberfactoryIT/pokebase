@@ -232,13 +232,14 @@ class CmapiClient
         $lastPageSignature = null;
 
         while ($page <= self::MAX_PAGES) {
+            $queryParams = [];
+            if ($page > 1) {
+                $queryParams['page'] = $page;
+            }
+
             $response = Http::timeout($this->timeout)
                 ->withHeaders($this->getHeaders())
-                ->get("{$this->baseUrl}{$endpoint}", [
-                    'page' => $page,
-                    'per_page' => $pageSize,
-                    'limit' => $pageSize,
-                ]);
+                ->get("{$this->baseUrl}{$endpoint}", $queryParams);
 
             if (!$response->successful()) {
                 Log::error("CMAPI {$context} failed: {$response->status()}", array_merge($logContext, [
@@ -313,6 +314,15 @@ class CmapiClient
      */
     protected function hasMorePages(array $payload, array $items, int $page, int $pageSize): bool
     {
+        // RapidAPI shape used in existing commands: { paging: { current, total } }
+        if (isset($payload['paging']) && is_array($payload['paging'])) {
+            $current = (int) ($payload['paging']['current'] ?? $page);
+            $total = (int) ($payload['paging']['total'] ?? $current);
+            if ($total > 0) {
+                return $current < $total;
+            }
+        }
+
         // Laravel-style metadata: { meta: { current_page, last_page } }
         if (isset($payload['meta']) && is_array($payload['meta'])) {
             $current = (int) ($payload['meta']['current_page'] ?? $page);
