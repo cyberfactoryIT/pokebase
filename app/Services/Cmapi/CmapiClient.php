@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Log;
  */
 class CmapiClient
 {
+    protected const DEFAULT_PAGE_SIZE = 100;
+    protected const MAX_PAGES = 200;
+
     protected string $baseUrl;
     protected int $timeout;
     protected string $rapidApiKey;
@@ -39,20 +42,7 @@ class CmapiClient
      */
     public function listSets(): array
     {
-        $response = Http::timeout($this->timeout)
-            ->withHeaders($this->getHeaders())
-            ->get("{$this->baseUrl}/{$this->game}/episodes");
-
-        if (!$response->successful()) {
-            Log::error("CMAPI listSets failed: {$response->status()}", [
-                'game' => $this->game,
-                'body' => $response->body(),
-            ]);
-            throw new \Exception("Failed to fetch sets: {$response->status()}");
-        }
-
-        $data = $response->json();
-        return $data['data'] ?? [];
+        return $this->fetchPaginatedCollection("/{$this->game}/episodes", 'listSets');
     }
 
     /**
@@ -78,21 +68,11 @@ class CmapiClient
      */
     public function listCardsBySet(string $episodeId): array
     {
-        $response = Http::timeout($this->timeout)
-            ->withHeaders($this->getHeaders())
-            ->get("{$this->baseUrl}/{$this->game}/episodes/{$episodeId}/cards");
-
-        if (!$response->successful()) {
-            Log::error("CMAPI listCardsBySet failed: {$response->status()}", [
-                'game' => $this->game,
-                'episode_id' => $episodeId,
-                'body' => $response->body(),
-            ]);
-            throw new \Exception("Failed to fetch cards for episode {$episodeId}: {$response->status()}");
-        }
-
-        $data = $response->json();
-        return $data['data'] ?? [];
+        return $this->fetchPaginatedCollection(
+            "/{$this->game}/episodes/{$episodeId}/cards",
+            'listCardsBySet',
+            ['episode_id' => $episodeId]
+        );
     }
 
     /**
@@ -234,5 +214,147 @@ class CmapiClient
             'X-RapidAPI-Key' => $this->rapidApiKey,
             'X-RapidAPI-Host' => $this->rapidApiHost,
         ];
+    }
+
+    /**
+     * Fetch paginated collections from CMAPI endpoints.
+     *
+     * Handles both paginated and non-paginated responses.
+     * Supports common pagination shapes (meta, pagination, links, has_more).
+     */
+    protected function fetchPaginatedCollection(string $endpoint, string $context, array $logContext = []): array
+    {
+        $pageSize = (int) config('cmapi.page_size', self::DEFAULT_PAGE_SIZE);
+        $pageSize = $pageSize > 0 ? $pageSize : self::DEFAULT_PAGE_SIZE;
+
+        $allItems = [];
+        $page = 1;
+        $lastPageSignature = null;
+
+        while ($page <= self::MAX_PAGES) {
+            $response = Http::timeout($this->timeout)
+                ->withHeaders($this->getHeaders())
+                ->get("{$this->baseUrl}{$endpoint}", [
+                    'page' => $page,
+                    'per_page' => $pageSize,
+                    'limit' => $pageSize,
+                ]);
+
+            if (!$response->successful()) {
+                Log::error("CMAPI {$context} failed: {$response->status()}", array_merge($logContext, [
+                    'game' => $this->game,
+                    'page' => $page,
+                    'body' => $response->body(),
+                ]));
+                throw new \Exception("Failed to fetch {$context}: {$response->status()}");
+            }
+
+            $payload = $response->json();
+            $items = $this->extractCollectionItems($payload);
+
+            if (empty($items)) {
+                break;
+            }
+
+            // Guard: if API ignores page param and keeps returning same payload, stop.
+            $signature = md5(json_encode($items));
+            if ($lastPageSignature !== null && $signature === $lastPageSignature) {
+                Log::warning("CMAPI {$context} appears non-advancing, stopping pagination loop", array_merge($logContext, [
+                    'game' => $this->game,
+                    'page' => $page,
+                ]));
+                break;
+            }
+            $lastPageSignature = $signature;
+
+            $allItems = array_merge($allItems, $items);
+
+            if (!$this->hasMorePages($payload, $items, $page, $pageSize)) {
+                break;
+            }
+
+            $page++;
+        }
+
+        if ($page > self::MAX_PAGES) {
+            Log::warning("CMAPI {$context} reached max pages safety limit", array_merge($logContext, [
+                'game' => $this->game,
+                'max_pages' => self::MAX_PAGES,
+            ]));
+        }
+
+        return $allItems;
+    }
+
+    /**
+     * Extract collection items from different response shapes.
+     */
+    protected function extractCollectionItems($payload): array
+    {
+        if (!is_array($payload)) {
+            return [];
+        }
+
+        // Common API shape: { data: [...] }
+        if (isset($payload['data']) && is_array($payload['data'])) {
+            return array_values(array_filter($payload['data'], 'is_array'));
+        }
+
+        // Some APIs return raw list directly.
+        if (array_is_list($payload)) {
+            return array_values(array_filter($payload, 'is_array'));
+        }
+
+        return [];
+    }
+
+    /**
+     * Determine whether another page likely exists.
+     */
+    protected function hasMorePages(array $payload, array $items, int $page, int $pageSize): bool
+    {
+        // Laravel-style metadata: { meta: { current_page, last_page } }
+        if (isset($payload['meta']) && is_array($payload['meta'])) {
+            $current = (int) ($payload['meta']['current_page'] ?? $page);
+            $last = (int) ($payload['meta']['last_page'] ?? $current);
+            if ($last > 0) {
+                return $current < $last;
+            }
+        }
+
+        // Alternate metadata: { pagination: { current_page, last_page } }
+        if (isset($payload['pagination']) && is_array($payload['pagination'])) {
+            $current = (int) ($payload['pagination']['current_page'] ?? $page);
+            $last = (int) ($payload['pagination']['last_page'] ?? $current);
+            if ($last > 0) {
+                return $current < $last;
+            }
+        }
+
+        // Link-based pagination.
+        if (isset($payload['next_page_url']) && !empty($payload['next_page_url'])) {
+            return true;
+        }
+        if (isset($payload['links']) && is_array($payload['links']) && !empty($payload['links']['next'])) {
+            return true;
+        }
+
+        // Boolean indicator.
+        if (isset($payload['has_more'])) {
+            return (bool) $payload['has_more'];
+        }
+
+        // Total/per-page indicator.
+        if (isset($payload['total'])) {
+            $total = (int) $payload['total'];
+            return ($page * $pageSize) < $total;
+        }
+        if (isset($payload['meta']['total'])) {
+            $total = (int) $payload['meta']['total'];
+            return ($page * $pageSize) < $total;
+        }
+
+        // Fallback: if full page returned, assume there may be another page.
+        return count($items) >= $pageSize;
     }
 }
