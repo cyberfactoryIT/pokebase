@@ -16,12 +16,12 @@
                     $catalogBackend = catalog_backend();
                     $setsRoute = match($catalogBackend) {
                         'tcgdex' => route('pokemon.sets'),
-                        'cmapi' => route('cmapi.sets.index', ['game' => $currentGame->slug ?? 'lorcana']),
+                        'cmapi' => '/' . ($currentGame->slug ?? 'lorcana') . '/sets',
                         default => route('tcg.expansions.index')
                     };
                     $isActiveRoute = match($catalogBackend) {
                         'tcgdex' => request()->routeIs('pokemon.sets*'),
-                        'cmapi' => request()->routeIs('cmapi.sets.*'),
+                        'cmapi' => request()->is(($currentGame->slug ?? 'lorcana') . '/sets*'),
                         default => request()->routeIs('tcg.expansions.*')
                     };
                 @endphp

@@ -186,17 +186,17 @@ class CmapiSetController extends Controller
             
             $card->is_liked = \DB::table('user_likes')
                 ->where('user_id', $userId)
-                ->where('cmapi_card_id', $card->id)
+                ->where('cmapi_card_id', $card->cmapi_id)
                 ->exists();
                 
             $card->is_in_wishlist = \DB::table('user_wishlist_items')
                 ->where('user_id', $userId)
-                ->where('cmapi_card_id', $card->id)
+                ->where('cmapi_card_id', $card->cmapi_id)
                 ->exists();
                 
             $card->is_watched = \DB::table('user_watch_items')
                 ->where('user_id', $userId)
-                ->where('cmapi_card_id', $card->id)
+                ->where('cmapi_card_id', $card->cmapi_id)
                 ->exists();
         } else {
             $card->is_liked = false;

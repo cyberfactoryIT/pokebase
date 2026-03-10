@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TcgcsvProduct;
+use App\Models\Cmapi\CmapiCard;
 use App\Models\Tcgdx\TcgdxCard;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -378,20 +379,35 @@ class TcgItemInteractionController extends Controller
     public function toggleLikeTcgdex(Request $request, string $cardId)
     {
         $user = Auth::user();
-        $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
+        $backend = catalog_backend();
+        $targetColumn = 'tcgdex_card_id';
+        $targetValue = null;
+
+        if ($backend === 'cmapi') {
+            $card = CmapiCard::where('cmapi_id', $cardId)->firstOrFail();
+            $targetColumn = 'cmapi_card_id';
+            $targetValue = $card->cmapi_id;
+        } elseif ($backend === 'tcgdex') {
+            $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
+            $targetValue = $card->id;
+        } else {
+            $card = TcgcsvProduct::where('product_id', $cardId)->firstOrFail();
+            $targetColumn = 'product_id';
+            $targetValue = $card->product_id;
+        }
 
         DB::beginTransaction();
         try {
             $exists = DB::table('user_likes')
                 ->where('user_id', $user->id)
-                ->where('tcgdex_card_id', $card->id)
+                ->where($targetColumn, $targetValue)
                 ->exists();
 
             if ($exists) {
                 // Unlike
                 DB::table('user_likes')
                     ->where('user_id', $user->id)
-                    ->where('tcgdex_card_id', $card->id)
+                    ->where($targetColumn, $targetValue)
                     ->delete();
                 
                 $status = 'unliked';
@@ -399,7 +415,7 @@ class TcgItemInteractionController extends Controller
                 // Like
                 DB::table('user_likes')->insert([
                     'user_id' => $user->id,
-                    'tcgdex_card_id' => $card->id,
+                    $targetColumn => $targetValue,
                     'created_at' => now(),
                 ]);
                 
@@ -439,20 +455,35 @@ class TcgItemInteractionController extends Controller
     public function toggleWishlistTcgdex(Request $request, string $cardId)
     {
         $user = Auth::user();
-        $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
+        $backend = catalog_backend();
+        $targetColumn = 'tcgdex_card_id';
+        $targetValue = null;
+
+        if ($backend === 'cmapi') {
+            $card = CmapiCard::where('cmapi_id', $cardId)->firstOrFail();
+            $targetColumn = 'cmapi_card_id';
+            $targetValue = $card->cmapi_id;
+        } elseif ($backend === 'tcgdex') {
+            $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
+            $targetValue = $card->id;
+        } else {
+            $card = TcgcsvProduct::where('product_id', $cardId)->firstOrFail();
+            $targetColumn = 'product_id';
+            $targetValue = $card->product_id;
+        }
 
         DB::beginTransaction();
         try {
             $exists = DB::table('user_wishlist_items')
                 ->where('user_id', $user->id)
-                ->where('tcgdex_card_id', $card->id)
+                ->where($targetColumn, $targetValue)
                 ->exists();
 
             if ($exists) {
                 // Remove from wishlist
                 DB::table('user_wishlist_items')
                     ->where('user_id', $user->id)
-                    ->where('tcgdex_card_id', $card->id)
+                    ->where($targetColumn, $targetValue)
                     ->delete();
                 
                 $status = 'removed';
@@ -460,7 +491,7 @@ class TcgItemInteractionController extends Controller
                 // Add to wishlist
                 DB::table('user_wishlist_items')->insert([
                     'user_id' => $user->id,
-                    'tcgdex_card_id' => $card->id,
+                    $targetColumn => $targetValue,
                     'created_at' => now(),
                 ]);
                 
@@ -500,20 +531,35 @@ class TcgItemInteractionController extends Controller
     public function toggleWatchTcgdex(Request $request, string $cardId)
     {
         $user = Auth::user();
-        $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
+        $backend = catalog_backend();
+        $targetColumn = 'tcgdex_card_id';
+        $targetValue = null;
+
+        if ($backend === 'cmapi') {
+            $card = CmapiCard::where('cmapi_id', $cardId)->firstOrFail();
+            $targetColumn = 'cmapi_card_id';
+            $targetValue = $card->cmapi_id;
+        } elseif ($backend === 'tcgdex') {
+            $card = TcgdxCard::where('tcgdex_id', $cardId)->firstOrFail();
+            $targetValue = $card->id;
+        } else {
+            $card = TcgcsvProduct::where('product_id', $cardId)->firstOrFail();
+            $targetColumn = 'product_id';
+            $targetValue = $card->product_id;
+        }
 
         DB::beginTransaction();
         try {
             $exists = DB::table('user_watch_items')
                 ->where('user_id', $user->id)
-                ->where('tcgdex_card_id', $card->id)
+                ->where($targetColumn, $targetValue)
                 ->exists();
 
             if ($exists) {
                 // Stop watching
                 DB::table('user_watch_items')
                     ->where('user_id', $user->id)
-                    ->where('tcgdex_card_id', $card->id)
+                    ->where($targetColumn, $targetValue)
                     ->delete();
                 
                 $status = 'unwatched';
@@ -521,7 +567,7 @@ class TcgItemInteractionController extends Controller
                 // Start watching
                 DB::table('user_watch_items')->insert([
                     'user_id' => $user->id,
-                    'tcgdex_card_id' => $card->id,
+                    $targetColumn => $targetValue,
                     'created_at' => now(),
                 ]);
                 

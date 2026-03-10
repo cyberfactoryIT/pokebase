@@ -51,7 +51,7 @@
                 $displayTotal = \App\Services\CurrencyService::convert($totalValue, 'EUR', $preferredCurrency);
             }
         @endphp
-        <a href="{{ route('cmapi.cards.show', [$currentGame->slug, $card->cmapi_id]) }}" 
+        <a href="/{{ $currentGame->slug }}/cards/{{ $card->cmapi_id }}" 
            class="group flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-lg hover:border-yellow-500/50 hover:bg-white/10 transition-all">
             
             <!-- Card Image Thumbnail -->

@@ -288,7 +288,7 @@ class DashboardController extends Controller
         } elseif ($catalogBackend === 'cmapi') {
             // CMAPI (Lorcana, One Piece)
             $userSetIds = UserCollection::where('user_id', Auth::id())
-                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                 ->distinct()
                 ->pluck('cmapi_cards.set_cmapi_id');
             

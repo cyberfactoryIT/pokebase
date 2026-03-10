@@ -307,6 +307,7 @@ class CardSearchController extends Controller
             ->select([
                 'cmapi_cards.id',
                 'cmapi_cards.cmapi_id',
+                'cmapi_cards.game',
                 'cmapi_cards.name',
                 'cmapi_cards.number as card_number',
                 'cmapi_cards.set_cmapi_id',
@@ -369,6 +370,7 @@ class CardSearchController extends Controller
                 'backend' => 'cmapi',
                 'cmapi_card_id' => $card->id,
                 'cmapi_id' => $card->cmapi_id,
+                'game' => $card->game,
                 'product_id' => null, // Not applicable for CMAPI
                 'tcgdex_card_id' => null, // Not applicable for CMAPI
                 'name' => $card->name,

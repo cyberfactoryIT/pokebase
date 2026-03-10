@@ -3,7 +3,7 @@
     // Get user's most collected set
     $userSetCounts = \App\Models\UserCollection::where('user_id', Auth::id())
         ->whereNotNull('cmapi_card_id')
-        ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+        ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
         ->select('cmapi_cards.set_cmapi_id', \DB::raw('COUNT(*) as card_count'))
         ->groupBy('cmapi_cards.set_cmapi_id')
         ->orderByDesc('card_count')
@@ -20,14 +20,14 @@
         if ($topSet) {
             // Get owned card IDs for this set
             $ownedCardIds = \App\Models\UserCollection::where('user_id', Auth::id())
-                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                 ->where('cmapi_cards.set_cmapi_id', $topSet->id)
-                ->pluck('cmapi_cards.id')
+                ->pluck('cmapi_cards.cmapi_id')
                 ->toArray();
             
             // Get missing cards
             $missingCards = \App\Models\Cmapi\CmapiCard::where('set_cmapi_id', $topSet->id)
-                ->whereNotIn('id', $ownedCardIds)
+                ->whereNotIn('cmapi_id', $ownedCardIds)
                 ->orderByRaw('CAST(number AS UNSIGNED), number')
                 ->get();
             
@@ -58,7 +58,7 @@
                 @endif
             </p>
         </div>
-        <a href="{{ route('cmapi.sets.show', [$currentGame->slug, $topSet->cmapi_episode]) }}" 
+        <a href="/{{ $currentGame->slug }}/sets/{{ $topSet->cmapi_episode }}" 
            class="text-sm text-purple-400 hover:text-purple-300 transition flex items-center gap-1">
             <span>{{ __('dashboard.view_set') }}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@
     <div class="relative">
         <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
             @foreach($missingCards->take(12) as $card)
-                <a href="{{ route('cmapi.cards.show', [$currentGame->slug, $card->cmapi_id]) }}" 
+                <a href="/{{ $currentGame->slug }}/cards/{{ $card->cmapi_id }}" 
                    class="flex-shrink-0 w-32 group">
                     <div class="bg-white/5 border border-white/10 hover:border-purple-500/50 rounded-lg overflow-hidden transition-all">
                         <!-- Card Image -->
@@ -119,7 +119,7 @@
             
             @if($missingCards->count() > 12)
                 <div class="flex-shrink-0 w-32 flex items-center justify-center">
-                    <a href="{{ route('cmapi.sets.show', [$currentGame->slug, $topSet->cmapi_episode]) }}" 
+                    <a href="/{{ $currentGame->slug }}/sets/{{ $topSet->cmapi_episode }}" 
                        class="flex flex-col items-center justify-center gap-2 text-center p-4 bg-white/5 border-2 border-dashed border-white/20 rounded-lg hover:border-purple-500/50 transition group">
                         <svg class="w-8 h-8 text-purple-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>

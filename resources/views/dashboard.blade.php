@@ -35,7 +35,7 @@
                 @php
                     $setsUrl = match($catalogBackend) {
                         'tcgdex' => route('pokemon.sets'),
-                        'cmapi' => route('cmapi.sets.index', ['game' => $currentGame->slug ?? 'lorcana']),
+                        'cmapi' => '/' . ($currentGame->slug ?? 'lorcana') . '/sets',
                         default => route('tcg.expansions.index')
                     };
                 @endphp

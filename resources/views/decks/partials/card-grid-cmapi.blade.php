@@ -7,6 +7,7 @@
         
         $inCollection = auth()->user()->collection()->where('cmapi_card_id', $card->cmapi_id)->exists();
         $displayImage = $card->image_large_url ?? $card->image_small_url;
+        $cmapiGameSlug = $currentGame->slug ?? ($card->game ?? 'lorcana');
     @endphp
     
     <div class="deck-card-item bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition overflow-hidden group relative" 
@@ -34,7 +35,7 @@
         @endif
         
         <!-- Card Image -->
-        <div class="aspect-[245/342] bg-black/50 overflow-hidden cursor-pointer" onclick="window.location.href='/tcg/cards/{{ $card->cmapi_id }}'">
+        <div class="aspect-[245/342] bg-black/50 overflow-hidden cursor-pointer" onclick="window.location.href='/{{ $cmapiGameSlug }}/cards/{{ $card->cmapi_id }}'">
             @if($displayImage)
             <img src="{{ $displayImage }}" alt="{{ $card->name }}" class="w-full h-full object-cover group-hover:scale-105 transition">
             @else
@@ -48,7 +49,7 @@
         
         <!-- Card Info -->
         <div class="p-3">
-            <h4 class="text-white font-semibold text-sm truncate group-hover:text-blue-400 transition cursor-pointer" onclick="window.location.href='/tcg/cards/{{ $card->cmapi_id }}'">
+            <h4 class="text-white font-semibold text-sm truncate group-hover:text-blue-400 transition cursor-pointer" onclick="window.location.href='/{{ $cmapiGameSlug }}/cards/{{ $card->cmapi_id }}'">
                 {{ $card->name }}
             </h4>
             <p class="text-gray-400 text-xs truncate mt-1">

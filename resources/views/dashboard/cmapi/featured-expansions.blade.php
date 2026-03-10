@@ -3,7 +3,7 @@
 <div class="mb-8">
     <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-semibold text-white">{{ __('dashboard.featured_expansions') }}</h3>
-        <a href="{{ route('cmapi.sets.index', $currentGame->slug) }}" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1 group">
+        <a href="/{{ $currentGame->slug }}/sets" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1 group">
             <span>{{ __('dashboard.view_all') }}</span>
             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
@@ -15,7 +15,7 @@
         <!-- Carousel Container -->
         <div id="expansion-carousel" class="flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-hide">
             @foreach($featuredExpansions as $expansion)
-                <a href="{{ route('cmapi.sets.show', [$currentGame->slug, $expansion->cmapi_episode]) }}" 
+                <a href="/{{ $currentGame->slug }}/sets/{{ $expansion->cmapi_episode }}" 
                    class="flex-shrink-0 w-48 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg overflow-hidden transition group/card">
                     
                     <!-- Expansion Logo -->

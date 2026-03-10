@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Pokemon;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cmapi\CmapiCard;
+use App\Models\Cmapi\CmapiSet;
 use App\Models\Tcgdx\TcgdxSet;
 use App\Models\Tcgdx\TcgdxCard;
 use App\Models\TcgcsvGroup;
@@ -37,6 +39,12 @@ class CatalogController extends Controller
                 'sets' => $sets,
                 'currentGame' => $currentGame,
                 'backend' => 'tcgdex',
+            ]);
+        }
+
+        if ($currentGame->catalog_backend === 'cmapi') {
+            return view('cmapi.sets.index', [
+                'game' => $currentGame->code,
             ]);
         }
         
@@ -118,6 +126,18 @@ class CatalogController extends Controller
                 'currentGame' => $currentGame,
                 'backend' => 'tcgdex',
                 'userInteractions' => $userInteractions,
+            ]);
+        }
+
+        if ($currentGame->catalog_backend === 'cmapi') {
+            $set = CmapiSet::where('game', $currentGame->code)
+                ->where('cmapi_episode', (int) $setId)
+                ->withCount('cards')
+                ->firstOrFail();
+
+            return view('cmapi.sets.show', [
+                'set' => $set,
+                'game' => $currentGame->code,
             ]);
         }
         
@@ -210,6 +230,43 @@ class CatalogController extends Controller
                 'isWatched' => $isWatched,
             ]);
         }
+
+        if ($currentGame->catalog_backend === 'cmapi') {
+            $card = CmapiCard::where('cmapi_id', $cardId)
+                ->where('game', $currentGame->code)
+                ->with(['set', 'cardmarketProductLorcana.latestPriceQuote'])
+                ->firstOrFail();
+
+            if (\Auth::check()) {
+                $userId = \Auth::id();
+                $card->is_liked = \DB::table('user_likes')
+                    ->where('user_id', $userId)
+                    ->where('cmapi_card_id', $card->cmapi_id)
+                    ->exists();
+                $card->is_in_wishlist = \DB::table('user_wishlist_items')
+                    ->where('user_id', $userId)
+                    ->where('cmapi_card_id', $card->cmapi_id)
+                    ->exists();
+                $card->is_watched = \DB::table('user_watch_items')
+                    ->where('user_id', $userId)
+                    ->where('cmapi_card_id', $card->cmapi_id)
+                    ->exists();
+            } else {
+                $card->is_liked = false;
+                $card->is_in_wishlist = false;
+                $card->is_watched = false;
+            }
+
+            $gameSlug = $currentGame->code;
+            $cardmarketPrices = null;
+            if ($currentGame->code === 'lorcana' && $card->cardmarketProductLorcana && $card->cardmarketProductLorcana->latestPriceQuote) {
+                $cardmarketPrices = $card->cardmarketProductLorcana->latestPriceQuote;
+            }
+
+            return view('cmapi.cards.show', compact('card', 'gameSlug', 'cardmarketPrices') + [
+                'game' => $currentGame->code,
+            ]);
+        }
         
         // Use TCGCSV data (default)
         $card = TcgcsvProduct::where('product_id', $cardId)
@@ -294,6 +351,41 @@ class CatalogController extends Controller
             }
         }
 
+        if ($currentGame->catalog_backend === 'cmapi') {
+            $query = CmapiSet::where('game', $currentGame->code)->withCount('cards');
+
+            if (!empty($validated['query'])) {
+                $searchTerm = $validated['query'];
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                      ->orWhere('cmapi_episode', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            $sets = $query->orderByDesc('release_date')->paginate(24);
+            $data = $sets->map(function($set) {
+                return [
+                    'cmapi_id' => $set->cmapi_id,
+                    'cmapi_episode' => $set->cmapi_episode,
+                    'name' => $set->name,
+                    'release_date' => $set->release_date ? $set->release_date->format('Y-m-d') : null,
+                    'logo_url' => $set->logo_url,
+                    'card_count' => $set->card_count,
+                    'cards_count' => $set->cards_count,
+                ];
+            });
+
+            return response()->json([
+                'data' => $data,
+                'meta' => [
+                    'current_page' => $sets->currentPage(),
+                    'last_page' => $sets->lastPage(),
+                    'per_page' => $sets->perPage(),
+                    'total' => $sets->total(),
+                ],
+            ]);
+        }
+
         $query = TcgdxSet::where('game_id', $currentGame->id);
 
         // Search filter
@@ -353,6 +445,54 @@ class CatalogController extends Controller
             if (!$currentGame) {
                 abort(404, 'Pokemon game not found');
             }
+        }
+
+        if ($currentGame->catalog_backend === 'cmapi') {
+            $set = CmapiSet::where('game', $currentGame->code)
+                ->where('cmapi_episode', (int) $setId)
+                ->firstOrFail();
+
+            $query = $set->cards();
+            if (!empty($validated['query'])) {
+                $searchTerm = $validated['query'];
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                      ->orWhere('number', 'like', "%{$searchTerm}%");
+                });
+            }
+            $query->orderByRaw('CAST(number AS UNSIGNED), number');
+            $cards = $query->paginate(48);
+
+            $data = $cards->map(function($card) {
+                return [
+                    'cmapi_id' => $card->cmapi_id,
+                    'name' => $card->name,
+                    'number' => $card->number,
+                    'rarity' => $card->rarity,
+                    'image_small_url' => $card->image_small_url,
+                    'image_large_url' => $card->image_large_url,
+                    'price_eur' => $card->price_eur,
+                    'price_usd' => $card->price_usd,
+                    'ink_cost' => $card->ink_cost,
+                    'card_type' => $card->card_type,
+                    'lore_value' => $card->lore_value,
+                    'ink_color' => $card->ink_color,
+                    'cost' => $card->cost,
+                    'power' => $card->power,
+                    'counter' => $card->counter,
+                    'color' => $card->color,
+                ];
+            });
+
+            return response()->json([
+                'data' => $data,
+                'meta' => [
+                    'current_page' => $cards->currentPage(),
+                    'last_page' => $cards->lastPage(),
+                    'per_page' => $cards->perPage(),
+                    'total' => $cards->total(),
+                ],
+            ]);
         }
 
         // Find set

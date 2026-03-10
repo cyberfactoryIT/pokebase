@@ -17,7 +17,7 @@
             <span class="text-gray-600">|</span>
             
             <!-- View Set Button -->
-            <a href="{{ route('cmapi.sets.show', [$game, $card->set->cmapi_episode]) }}" class="inline-flex items-center text-blue-400 hover:text-blue-300 transition">
+            <a href="/{{ $game }}/sets/{{ $card->set->cmapi_episode }}" class="inline-flex items-center text-blue-400 hover:text-blue-300 transition">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                 </svg>
@@ -475,7 +475,7 @@ function toggleLike() {
     const btn = document.getElementById('likeBtn');
     const text = document.getElementById('likeText');
     
-    const url = '{{ route('cmapi.cards.like', ['game' => $gameSlug, 'cardId' => $card->id]) }}';
+    const url = '/{{ $gameSlug }}/cards/{{ $card->cmapi_id }}/like';
     console.log('Calling like endpoint:', url);
     
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -519,7 +519,7 @@ function toggleWishlist() {
     const btn = document.getElementById('wishlistBtn');
     const text = document.getElementById('wishlistText');
     
-    const url = '{{ route('cmapi.cards.wishlist', ['game' => $gameSlug, 'cardId' => $card->id]) }}';
+    const url = '/{{ $gameSlug }}/cards/{{ $card->cmapi_id }}/wishlist';
     console.log('Calling wishlist endpoint:', url);
     
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -563,7 +563,7 @@ function toggleWatch() {
     const btn = document.getElementById('watchBtn');
     const text = document.getElementById('watchText');
     
-    const url = '{{ route('cmapi.cards.watch', ['game' => $gameSlug, 'cardId' => $card->id]) }}';
+    const url = '/{{ $gameSlug }}/cards/{{ $card->cmapi_id }}/watch';
     console.log('Calling watch endpoint:', url);
     
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

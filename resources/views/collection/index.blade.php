@@ -580,7 +580,7 @@
             @php
                 $browseUrl = match($catalogBackend) {
                     'tcgdex' => route('pokemon.sets'),
-                    'cmapi' => route('cmapi.sets.index', ['game' => $currentGame->slug ?? 'lorcana']),
+                    'cmapi' => '/' . ($currentGame->slug ?? 'lorcana') . '/sets',
                     default => route('tcg.expansions.index')
                 };
             @endphp
@@ -701,7 +701,7 @@
                     $card = $item->cmapiCard;
                     $cardName = $card->name ?? 'Unknown';
                     $displayImage = $card->image_large_url ?? $card->image_small_url;
-                    $cardUrl = route('cmapi.cards.show', [$currentGame->slug ?? 'lorcana', $card->cmapi_id]);
+                    $cardUrl = '/' . ($currentGame->slug ?? 'lorcana') . '/cards/' . $card->cmapi_id;
                 } else {
                     $card = $item->card;
                     $cardName = $card->name ?? 'Unknown';

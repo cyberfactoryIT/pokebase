@@ -235,7 +235,7 @@ class CollectionController extends Controller
                       ->orderByRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) ASC')
                       ->select('user_collection.*');
             } elseif ($catalogBackend === 'cmapi') {
-                $query->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                $query->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                       ->orderBy('cmapi_cards.name', 'ASC')
                       ->select('user_collection.*');
             } else {
@@ -250,7 +250,7 @@ class CollectionController extends Controller
                       ->orderByRaw('JSON_UNQUOTE(JSON_EXTRACT(tcgdx_cards.name, "$.en")) DESC')
                       ->select('user_collection.*');
             } elseif ($catalogBackend === 'cmapi') {
-                $query->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.id')
+                $query->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                       ->orderBy('cmapi_cards.name', 'DESC')
                       ->select('user_collection.*');
             } else {
@@ -1369,7 +1369,7 @@ class CollectionController extends Controller
             ]);
         } elseif ($isCmapi) {
             $validated = $request->validate([
-                'cmapi_card_id' => 'required|integer|exists:cmapi_cards,id',
+                'cmapi_card_id' => 'required|string|max:100|exists:cmapi_cards,cmapi_id',
                 'quantity' => 'required|integer|min:1|max:100',
                 'condition' => 'required|string|in:M,NM,LP,MP,HP,D',
             ]);

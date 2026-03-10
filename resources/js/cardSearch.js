@@ -103,6 +103,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (card.backend === 'tcgdex') {
                 // For TCGDEX: use tcgdex_id (e.g., "base1-1") which is globally unique
                 key = card.tcgdex_id;
+            } else if (card.backend === 'cmapi') {
+                // For CMAPI: use cmapi_id and namespace by backend
+                key = `cmapi:${card.cmapi_id}`;
             } else {
                 // For TCGCSV: use product_id (unique) or fallback to set+number
                 key = card.product_id || `${card.group_id}-${card.card_number}`;
@@ -130,6 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (card.backend === 'tcgdex') {
                 // TCGDEX: use tcgdex_id for the route
                 cardUrl = `/pokemon/cards/${card.tcgdex_id}`;
+            } else if (card.backend === 'cmapi') {
+                // CMAPI: route is game-scoped
+                const gameSlug = card.game || 'lorcana';
+                cardUrl = `/${gameSlug}/cards/${card.cmapi_id}`;
             } else {
                 // TCGCSV: use product_id for the route
                 cardUrl = `/tcg/cards/${card.product_id}`;

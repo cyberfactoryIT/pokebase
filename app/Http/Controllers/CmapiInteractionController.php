@@ -13,10 +13,10 @@ class CmapiInteractionController extends Controller
     /**
      * Toggle like on a CMAPI card
      */
-    public function toggleLike(Request $request, string $game, int $cardId)
+    public function toggleLike(Request $request, string $game, string $cardId)
     {
         $user = Auth::user();
-        $card = CmapiCard::findOrFail($cardId);
+        $card = CmapiCard::where('cmapi_id', $cardId)->where('game', $game)->firstOrFail();
 
         DB::beginTransaction();
         try {
@@ -84,10 +84,10 @@ class CmapiInteractionController extends Controller
     /**
      * Toggle wishlist on a CMAPI card
      */
-    public function toggleWishlist(Request $request, string $game, int $cardId)
+    public function toggleWishlist(Request $request, string $game, string $cardId)
     {
         $user = Auth::user();
-        $card = CmapiCard::findOrFail($cardId);
+        $card = CmapiCard::where('cmapi_id', $cardId)->where('game', $game)->firstOrFail();
 
         DB::beginTransaction();
         try {
@@ -149,10 +149,10 @@ class CmapiInteractionController extends Controller
     /**
      * Toggle watch on a CMAPI card
      */
-    public function toggleWatch(Request $request, string $game, int $cardId)
+    public function toggleWatch(Request $request, string $game, string $cardId)
     {
         $user = Auth::user();
-        $card = CmapiCard::findOrFail($cardId);
+        $card = CmapiCard::where('cmapi_id', $cardId)->where('game', $game)->firstOrFail();
 
         DB::beginTransaction();
         try {

@@ -25,7 +25,7 @@
             $cardName = $card->name;
             $cardImage = $card->image_large_url ?? $card->image_small_url;
         @endphp
-        <a href="{{ route('cmapi.cards.show', [$currentGame->slug, $card->cmapi_id]) }}" 
+        <a href="/{{ $currentGame->slug }}/cards/{{ $card->cmapi_id }}" 
            class="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/50 rounded-lg overflow-hidden transition-all">
             
             <!-- Card Image -->
