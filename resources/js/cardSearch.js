@@ -6,8 +6,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('global-card-search');
     const searchDropdown = document.getElementById('search-dropdown');
+    const wrapper = searchInput?.closest('[data-catalog-backend]');
     
-    if (!searchInput || !searchDropdown) return;
+    if (!searchInput || !searchDropdown || !wrapper) return;
     
     let debounceTimer = null;
     let currentRequestId = 0;
@@ -71,8 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
         showDropdown();
         searchDropdown.innerHTML = '<div class="px-4 py-3 text-gray-400 text-sm">Searching...</div>';
         
-        // Fetch results
-        fetch(`/api/search/cards?q=${encodeURIComponent(query)}&limit=12`)
+        const catalogBackend = wrapper.dataset.catalogBackend || 'tcgcsv';
+
+        // Fetch results, explicitly passing backend so the API knows which tables to search
+        fetch(`/api/search/cards?q=${encodeURIComponent(query)}&limit=12&backend=${encodeURIComponent(catalogBackend)}`)
             .then(response => {
                 if (!response.ok) throw new Error('Search failed');
                 return response.json();

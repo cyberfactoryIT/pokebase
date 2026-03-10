@@ -66,7 +66,14 @@
             <div class="hidden md:flex items-center gap-4">
                 <!-- Global Card Search -->
                 @if(! auth()->user()->hasRole('superadmin'))
-                <div class="relative" x-data="{ searchOpen: false }" @click.away="searchOpen = false">
+                @php
+                    $navCatalogBackend = catalog_backend();
+                @endphp
+                <div class="relative"
+                     x-data="{ searchOpen: false }"
+                     @click.away="searchOpen = false"
+                     data-catalog-backend="{{ $navCatalogBackend }}"
+                     data-game-slug="{{ $currentGame->slug ?? 'pokemon' }}">
                     <input 
                         type="text" 
                         id="global-card-search" 
