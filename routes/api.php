@@ -99,6 +99,7 @@ Route::get('/cmapi/cards/{id}/price-history', function ($id) {
     
     // For Pokemon: use generic CardMarket price quotes table if cardmarket_id present 
     if ($card->game === 'pokemon' && $card->cardmarket_id) {
+        // First try within requested window
         $priceHistory = DB::table('cardmarket_price_quotes')
             ->where('cardmarket_product_id', $card->cardmarket_id)
             ->where('as_of_date', '>=', $cutoffDate)
@@ -111,6 +112,21 @@ Route::get('/cmapi/cards/{id}/price-history', function ($id) {
                     'price_trend_eur' => $quote->trend ?? $quote->avg30 ?? $quote->avg,
                 ];
             });
+
+        // If no data in the requested window, fall back to full history for this product
+        if ($priceHistory->isEmpty()) {
+            $priceHistory = DB::table('cardmarket_price_quotes')
+                ->where('cardmarket_product_id', $card->cardmarket_id)
+                ->orderBy('as_of_date', 'asc')
+                ->get()
+                ->map(function ($quote) {
+                    return [
+                        'price_date' => $quote->as_of_date,
+                        'price_eur' => $quote->trend ?? $quote->avg ?? $quote->low,
+                        'price_trend_eur' => $quote->trend ?? $quote->avg30 ?? $quote->avg,
+                    ];
+                });
+        }
 
         if ($priceHistory->isNotEmpty()) {
             return response()->json($priceHistory);
