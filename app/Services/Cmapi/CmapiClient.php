@@ -12,9 +12,12 @@ use Illuminate\Support\Facades\Log;
  * Supported games: lorcana, onepiece
  * 
  * Endpoints:
- * - GET /{game}/episodes - List all sets ("episodes")
+ * Note: RapidAPI uses "one-piece" in the URL path, while our internal game
+ * code remains "onepiece". The client handles this mapping transparently.
+ * 
+ * - GET /{game}/episodes           - List all sets ("episodes")
  * - GET /{game}/episodes/{id}/cards - List cards in a set
- * - GET /{game}/cards/{id} - Get single card
+ * - GET /{game}/cards/{id}         - Get single card
  * - GET /{game}/cards?search={query} - Search cards
  */
 class CmapiClient
@@ -42,7 +45,7 @@ class CmapiClient
      */
     public function listSets(): array
     {
-        return $this->fetchPaginatedCollection("/{$this->game}/episodes", 'listSets');
+        return $this->fetchPaginatedCollection("/{$this->getApiGameSlug()}/episodes", 'listSets');
     }
 
     /**
@@ -69,7 +72,7 @@ class CmapiClient
     public function listCardsBySet(string $episodeId): array
     {
         return $this->fetchPaginatedCollection(
-            "/{$this->game}/episodes/{$episodeId}/cards",
+            "/{$this->getApiGameSlug()}/episodes/{$episodeId}/cards",
             'listCardsBySet',
             ['episode_id' => $episodeId]
         );
@@ -82,7 +85,7 @@ class CmapiClient
     {
         $response = Http::timeout($this->timeout)
             ->withHeaders($this->getHeaders())
-            ->get("{$this->baseUrl}/{$this->game}/cards/{$cardId}");
+            ->get("{$this->baseUrl}/{$this->getApiGameSlug()}/cards/{$cardId}");
 
         if (!$response->successful()) {
             Log::warning("CMAPI getCard failed: {$response->status()}", [
@@ -214,6 +217,21 @@ class CmapiClient
             'X-RapidAPI-Key' => $this->rapidApiKey,
             'X-RapidAPI-Host' => $this->rapidApiHost,
         ];
+    }
+
+    /**
+     * Map internal game code to the API path segment.
+     *
+     * RapidAPI expects "one-piece" in the URL, while we use "onepiece"
+     * internally for consistency across the app.
+     */
+    protected function getApiGameSlug(): string
+    {
+        if ($this->game === 'onepiece') {
+            return 'one-piece';
+        }
+
+        return $this->game;
     }
 
     /**
