@@ -97,7 +97,27 @@ Route::get('/cmapi/cards/{id}/price-history', function ($id) {
         }
     }
     
-    // For One Piece or fallback: Try old CMAPI price history
+    // For Pokemon: use generic CardMarket price quotes table if cardmarket_id present
+    if ($card->game === 'pokemon' && $card->cardmarket_id) {
+        $priceHistory = DB::table('cardmarket_price_quotes')
+            ->where('cardmarket_product_id', $card->cardmarket_id)
+            ->where('as_of_date', '>=', $cutoffDate)
+            ->orderBy('as_of_date', 'asc')
+            ->get()
+            ->map(function ($quote) {
+                return [
+                    'price_date' => $quote->as_of_date,
+                    'price_eur' => $quote->trend ?? $quote->avg ?? $quote->low,
+                    'price_trend_eur' => $quote->trend ?? $quote->avg30 ?? $quote->avg,
+                ];
+            });
+
+        if ($priceHistory->isNotEmpty()) {
+            return response()->json($priceHistory);
+        }
+    }
+    
+    // For One Piece or fallback: Try CMAPI price history
     $language = request('language', 'en');
     $condition = request('condition', 'NM');
     

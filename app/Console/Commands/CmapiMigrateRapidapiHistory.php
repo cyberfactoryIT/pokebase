@@ -41,6 +41,14 @@ class CmapiMigrateRapidapiHistory extends Command
             $this->warn('Running in DRY-RUN mode (no writes will be performed).');
         }
 
+        // Safety: ensure we actually have cmapi_cards for this game
+        $cmapiCardCount = DB::table('cmapi_cards')->where('game', $game)->count();
+        if ($cmapiCardCount === 0) {
+            $this->error("No cmapi_cards found for game [{$game}]. Migration would have nowhere to write.");
+            $this->line('Hint: this command is only meaningful for games already imported into CMAPI (e.g. lorcana, onepiece).');
+            return 1;
+        }
+
         // Basic date filters
         $query = DB::table('rapidapi_price_history')
             ->where('game', $game);
@@ -73,6 +81,7 @@ class CmapiMigrateRapidapiHistory extends Command
                 $cardIds = $rows->pluck('card_id')->unique()->values()->all();
 
                 $cmapiCards = DB::table('cmapi_cards')
+                    ->where('game', $game)
                     ->whereIn('cmapi_id', $cardIds)
                     ->pluck('id', 'cmapi_id'); // [cmapi_id => id]
 
