@@ -97,7 +97,7 @@ Route::get('/cmapi/cards/{id}/price-history', function ($id) {
         }
     }
     
-    // For Pokemon: use generic CardMarket price quotes table if cardmarket_id present
+    // For Pokemon: use generic CardMarket price quotes table if cardmarket_id present 
     if ($card->game === 'pokemon' && $card->cardmarket_id) {
         $priceHistory = DB::table('cardmarket_price_quotes')
             ->where('cardmarket_product_id', $card->cardmarket_id)
