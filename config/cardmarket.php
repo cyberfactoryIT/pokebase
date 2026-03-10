@@ -42,6 +42,12 @@ return [
             'products_url' => env('CARDMARKET_LORCANA_PRODUCTS_URL', 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_19.json'),
             'prices_url' => env('CARDMARKET_LORCANA_PRICES_URL', 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_19.json'),
         ],
+        'onepiece' => [
+            'id' => 18,
+            'name' => 'One Piece',
+            'products_url' => env('CARDMARKET_LORCANA_PRODUCTS_URL', 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_18.json'),
+            'prices_url' => env('CARDMARKET_LORCANA_PRICES_URL', 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_18.json'),
+        ],
         'mtg' => [
             'id' => 1,
             'name' => 'Magic: The Gathering',

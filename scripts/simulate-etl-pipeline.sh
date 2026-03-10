@@ -63,19 +63,28 @@ echo -e "${GREEN}═════════════════════
 echo -e "${GREEN}STEP 1/12: Cardmarket Download & Process (Schedule: 02:10)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📥 Step 1a: Download Cardmarket catalogue + prices${NC}"
+echo -e "${CYAN}📥 Step 1a: Download Cardmarket catalogue + prices (Pokemon, Lorcana, One Piece)${NC}"
 echo ""
-$PHP_CMD artisan cardmarket:download --products
+$PHP_CMD artisan cardmarket:download pokemon --products
+$PHP_CMD artisan cardmarket:download pokemon --prices
 echo ""
-echo -e "${CYAN}📥 Step 1b: Download Cardmarket price quotes${NC}"
+$PHP_CMD artisan cardmarket:download lorcana --products
+$PHP_CMD artisan cardmarket:download lorcana --prices
 echo ""
-$PHP_CMD artisan cardmarket:download --prices
+$PHP_CMD artisan cardmarket:download onepiece --products
+$PHP_CMD artisan cardmarket:download onepiece --prices
 echo ""
-echo -e "${CYAN}📝 Step 1c: Process and import to database${NC}"
+echo -e "${CYAN}📝 Step 1b: Process and import to database (Pokemon, Lorcana, One Piece)${NC}"
 echo ""
 step1_start=$(date +%s)
-$PHP_CMD artisan cardmarket:import --products
-$PHP_CMD artisan cardmarket:import --prices
+$PHP_CMD artisan cardmarket:import pokemon --products
+$PHP_CMD artisan cardmarket:import pokemon --prices
+echo ""
+$PHP_CMD artisan cardmarket:import lorcana --products
+$PHP_CMD artisan cardmarket:import lorcana --prices
+echo ""
+$PHP_CMD artisan cardmarket:import onepiece --products
+$PHP_CMD artisan cardmarket:import onepiece --prices
 step1_end=$(date +%s)
 step1_duration=$((step1_end - step1_start))
 echo ""
@@ -100,79 +109,29 @@ echo -e "${GREEN}✅ STEP 2 completato in ${step2_duration}s${NC}"
 echo ""
 sleep 2
 
-# Step 3: RapidAPI Import Episodes (03:30)
+# Step 3: CMAPI Import (CardMarket API via RapidAPI) (03:30)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 3/12: RapidAPI Import Episodes (Schedule: 03:30)${NC}"
+echo -e "${GREEN}STEP 3/8: CMAPI Import (CardMarket API) (Schedule: 03:30)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Importing Pokemon episodes list from RapidAPI${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
+echo -e "${CYAN}📝 Importing sets and cards from CardMarket API via RapidAPI for: pokemon, lorcana, onepiece, riftbound${NC}"
+echo -e "${CYAN}⏱️  Estimated duration: ~5-15 minutes (all games)${NC}"
 echo ""
 step5_start=$(date +%s)
-$PHP_CMD artisan rapidapi:import-episodes pokemon
+#$PHP_CMD artisan cmapi:import --game=pokemon
+#$PHP_CMD artisan cmapi:import --game=lorcana
+#$PHP_CMD artisan cmapi:import --game=onepiece
+#$PHP_CMD artisan cmapi:import --game=riftbound
 step5_end=$(date +%s)
 step5_duration=$((step5_end - step5_start))
 echo ""
-echo -e "${GREEN}✅ STEP 5 completato in ${step5_duration}s${NC}"
+echo -e "${GREEN}✅ STEP 3 completato in ${step5_duration}s${NC}"
 echo ""
 sleep 2
 
-# Step 4: RapidAPI Sync Cards (03:35)
+# Step 4: TCGdex Download & Import (04:45)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 4/12: RapidAPI Sync Cards (Schedule: 03:35)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Syncing all episode cards with daily price snapshots${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~8-10 minutes (171 episodes × 3s rate limit)${NC}"
-echo -e "${YELLOW}⚠️  Rate limit: 300 req/minute${NC}"
-echo ""
-step6_start=$(date +%s)
-$PHP_CMD artisan rapidapi:sync-cards pokemon
-step6_end=$(date +%s)
-step6_duration=$((step6_end - step6_start))
-echo ""
-echo -e "${GREEN}✅ STEP 6 completato in ${step6_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 5: RapidAPI Cards Mapping
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 5/12: RapidAPI Cards Mapping (After Sync)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Mapping RapidAPI cards to TCGCSV products${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
-echo ""
-step5_start=$(date +%s)
-$PHP_CMD artisan cards:map
-step5_end=$(date +%s)
-step5_duration=$((step5_end - step5_start))
-echo ""
-echo -e "${GREEN}✅ STEP 5 completato in ${step5_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 6: Cardmarket Match Metacards
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 6/12: Cardmarket Match Metacards (Direct + Fuzzy)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Phase 1: Direct mapping from RapidAPI cardmarket_id${NC}"
-echo -e "${CYAN}📝 Phase 2: Fuzzy matching for remaining products${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~2-3 minutes (tutti i prodotti, no limit)${NC}"
-echo ""
-step6_start=$(date +%s)
-$PHP_CMD artisan cardmarket:match-metacards --auto-confirm
-step6_end=$(date +%s)
-step6_duration=$((step6_end - step6_start))
-echo ""
-echo -e "${GREEN}✅ STEP 6 completato in ${step6_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 7: TCGdex Download & Import (04:45)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 7/12: TCGdex Download & Import (Schedule: 04:45)${NC}"
+echo -e "${GREEN}STEP 4/7: TCGdex Download & Import (Schedule: 04:45)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📥 Download & import Pokemon sets and cards from TCGdex API${NC}"
@@ -183,98 +142,13 @@ $PHP_CMD artisan tcgdx:import
 step7_end=$(date +%s)
 step7_duration=$((step7_end - step7_start))
 echo ""
-echo -e "${GREEN}✅ STEP 7 completato in ${step7_duration}s${NC}"
+echo -e "${GREEN}✅ STEP 4 completato in ${step7_duration}s${NC}"
 echo ""
 sleep 2
 
-# Step 7b: TCGdex Update Lookup Keys
+# Step 5: Cardmarket Sync Prices (06:30)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 7b/12: TCGdex Update Lookup Keys${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Populating visible_lookup_key for card search (SETCODE 028/64)${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
-echo ""
-step7b_start=$(date +%s)
-$PHP_CMD artisan tcgdex:update-lookup-keys
-step7b_end=$(date +%s)
-step7b_duration=$((step7b_end - step7b_start))
-echo ""
-echo -e "${GREEN}✅ STEP 7b completato in ${step7b_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 8: RapidAPI Episodes Mapping (05:30)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 8/12: RapidAPI Episodes Mapping (Schedule: 05:30)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Mapping RapidAPI episodes to TCGCSV groups${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~10-30 seconds${NC}"
-echo ""
-step8_start=$(date +%s)
-$PHP_CMD artisan rapidapi:map-episodes
-step8_end=$(date +%s)
-step8_duration=$((step8_end - step8_start))
-echo ""
-echo -e "${GREEN}✅ STEP 8 completato in ${step8_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 9: TCGdex to TCGCSV Mapping (05:50)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 9/12: TCGdex to TCGCSV Mapping (Schedule: 05:50)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Mapping TCGdex sets/cards to TCGCSV (fuzzy matching + logos)${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~5-15 seconds${NC}"
-echo ""
-step9_start=$(date +%s)
-$PHP_CMD artisan tcgdex:map-to-tcgcsv
-step9_end=$(date +%s)
-step9_duration=$((step9_end - step9_start))
-echo ""
-echo -e "${GREEN}✅ STEP 9 completato in ${step9_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 9b: TCGdex CardMarket Product IDs Mapping
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 9b/12: TCGdex CardMarket Product IDs Mapping${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Extracting CardMarket product IDs from TCGdex JSON${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~5-15 seconds${NC}"
-echo ""
-step9b_start=$(date +%s)
-$PHP_CMD artisan tcgdex:map-cardmarket
-step9b_end=$(date +%s)
-step9b_duration=$((step9b_end - step9b_start))
-echo ""
-echo -e "${GREEN}✅ STEP 9b completato in ${step9b_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 10: TCGCSV Enrichment (06:00)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 10/12: TCGCSV Enrichment (Schedule: 06:00)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Enriching TCGCSV with HD images, prices, links, details${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~2-5 minutes${NC}"
-echo ""
-step10_start=$(date +%s)
-$PHP_CMD artisan tcgcsv:enrich --all
-step10_end=$(date +%s)
-step10_duration=$((step10_end - step10_start))
-echo ""
-echo -e "${GREEN}✅ STEP 10 completato in ${step10_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 11: Cardmarket Sync Prices (06:30)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 11/12: Cardmarket Sync Prices (Schedule: 06:30)${NC}"
+echo -e "${GREEN}STEP 5/5: Cardmarket Sync Prices (Schedule: 06:30)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📝 Syncing Cardmarket trend prices to TCGCSV products${NC}"
@@ -285,13 +159,13 @@ $PHP_CMD artisan cardmarket:sync-prices --force
 step11_end=$(date +%s)
 step11_duration=$((step11_end - step11_start))
 echo ""
-echo -e "${GREEN}✅ STEP 11 completato in ${step11_duration}s${NC}"
+echo -e "${GREEN}✅ STEP 5 completato in ${step11_duration}s${NC}"
 echo ""
 sleep 2
 
-# Step 12: Refresh Cached Prices for Users
+# Optional: Refresh Cached Prices for Users
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 12/12: Refresh Cached Prices for Users${NC}"
+echo -e "${GREEN}OPTIONAL: Refresh Cached Prices for Users${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📝 Refreshing cached prices for user collections and decks${NC}"
@@ -302,7 +176,7 @@ $PHP_CMD artisan prices:refresh-cache --force
 step12_end=$(date +%s)
 step12_duration=$((step12_end - step12_start))
 echo ""
-echo -e "${GREEN}✅ STEP 12 completato in ${step12_duration}s${NC}"
+echo -e "${GREEN}✅ OPTIONAL STEP completato in ${step12_duration}s${NC}"
 echo ""
 
 # Calculate total duration
@@ -322,18 +196,9 @@ echo ""
 echo -e "${GREEN}📊 RIEPILOGO DURATE:${NC}"
 echo -e "   1️⃣  Cardmarket Download & Process ......... ${step1_duration}s"
 echo -e "   2️⃣  TCGCSV Download & Import .............. ${step2_duration}s"
-echo -e "   3️⃣  RapidAPI Import Episodes .............. ${step5_duration}s"
-echo -e "   4️⃣  RapidAPI Sync Cards ................... ${step6_duration}s"
-echo -e "   5️⃣  RapidAPI Cards Mapping ................ ${step5_duration}s"
-echo -e "   6️⃣  Cardmarket Match (Direct+Fuzzy) ....... ${step6_duration}s"
-echo -e "   7️⃣  TCGdex Download & Import .............. ${step7_duration}s"
-echo -e "   7️⃣🅱️ TCGdex Update Lookup Keys ............ ${step7b_duration}s"
-echo -e "   8️⃣  RapidAPI Episodes Mapping ............. ${step8_duration}s"
-echo -e "   9️⃣  TCGdex Mapping ........................ ${step9_duration}s"
-echo -e "   9️⃣🅱️ TCGdex CardMarket IDs ................ ${step9b_duration}s"
-echo -e "   🔟  TCGCSV Enrichment ..................... ${step10_duration}s"
-echo -e "   1️⃣1️⃣ Cardmarket Sync Prices ................ ${step11_duration}s"
-echo -e "   1️⃣2️⃣ Refresh Cached Prices ................. ${step12_duration}s"
+echo -e "   3️⃣  CMAPI Import (all games) .............. ${step5_duration}s"
+echo -e "   4️⃣  TCGdex Download & Import .............. ${step7_duration}s"
+echo -e "   5️⃣  Cardmarket Sync Prices ................ ${step11_duration}s"
 echo ""
 echo -e "${CYAN}⏱️  DURATA TOTALE: ${total_minutes}m ${total_seconds}s${NC}"
 echo ""
