@@ -60,7 +60,7 @@ echo ""
 
 # Step 1: Cardmarket Download & Process (02:10)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 1/12: Cardmarket Download & Process (Schedule: 02:10)${NC}"
+echo -e "${GREEN}STEP 1/4: Cardmarket Download & Process (Schedule: 02:10)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📥 Step 1a: Download Cardmarket catalogue + prices (Pokemon, Lorcana, One Piece)${NC}"
@@ -94,7 +94,7 @@ sleep 2
 
 # Step 2: TCGCSV Download & Import Pokemon (02:40)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 2/12: TCGCSV Download & Import Pokemon (Schedule: 02:40)${NC}"
+echo -e "${GREEN}STEP 2/4: TCGCSV Download & Import Pokemon (Schedule: 02:40)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📥 Download & import Pokemon TCG data from tcgcsv.com (TCGplayer)${NC}"
@@ -111,17 +111,17 @@ sleep 2
 
 # Step 3: CMAPI Import (CardMarket API via RapidAPI) (03:30)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 3/8: CMAPI Import (CardMarket API) (Schedule: 03:30)${NC}"
+echo -e "${GREEN}STEP 3/4: CMAPI Import (CardMarket API) (Schedule: 03:30)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📝 Importing sets and cards from CardMarket API via RapidAPI for: pokemon, lorcana, onepiece, riftbound${NC}"
 echo -e "${CYAN}⏱️  Estimated duration: ~5-15 minutes (all games)${NC}"
 echo ""
 step5_start=$(date +%s)
-#$PHP_CMD artisan cmapi:import --game=pokemon
-#$PHP_CMD artisan cmapi:import --game=lorcana
-#$PHP_CMD artisan cmapi:import --game=onepiece
-#$PHP_CMD artisan cmapi:import --game=riftbound
+$PHP_CMD artisan cmapi:import --game=pokemon
+$PHP_CMD artisan cmapi:import --game=lorcana
+$PHP_CMD artisan cmapi:import --game=onepiece
+$PHP_CMD artisan cmapi:import --game=riftbound
 step5_end=$(date +%s)
 step5_duration=$((step5_end - step5_start))
 echo ""
@@ -131,7 +131,7 @@ sleep 2
 
 # Step 4: TCGdex Download & Import (04:45)
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 4/7: TCGdex Download & Import (Schedule: 04:45)${NC}"
+echo -e "${GREEN}STEP 4/4: TCGdex Download & Import (Schedule: 04:45)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
 echo -e "${CYAN}📥 Download & import Pokemon sets and cards from TCGdex API${NC}"
@@ -143,23 +143,6 @@ step7_end=$(date +%s)
 step7_duration=$((step7_end - step7_start))
 echo ""
 echo -e "${GREEN}✅ STEP 4 completato in ${step7_duration}s${NC}"
-echo ""
-sleep 2
-
-# Step 5: Cardmarket Sync Prices (06:30)
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}STEP 5/5: Cardmarket Sync Prices (Schedule: 06:30)${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}⏰ Started at: $(timestamp)${NC}"
-echo -e "${CYAN}📝 Syncing Cardmarket trend prices to TCGCSV products${NC}"
-echo -e "${CYAN}⏱️  Estimated duration: ~1-2 minutes${NC}"
-echo ""
-step11_start=$(date +%s)
-$PHP_CMD artisan cardmarket:sync-prices --force
-step11_end=$(date +%s)
-step11_duration=$((step11_end - step11_start))
-echo ""
-echo -e "${GREEN}✅ STEP 5 completato in ${step11_duration}s${NC}"
 echo ""
 sleep 2
 
@@ -198,7 +181,6 @@ echo -e "   1️⃣  Cardmarket Download & Process ......... ${step1_duration}s"
 echo -e "   2️⃣  TCGCSV Download & Import .............. ${step2_duration}s"
 echo -e "   3️⃣  CMAPI Import (all games) .............. ${step5_duration}s"
 echo -e "   4️⃣  TCGdex Download & Import .............. ${step7_duration}s"
-echo -e "   5️⃣  Cardmarket Sync Prices ................ ${step11_duration}s"
 echo ""
 echo -e "${CYAN}⏱️  DURATA TOTALE: ${total_minutes}m ${total_seconds}s${NC}"
 echo ""
