@@ -99,7 +99,7 @@ class CollectionController extends Controller
                             $card->local_id,
                             $item->quantity,
                             $card->rarity,
-                            null,
+                            $item->cached_price,
                         ]);
                     } elseif ($catalogBackend === 'cmapi') {
                         $card = $item->cmapiCard;
@@ -123,7 +123,7 @@ class CollectionController extends Controller
                             $card->number,
                             $item->quantity,
                             $card->rarity,
-                            $card->price_eur,
+                            $item->cached_price,
                         ]);
                     } else {
                         $card = $item->card;
@@ -147,7 +147,7 @@ class CollectionController extends Controller
                             $card->card_number,
                             $item->quantity,
                             $card->rarity,
-                            $card->cardmarket_price_eur,
+                            $item->cached_price,
                         ]);
                     }
                 }
