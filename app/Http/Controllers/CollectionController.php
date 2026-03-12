@@ -74,15 +74,21 @@ class CollectionController extends Controller
 
                         // Normalize JSON names for TCGDEX (set and card)
                         $setName = optional($set)->name;
+                        // Handle JSON string or array for set name
                         if (is_string($setName) && str_starts_with($setName, '{')) {
                             $decoded = json_decode($setName, true);
                             $setName = is_array($decoded) ? ($decoded['en'] ?? reset($decoded) ?? 'Unknown') : $setName;
+                        } elseif (is_array($setName)) {
+                            $setName = $setName['en'] ?? reset($setName) ?? 'Unknown';
                         }
 
                         $cardName = $card->name;
+                        // Handle JSON string or array for card name
                         if (is_string($cardName) && str_starts_with($cardName, '{')) {
                             $decodedCard = json_decode($cardName, true);
                             $cardName = is_array($decodedCard) ? ($decodedCard['en'] ?? reset($decodedCard) ?? 'Unknown') : $cardName;
+                        } elseif (is_array($cardName)) {
+                            $cardName = $cardName['en'] ?? reset($cardName) ?? 'Unknown';
                         }
 
                         fputcsv($out, [
@@ -101,11 +107,19 @@ class CollectionController extends Controller
                             continue;
                         }
                         $set = $card->set;
+                        $setName = optional($set)->name;
+                        if (is_array($setName)) {
+                            $setName = $setName['en'] ?? reset($setName) ?? 'Unknown';
+                        }
+                        $cardName = $card->name;
+                        if (is_array($cardName)) {
+                            $cardName = $cardName['en'] ?? reset($cardName) ?? 'Unknown';
+                        }
                         fputcsv($out, [
                             'cmapi',
                             $card->game,
-                            optional($set)->name,
-                            $card->name,
+                            $setName,
+                            $cardName,
                             $card->number,
                             $item->quantity,
                             $card->rarity,
@@ -117,11 +131,19 @@ class CollectionController extends Controller
                             continue;
                         }
                         $group = $card->group;
+                        $groupName = optional($group)->name;
+                        if (is_array($groupName)) {
+                            $groupName = $groupName['en'] ?? reset($groupName) ?? 'Unknown';
+                        }
+                        $cardName = $card->name;
+                        if (is_array($cardName)) {
+                            $cardName = $cardName['en'] ?? reset($cardName) ?? 'Unknown';
+                        }
                         fputcsv($out, [
                             'tcgcsv',
                             $card->game_id,
-                            optional($group)->name,
-                            $card->name,
+                            $groupName,
+                            $cardName,
                             $card->card_number,
                             $item->quantity,
                             $card->rarity,
