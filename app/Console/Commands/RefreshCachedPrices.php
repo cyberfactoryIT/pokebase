@@ -104,13 +104,13 @@ class RefreshCachedPrices extends Command
         
         // TCGCSV Products
         $tcgcsvItems = UserCollection::whereNotNull('product_id')
-            ->with('product.prices')
+            ->with('card.prices')
             ->get();
         
         foreach ($tcgcsvItems as $item) {
-            if (!$item->product) continue;
+            if (!$item->card) continue;
             
-            $latestPrice = $item->product->prices()->orderBy('updated_at', 'desc')->first();
+            $latestPrice = $item->card->prices()->orderBy('updated_at', 'desc')->first();
             
             if ($latestPrice && $latestPrice->market_price) {
                 $item->cached_price = $latestPrice->market_price;
@@ -178,13 +178,13 @@ class RefreshCachedPrices extends Command
         
         // TCGCSV Products in Decks
         $tcgcsvDeckCards = DeckCard::whereNotNull('product_id')
-            ->with('product.prices')
+            ->with('card.prices')
             ->get();
         
         foreach ($tcgcsvDeckCards as $deckCard) {
-            if (!$deckCard->product) continue;
+            if (!$deckCard->card) continue;
             
-            $latestPrice = $deckCard->product->prices()->orderBy('updated_at', 'desc')->first();
+            $latestPrice = $deckCard->card->prices()->orderBy('updated_at', 'desc')->first();
             
             if ($latestPrice && $latestPrice->market_price) {
                 $deckCard->cached_price = $latestPrice->market_price;
