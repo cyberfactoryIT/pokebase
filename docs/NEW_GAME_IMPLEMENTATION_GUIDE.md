@@ -1923,7 +1923,53 @@ public function setsSearch(Request $request)
 
 ---
 
-### 7.2 Update Dashboard
+### 7.2 Register CMAPI Web Routes for New Games
+
+When adding a new CMAPI-based game (e.g. `riftbound`), you must whitelist its slug in the CMAPI route group and in the sets search validation.
+
+**File**: `routes/web.php`
+
+```php
+// CMAPI Browsing Routes (Lorcana, One Piece, Riftbound, ...)
+Route::prefix('{game}')->whereIn('game', ['lorcana', 'onepiece', 'riftbound'])->group(function () {
+    // Sets
+    Route::get('/sets', [\App\Http\Controllers\CmapiSetController::class, 'index'])->name('cmapi.sets.index');
+    Route::get('/sets/search', [\App\Http\Controllers\CmapiSetController::class, 'search'])->name('cmapi.sets.search');
+    Route::get('/sets/{episode}', [\App\Http\Controllers\CmapiSetController::class, 'show'])->name('cmapi.sets.show');
+    Route::get('/sets/{episode}/cards/search', [\App\Http\Controllers\CmapiSetController::class, 'cardsSearch'])->name('cmapi.sets.cards.search');
+
+    // Cards
+    Route::get('/cards/{cardId}', [\App\Http\Controllers\CmapiSetController::class, 'showCard'])->name('cmapi.cards.show');
+});
+```
+
+**File**: `app/Http/Controllers/CmapiSetController.php`
+
+```php
+public function search(Request $request): JsonResponse
+{
+    $validated = $request->validate([
+        'query' => 'nullable|string|max:100',
+        'page' => 'integer|min:1',
+        // Allow all supported CMAPI games; keep this in sync with routes/web.php
+        'game' => 'required|in:lorcana,onepiece,riftbound',
+    ]);
+
+    $game = $validated['game'];
+    $query = CmapiSet::where('game', $game)->withCount('cards');
+    // ...
+}
+```
+
+**Checklist**:
+- [ ] Add new CMAPI game slug to the `whereIn('game', [...])` array
+- [ ] Add the same slug to `CmapiSetController::search()` validation rule
+- [ ] Verify `/{$slug}/sets` and `/{$slug}/sets/{episode}` load without 404
+- [ ] Verify CMAPI dashboard widgets only show data for the selected game
+
+---
+
+### 7.3 Update Dashboard
 
 **Reference**: `resources/views/dashboard.blade.php`
 
@@ -1941,7 +1987,7 @@ Update dashboard to show:
 
 ---
 
-### 7.3 Update Collection Views
+### 7.4 Update Collection Views
 
 **Reference**: `resources/views/collection/index.blade.php`
 

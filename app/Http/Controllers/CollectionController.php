@@ -622,7 +622,10 @@ class CollectionController extends Controller
         } elseif ($catalogBackend === 'cmapi') {
             $cardsWithPhotosQuery->whereNotNull('cmapi_card_id');
             if ($currentGame) {
-                $cardsWithPhotosQuery->whereHas('cmapiCard', fn($q) => $q->where('game_id', $currentGame->id));
+                // CMAPI uses string game code (e.g. lorcana, onepiece, riftbound)
+                $cardsWithPhotosQuery->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
             }
         } else {
             // TCGCSV
@@ -648,7 +651,9 @@ class CollectionController extends Controller
         } elseif ($catalogBackend === 'cmapi') {
             $duplicateCardsQuery->whereNotNull('cmapi_card_id');
             if ($currentGame) {
-                $duplicateCardsQuery->whereHas('cmapiCard', fn($q) => $q->where('game_id', $currentGame->id));
+                $duplicateCardsQuery->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
             }
         } else {
             // TCGCSV
@@ -766,7 +771,9 @@ class CollectionController extends Controller
         } elseif ($catalogBackend === 'cmapi') {
             $foilCardsQuery->whereNotNull('cmapi_card_id');
             if ($currentGame) {
-                $foilCardsQuery->whereHas('cmapiCard', fn($q) => $q->where('game_id', $currentGame->id));
+                $foilCardsQuery->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
             }
         } else {
             // TCGCSV
