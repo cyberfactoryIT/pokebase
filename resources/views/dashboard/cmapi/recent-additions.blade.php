@@ -2,6 +2,9 @@
 @php
     $recentAdditions = \App\Models\UserCollection::where('user_id', Auth::id())
         ->whereNotNull('cmapi_card_id')
+        ->whereHas('cmapiCard', function ($q) use ($currentGame) {
+            $q->where('game', $currentGame->slug);
+        })
         ->with('cmapiCard.set')
         ->latest()
         ->take(6)

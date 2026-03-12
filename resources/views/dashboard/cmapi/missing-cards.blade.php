@@ -1,9 +1,10 @@
 <!-- Missing Cards Section - CMAPI (Lorcana/One Piece) -->
 @php
-    // Get user's most collected set
+    // Get user's most collected set for current CMAPI game
     $userSetCounts = \App\Models\UserCollection::where('user_id', Auth::id())
         ->whereNotNull('cmapi_card_id')
         ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
+        ->where('cmapi_cards.game', $currentGame->slug)
         ->select('cmapi_cards.set_cmapi_id', \DB::raw('COUNT(*) as card_count'))
         ->groupBy('cmapi_cards.set_cmapi_id')
         ->orderByDesc('card_count')
@@ -15,24 +16,30 @@
     $totalValueEur = 0;
     
     if ($userSetCounts) {
-        $topSet = \App\Models\Cmapi\CmapiSet::find($userSetCounts->set_cmapi_id);
+        $topSet = \App\Models\Cmapi\CmapiSet::where('id', $userSetCounts->set_cmapi_id)
+            ->where('game', $currentGame->slug)
+            ->first();
         
         if ($topSet) {
             // Get owned card IDs for this set
             $ownedCardIds = \App\Models\UserCollection::where('user_id', Auth::id())
                 ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
                 ->where('cmapi_cards.set_cmapi_id', $topSet->id)
+                ->where('cmapi_cards.game', $currentGame->slug)
                 ->pluck('cmapi_cards.cmapi_id')
                 ->toArray();
             
             // Get missing cards
             $missingCards = \App\Models\Cmapi\CmapiCard::where('set_cmapi_id', $topSet->id)
+                ->where('game', $currentGame->slug)
                 ->whereNotIn('cmapi_id', $ownedCardIds)
                 ->orderByRaw('CAST(number AS UNSIGNED), number')
                 ->get();
             
             // Calculate stats
-            $totalCards = \App\Models\Cmapi\CmapiCard::where('set_cmapi_id', $topSet->id)->count();
+            $totalCards = \App\Models\Cmapi\CmapiCard::where('set_cmapi_id', $topSet->id)
+                ->where('game', $currentGame->slug)
+                ->count();
             $ownedCards = count($ownedCardIds);
             $completionPercentage = $totalCards > 0 ? round(($ownedCards / $totalCards) * 100) : 0;
             $totalValueEur = $missingCards->sum('price_eur');
