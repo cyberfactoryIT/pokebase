@@ -11,33 +11,45 @@
                     <p class="text-gray-400">{{ __('collection/index.subtitle') }}</p>
                 </div>
                 
-                <!-- Card Limit Badge (Free users only) -->
-                @if(auth()->user()->isFree())
-                    @php
-                        $cardLimit = auth()->user()->cardLimit();
-                        $currentUsage = auth()->user()->currentCardUsage();
-                        $percentUsed = $cardLimit > 0 ? round(($currentUsage / $cardLimit) * 100) : 0;
-                        $isNearLimit = $percentUsed >= 80;
-                        $isAtLimit = $currentUsage >= $cardLimit;
-                    @endphp
-                    <div class="text-right">
-                        <div class="inline-flex items-center gap-2 px-4 py-2 {{ $isAtLimit ? 'bg-red-500/20 text-red-300' : ($isNearLimit ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300') }} rounded-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                            </svg>
-                            <span class="font-semibold">
-                                {{ __('limits.cards.free.usage', ['used' => $currentUsage, 'limit' => $cardLimit]) }}
-                            </span>
+                <div class="flex items-center gap-4">
+                    <!-- Card Limit Badge (Free users only) -->
+                    @if(auth()->user()->isFree())
+                        @php
+                            $cardLimit = auth()->user()->cardLimit();
+                            $currentUsage = auth()->user()->currentCardUsage();
+                            $percentUsed = $cardLimit > 0 ? round(($currentUsage / $cardLimit) * 100) : 0;
+                            $isNearLimit = $percentUsed >= 80;
+                            $isAtLimit = $currentUsage >= $cardLimit;
+                        @endphp
+                        <div class="text-right">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 {{ $isAtLimit ? 'bg-red-500/20 text-red-300' : ($isNearLimit ? 'bg-yellow-500/20 text-yellow-300' : 'bg-blue-500/20 text-blue-300') }} rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                                <span class="font-semibold">
+                                    {{ __('limits.cards.free.usage', ['used' => $currentUsage, 'limit' => $cardLimit]) }}
+                                </span>
+                            </div>
+                            @if($isNearLimit)
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <a href="{{ route('profile.subscription') }}" class="hover:text-blue-400 underline">
+                                        {{ __('limits.cards.cta_upgrade') }}
+                                    </a>
+                                </p>
+                            @endif
                         </div>
-                        @if($isNearLimit)
-                            <p class="text-xs text-gray-400 mt-1">
-                                <a href="{{ route('profile.subscription') }}" class="hover:text-blue-400 underline">
-                                    {{ __('limits.cards.cta_upgrade') }}
-                                </a>
-                            </p>
-                        @endif
-                    </div>
-                @endif
+                    @endif
+
+                    @if(auth()->user()->isAdvanced() || auth()->user()->isPremium())
+                        <a href="{{ route('collection.export') }}"
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                            </svg>
+                            <span>Export CSV</span>
+                        </a>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -203,7 +215,7 @@
         <!-- Advanced tier - Show upsell badge for Premium Statistics tab -->
         <div class="mb-8 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-6">
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4">
                     <div class="bg-purple-500/20 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>

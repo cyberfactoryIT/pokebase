@@ -135,6 +135,105 @@ class DeckController extends Controller
     }
 
     /**
+     * Export a deck as CSV (Advanced/Premium only)
+     */
+    public function export(Request $request, Deck $deck)
+    {
+        $user = Auth::user();
+        if ($deck->user_id !== $user?->id) {
+            abort(403, 'Unauthorized access to this deck.');
+        }
+        if (! $user || ! ($user->isAdvanced() || $user->isPremium())) {
+            abort(403, 'Export is available for Advanced and Premium plans only.');
+        }
+
+        $catalogBackend = catalog_backend();
+        $currentGame = $request->attributes->get('currentGame');
+
+        $deck->load([
+            'deckCards' => function ($query) use ($catalogBackend) {
+                if ($catalogBackend === 'tcgdex') {
+                    $query->whereNotNull('tcgdex_card_id');
+                } elseif ($catalogBackend === 'cmapi') {
+                    $query->whereNotNull('cmapi_card_id');
+                } else {
+                    $query->whereNotNull('product_id');
+                }
+            },
+            'deckCards.card.group',
+            'deckCards.cmapiCard.set',
+            'deckCards.tcgdexCard.set',
+            'game',
+        ]);
+
+        $filename = 'deck-' . $deck->id . '-' . $catalogBackend . '-' . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        return response()->stream(function () use ($deck, $catalogBackend, $currentGame) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Deck', 'Backend', 'Game', 'Set', 'Card', 'Number', 'Quantity', 'Rarity']);
+
+            foreach ($deck->deckCards as $deckCard) {
+                if ($catalogBackend === 'tcgdex') {
+                    $card = $deckCard->tcgdexCard;
+                    if (! $card) {
+                        continue;
+                    }
+                    $set = $card->set;
+                    fputcsv($out, [
+                        $deck->name,
+                        'tcgdex',
+                        optional($set)->game_id,
+                        optional($set)->name,
+                        $card->name,
+                        $card->local_id,
+                        $deckCard->quantity,
+                        $card->rarity,
+                    ]);
+                } elseif ($catalogBackend === 'cmapi') {
+                    $card = $deckCard->cmapiCard;
+                    if (! $card) {
+                        continue;
+                    }
+                    $set = $card->set;
+                    fputcsv($out, [
+                        $deck->name,
+                        'cmapi',
+                        $card->game,
+                        optional($set)->name,
+                        $card->name,
+                        $card->number,
+                        $deckCard->quantity,
+                        $card->rarity,
+                    ]);
+                } else {
+                    $card = $deckCard->card;
+                    if (! $card) {
+                        continue;
+                    }
+                    $group = $card->group;
+                    fputcsv($out, [
+                        $deck->name,
+                        'tcgcsv',
+                        $card->game_id,
+                        optional($group)->name,
+                        $card->name,
+                        $card->card_number,
+                        $deckCard->quantity,
+                        $card->rarity,
+                    ]);
+                }
+            }
+
+            fclose($out);
+        }, 200, $headers);
+    }
+
+    /**
      * Show the form for editing the specified deck
      */
     public function edit(Deck $deck): View

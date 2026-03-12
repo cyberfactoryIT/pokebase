@@ -16,6 +16,111 @@ use Illuminate\Http\RedirectResponse;
 class CollectionController extends Controller
 {
     /**
+     * Export user's collection as CSV (Advanced/Premium only)
+     */
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+        if (! $user || ! ($user->isAdvanced() || $user->isPremium())) {
+            abort(403, 'Export is available for Advanced and Premium plans only.');
+        }
+
+        $userId = $user->id;
+        $currentGame = $request->attributes->get('currentGame');
+        $catalogBackend = catalog_backend();
+
+        $query = UserCollection::where('user_id', $userId);
+
+        if ($catalogBackend === 'tcgdex') {
+            $query->whereNotNull('tcgdex_card_id')
+                ->when($currentGame, function ($q) use ($currentGame) {
+                    $q->whereHas('tcgdexCard.set', fn ($sq) => $sq->where('game_id', $currentGame->id));
+                })
+                ->with(['tcgdexCard.set']);
+        } elseif ($catalogBackend === 'cmapi') {
+            $query->whereNotNull('cmapi_card_id')
+                ->when($currentGame, function ($q) use ($currentGame) {
+                    $q->whereHas('cmapiCard', fn ($sq) => $sq->where('game', $currentGame->slug));
+                })
+                ->with(['cmapiCard.set']);
+        } else {
+            // TCGCSV
+            $query->whereNotNull('product_id')
+                ->when($currentGame, function ($q) use ($currentGame) {
+                    $q->whereHas('card', fn ($sq) => $sq->where('game_id', $currentGame->id));
+                })
+                ->with(['card.group']);
+        }
+
+        $filename = 'collection-' . $catalogBackend . '-' . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        return response()->stream(function () use ($query, $catalogBackend) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Backend', 'Game', 'Set', 'Card', 'Number', 'Quantity', 'Rarity', 'Price_EUR']);
+
+            $query->chunk(500, function ($items) use ($out, $catalogBackend) {
+                foreach ($items as $item) {
+                    if ($catalogBackend === 'tcgdex') {
+                        $card = $item->tcgdexCard;
+                        if (! $card) {
+                            continue;
+                        }
+                        $set = $card->set;
+                        fputcsv($out, [
+                            'tcgdex',
+                            optional($set)->game_id,
+                            optional($set)->name,
+                            $card->name,
+                            $card->local_id,
+                            $item->quantity,
+                            $card->rarity,
+                            null,
+                        ]);
+                    } elseif ($catalogBackend === 'cmapi') {
+                        $card = $item->cmapiCard;
+                        if (! $card) {
+                            continue;
+                        }
+                        $set = $card->set;
+                        fputcsv($out, [
+                            'cmapi',
+                            $card->game,
+                            optional($set)->name,
+                            $card->name,
+                            $card->number,
+                            $item->quantity,
+                            $card->rarity,
+                            $card->price_eur,
+                        ]);
+                    } else {
+                        $card = $item->card;
+                        if (! $card) {
+                            continue;
+                        }
+                        $group = $card->group;
+                        fputcsv($out, [
+                            'tcgcsv',
+                            $card->game_id,
+                            optional($group)->name,
+                            $card->name,
+                            $card->card_number,
+                            $item->quantity,
+                            $card->rarity,
+                            $card->cardmarket_price_eur,
+                        ]);
+                    }
+                }
+            });
+
+            fclose($out);
+        }, 200, $headers);
+    }
+    /**
      * Display user's collection
      */
     public function index(Request $request): View

@@ -46,6 +46,16 @@
                         {{ __('decks/show.edit_deck') }}
                     </a>
 
+                    @if(auth()->user()->isAdvanced() || auth()->user()->isPremium())
+                        <a href="{{ route('decks.export', $deck) }}"
+                           class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                            </svg>
+                            <span>Export CSV</span>
+                        </a>
+                    @endif
+
                     <!-- Share Deck Button -->
                     @if($deck->is_shared)
                         <!-- Deck is currently shared -->

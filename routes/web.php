@@ -110,6 +110,7 @@ Route::middleware('auth')->group(function () {
 
     // Deck Management
     Route::resource('decks', \App\Http\Controllers\DeckController::class);
+    Route::get('decks/{deck}/export', [\App\Http\Controllers\DeckController::class, 'export'])->name('decks.export');
     Route::post('decks/{deck}/cards', [\App\Http\Controllers\DeckController::class, 'addCard'])->name('decks.cards.add');
     Route::post('decks/{deck}/cards/tcgdex', [\App\Http\Controllers\DeckController::class, 'addCardTcgdex'])->name('decks.cards.add.tcgdex');
     Route::post('decks/{deck}/cards/cmapi', [\App\Http\Controllers\DeckController::class, 'addCardCmapi'])->name('decks.cards.add.cmapi');
@@ -122,6 +123,7 @@ Route::middleware('auth')->group(function () {
 
     // User Collection
     Route::get('collection', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collection.index');
+    Route::get('collection/export', [\App\Http\Controllers\CollectionController::class, 'export'])->name('collection.export');
     Route::post('collection/add', [\App\Http\Controllers\CollectionController::class, 'add'])->name('collection.add');
     Route::post('collection/add/tcgdex', [\App\Http\Controllers\CollectionController::class, 'addTcgdex'])->name('collection.add.tcgdex');
     Route::post('collection/add/cmapi', [\App\Http\Controllers\CollectionController::class, 'addCmapi'])->name('collection.add.cmapi');
