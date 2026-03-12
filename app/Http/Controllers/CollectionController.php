@@ -810,7 +810,8 @@ class CollectionController extends Controller
                           ->orWhere('rarity', 'like', '%super%');
                     });
                     if ($currentGame) {
-                        $q->where('game_id', $currentGame->id);
+                        // CMAPI uses string game code (e.g. lorcana, onepiece, riftbound)
+                        $q->where('game', $currentGame->slug);
                     }
                 });
         } else {
