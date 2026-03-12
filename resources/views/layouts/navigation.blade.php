@@ -29,13 +29,12 @@
                    class="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg transition {{ $isActiveRoute ? 'bg-white/10 border-white/20 text-white font-semibold' : 'text-gray-300' }}"
                    title="{{ __('dashboard.browse_expansions') }}">
                     @if($currentGame)
-                        @if($currentGame->code === 'pokemon')
-                            <img src="/images/logos/logo_pokemon.png" alt="{{ $currentGame->name }}" class="w-10 h-10 object-contain">
-                        @elseif($currentGame->code === 'mtg')
-                            <span class="text-xl font-bold">MTG</span>
-                        @elseif($currentGame->code === 'yugioh')
-                            <span class="text-xl font-bold">YGO</span>
-                        @endif
+                        <img 
+                            src="{{ asset('images/logos/logo_' . $currentGame->code . '.png') }}" 
+                            alt="{{ $currentGame->name }}" 
+                            class="w-10 h-10 object-contain"
+                            onerror="this.style.display='none';"
+                        >
                         <span class="text-sm font-medium">Sets</span>
                     @endif
                 </a>
