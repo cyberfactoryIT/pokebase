@@ -13,14 +13,15 @@
             <div class="relative" x-data="{ gameOpen: false }">
                 <button @click="gameOpen = !gameOpen" class="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition">
                     @if(isset($currentGame) && $currentGame)
-                        @if($currentGame->code === 'pokemon')
-                            <img src="/images/logos/logo_pokemon.png" alt="{{ $currentGame->name }}" class="w-5 h-5 object-contain">
-                        @elseif($currentGame->code === 'mtg')
-                            <span class="text-sm font-bold">MTG</span>
-                        @elseif($currentGame->code === 'yugioh')
-                            <span class="text-sm font-bold">YGO</span>
-                        @endif
-                        <span class="text-sm">{{ $currentGame->name }}</span>
+                    
+                        <img 
+                            src="{{ asset('images/logos/logo_' . $currentGame->code . '.png') }}" 
+                            alt="{{ $currentGame->name }}" 
+                            class="w-10 h-10 object-contain"
+                            onerror="this.style.display='none';"
+                        >
+                        <span class="text-sm font-medium">{{$currentGame->name}}</span>
+                   
                     @else
                         <span class="text-sm">Select Game</span>
                     @endif
