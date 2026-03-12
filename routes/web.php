@@ -288,8 +288,8 @@ Route::prefix('tcgdex')->group(function () {
     Route::get('/cards/{cardId}', [\App\Http\Controllers\TcgdxCardController::class, 'show'])->name('tcgdex.cards.show');
 });
 
-// CMAPI Browsing Routes (Lorcana, One Piece)
-Route::prefix('{game}')->whereIn('game', ['lorcana', 'onepiece'])->group(function () {
+// CMAPI Browsing Routes (Lorcana, One Piece, Riftbound, ...)
+Route::prefix('{game}')->whereIn('game', ['lorcana', 'onepiece', 'riftbound'])->group(function () {
     // Sets
     Route::get('/sets', [\App\Http\Controllers\CmapiSetController::class, 'index'])->name('cmapi.sets.index');
     Route::get('/sets/search', [\App\Http\Controllers\CmapiSetController::class, 'search'])->name('cmapi.sets.search');

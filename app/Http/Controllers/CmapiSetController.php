@@ -27,7 +27,8 @@ class CmapiSetController extends Controller
         $validated = $request->validate([
             'query' => 'nullable|string|max:100',
             'page' => 'integer|min:1',
-            'game' => 'required|in:lorcana,onepiece',
+            // Allow all supported CMAPI games; currently lorcana, onepiece, riftbound
+            'game' => 'required|in:lorcana,onepiece,riftbound',
         ]);
 
         $game = $validated['game'];
