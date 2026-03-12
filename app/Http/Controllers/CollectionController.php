@@ -61,7 +61,7 @@ class CollectionController extends Controller
 
         return response()->stream(function () use ($query, $catalogBackend) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Backend', 'Game', 'Set', 'Card', 'Number', 'Quantity', 'Rarity', 'Price_EUR']);
+            fputcsv($out, ['Backend', 'Game', 'Set', 'Card', 'Number', 'Quantity', 'Rarity', 'Price', 'Price_Currency']);
 
             $query->chunk(500, function ($items) use ($out, $catalogBackend) {
                 foreach ($items as $item) {
@@ -100,6 +100,7 @@ class CollectionController extends Controller
                             $item->quantity,
                             $card->rarity,
                             $item->cached_price,
+                            $item->cached_price_currency,
                         ]);
                     } elseif ($catalogBackend === 'cmapi') {
                         $card = $item->cmapiCard;
@@ -124,6 +125,7 @@ class CollectionController extends Controller
                             $item->quantity,
                             $card->rarity,
                             $item->cached_price,
+                            $item->cached_price_currency,
                         ]);
                     } else {
                         $card = $item->card;
@@ -148,6 +150,7 @@ class CollectionController extends Controller
                             $item->quantity,
                             $card->rarity,
                             $item->cached_price,
+                            $item->cached_price_currency,
                         ]);
                     }
                 }

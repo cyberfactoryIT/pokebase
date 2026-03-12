@@ -175,7 +175,7 @@ class DeckController extends Controller
 
         return response()->stream(function () use ($deck, $catalogBackend, $currentGame) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Deck', 'Backend', 'Game', 'Set', 'Card', 'Number', 'Quantity', 'Rarity']);
+            fputcsv($out, ['Deck', 'Backend', 'Game', 'Set', 'Card', 'Number', 'Quantity', 'Rarity', 'Price', 'Price_Currency']);
 
             foreach ($deck->deckCards as $deckCard) {
                 if ($catalogBackend === 'tcgdex') {
@@ -193,6 +193,8 @@ class DeckController extends Controller
                         $card->local_id,
                         $deckCard->quantity,
                         $card->rarity,
+                            $deckCard->cached_price,
+                            $deckCard->cached_price_currency,
                     ]);
                 } elseif ($catalogBackend === 'cmapi') {
                     $card = $deckCard->cmapiCard;
@@ -209,6 +211,8 @@ class DeckController extends Controller
                         $card->number,
                         $deckCard->quantity,
                         $card->rarity,
+                            $deckCard->cached_price,
+                            $deckCard->cached_price_currency,
                     ]);
                 } else {
                     $card = $deckCard->card;
@@ -225,6 +229,8 @@ class DeckController extends Controller
                         $card->card_number,
                         $deckCard->quantity,
                         $card->rarity,
+                            $deckCard->cached_price,
+                            $deckCard->cached_price_currency,
                     ]);
                 }
             }
