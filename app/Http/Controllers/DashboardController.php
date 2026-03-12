@@ -81,12 +81,19 @@ class DashboardController extends Controller
                 ->whereNotNull('tcgdex_card_id')
                 ->count();
         } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI: scope collection to current CMAPI game via cmapi_cards.game
             $userCollectionCount = UserCollection::where('user_id', Auth::id())
                 ->whereNotNull('cmapi_card_id')
+                ->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                })
                 ->sum('quantity');
                 
             $uniqueCardsCount = UserCollection::where('user_id', Auth::id())
                 ->whereNotNull('cmapi_card_id')
+                ->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                })
                 ->count();
         } else {
             $userCollectionCount = UserCollection::where('user_id', Auth::id())
@@ -138,6 +145,16 @@ class DashboardController extends Controller
                 ->orderByDesc('created_at')
                 ->limit(6)
                 ->get();
+        } elseif ($catalogBackend === 'cmapi') {
+            $recentAdditions = UserCollection::where('user_id', Auth::id())
+                ->whereNotNull('cmapi_card_id')
+                ->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                })
+                ->with('cmapiCard.set')
+                ->orderByDesc('created_at')
+                ->limit(6)
+                ->get();
         } else {
             $recentAdditions = UserCollection::where('user_id', Auth::id())
                 ->whereHas('card', function($q) use ($currentGame) {
@@ -158,6 +175,17 @@ class DashboardController extends Controller
                     $q->where('game_id', $currentGame->id);
                 })
                 ->with('tcgdexCard')
+                ->orderByDesc('cached_price')
+                ->limit(4)
+                ->get();
+        } elseif ($catalogBackend === 'cmapi') {
+            $topCards = UserCollection::where('user_id', Auth::id())
+                ->whereNotNull('cmapi_card_id')
+                ->whereNotNull('cached_price')
+                ->whereHas('cmapiCard', function($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                })
+                ->with('cmapiCard.set')
                 ->orderByDesc('cached_price')
                 ->limit(4)
                 ->get();
@@ -286,13 +314,15 @@ class DashboardController extends Controller
                 ->limit(6)
                 ->get();
         } elseif ($catalogBackend === 'cmapi') {
-            // CMAPI (Lorcana, One Piece)
+            // CMAPI (Lorcana, One Piece) - limit to current CMAPI game
             $userSetIds = UserCollection::where('user_id', Auth::id())
                 ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
+                ->where('cmapi_cards.game', $currentGame->slug)
                 ->distinct()
                 ->pluck('cmapi_cards.set_cmapi_id');
             
             $userExpansions = \App\Models\Cmapi\CmapiSet::whereIn('id', $userSetIds)
+                ->where('game', $currentGame->slug)
                 ->orderBy('release_date', 'desc')
                 ->limit(10)
                 ->get();

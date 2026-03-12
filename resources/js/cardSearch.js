@@ -73,9 +73,22 @@ document.addEventListener('DOMContentLoaded', function() {
         searchDropdown.innerHTML = '<div class="px-4 py-3 text-gray-400 text-sm">Searching...</div>';
         
         const catalogBackend = wrapper.dataset.catalogBackend || 'tcgcsv';
+        const gameSlug = wrapper.dataset.gameSlug || '';
 
-        // Fetch results, explicitly passing backend so the API knows which tables to search
-        fetch(`/api/search/cards?q=${encodeURIComponent(query)}&limit=12&backend=${encodeURIComponent(catalogBackend)}`)
+        // Build query string
+        const params = new URLSearchParams({
+            q: query,
+            limit: '12',
+            backend: catalogBackend,
+        });
+
+        // For CMAPI, pass the current game so the API can filter correctly (lorcana, onepiece, etc.)
+        if (catalogBackend === 'cmapi' && gameSlug) {
+            params.set('game', gameSlug);
+        }
+
+        // Fetch results, explicitly passing backend (and game for CMAPI) so the API knows which tables to search
+        fetch(`/api/search/cards?${params.toString()}`)
             .then(response => {
                 if (!response.ok) throw new Error('Search failed');
                 return response.json();

@@ -67,11 +67,18 @@ class CardSearchController extends Controller
                 $gameId = Auth::user()->default_game_id;
             }
             
-            // Get game code for CMAPI (uses slug, not ID)
+            // Get game code for CMAPI (uses slug/code, not numeric ID)
             $gameCode = null;
-            if ($catalogBackend === 'cmapi' && $gameId) {
-                $game = \App\Models\Game::find($gameId);
-                $gameCode = $game ? $game->code : null;
+            if ($catalogBackend === 'cmapi') {
+                // Prefer explicit game passed from frontend (e.g. current cmapi game slug)
+                $explicitGame = $request->input('game');
+                if ($explicitGame) {
+                    $gameCode = $explicitGame;
+                } elseif ($gameId) {
+                    // Fallback: derive from current game in session/user
+                    $game = \App\Models\Game::find($gameId);
+                    $gameCode = $game ? $game->code : null;
+                }
             }
 
             // Search based on catalog backend

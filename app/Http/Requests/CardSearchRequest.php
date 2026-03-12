@@ -24,6 +24,8 @@ class CardSearchRequest extends FormRequest
             'limit' => ['nullable', 'integer', 'min:1', 'max:50'],
             // Allow all supported catalog backends
             'backend' => ['nullable', 'string', 'in:tcgcsv,tcgdex,cmapi'],
+            // Optional game code (used mainly for CMAPI, e.g. lorcana, onepiece)
+            'game' => ['nullable', 'string', 'max:50'],
         ];
     }
 
