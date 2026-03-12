@@ -583,45 +583,88 @@ class CollectionController extends Controller
     private function getUserCardCount($userId, $currentGame, $catalogBackend)
     {
         $query = UserCollection::where('user_id', $userId);
-        if ($currentGame) {
-            $query->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
-        // Filter by catalog backend
+
         if ($catalogBackend === 'tcgdex') {
             $query->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $query->whereHas('tcgdexCard', function ($q) use ($currentGame) {
+                    $q->whereHas('set', fn ($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $query->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                // CMAPI uses string game code (e.g. pokemon, lorcana, onepiece, riftbound)
+                $query->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
+            }
         } else {
+            // TCGCSV
             $query->whereNotNull('product_id');
+            if ($currentGame) {
+                $query->whereHas('card', fn ($q) => $q->where('game_id', $currentGame->id));
+            }
         }
+
         return $query->sum('quantity');
     }
     
     private function getUserUniqueCardCount($userId, $currentGame, $catalogBackend)
     {
         $query = UserCollection::where('user_id', $userId);
-        if ($currentGame) {
-            $query->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
-        // Filter by catalog backend
+
         if ($catalogBackend === 'tcgdex') {
             $query->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $query->whereHas('tcgdexCard', function ($q) use ($currentGame) {
+                    $q->whereHas('set', fn ($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $query->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                $query->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
+            }
         } else {
+            // TCGCSV
             $query->whereNotNull('product_id');
+            if ($currentGame) {
+                $query->whereHas('card', fn ($q) => $q->where('game_id', $currentGame->id));
+            }
         }
+
         return $query->count();
     }
     
     private function getUserFoilCardCount($userId, $currentGame, $catalogBackend)
     {
         $query = UserCollection::where('user_id', $userId)->where('is_foil', true);
-        if ($currentGame) {
-            $query->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
-        // Filter by catalog backend
+
         if ($catalogBackend === 'tcgdex') {
             $query->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $query->whereHas('tcgdexCard', function ($q) use ($currentGame) {
+                    $q->whereHas('set', fn ($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $query->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                $query->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
+            }
         } else {
+            // TCGCSV
             $query->whereNotNull('product_id');
+            if ($currentGame) {
+                $query->whereHas('card', fn ($q) => $q->where('game_id', $currentGame->id));
+            }
         }
+
         return $query->sum('quantity');
     }
     
@@ -632,13 +675,28 @@ class CollectionController extends Controller
     {
         // 1. Rarity distribution (most interesting)
         if ($catalogBackend === 'tcgdex') {
-            // TCGDEX: rarity is stored in JSON
+            // TCGDEX
             $rarityQuery = UserCollection::where('user_id', $userId)
                 ->join('tcgdx_cards', 'user_collection.tcgdex_card_id', '=', 'tcgdx_cards.id')
                 ->selectRaw('tcgdx_cards.rarity, COUNT(*) as count, SUM(user_collection.quantity) as total_quantity')
                 ->whereNotNull('user_collection.tcgdex_card_id')
                 ->groupBy('tcgdx_cards.rarity')
                 ->orderBy('count', 'desc');
+            if ($currentGame) {
+                $rarityQuery->whereHas('tcgdexCard.set', fn ($q) => $q->where('game_id', $currentGame->id));
+            }
+            $rarityDistribution = $rarityQuery->get();
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI
+            $rarityQuery = UserCollection::where('user_id', $userId)
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
+                ->selectRaw('cmapi_cards.rarity, COUNT(*) as count, SUM(user_collection.quantity) as total_quantity')
+                ->whereNotNull('user_collection.cmapi_card_id')
+                ->groupBy('cmapi_cards.rarity')
+                ->orderBy('count', 'desc');
+            if ($currentGame) {
+                $rarityQuery->where('cmapi_cards.game', $currentGame->slug);
+            }
             $rarityDistribution = $rarityQuery->get();
         } else {
             // TCGCSV
@@ -687,6 +745,36 @@ class CollectionController extends Controller
                     'owned' => $topSetQuery->owned_count,
                     'total' => $totalInSet,
                     'percentage' => $completionPercentage
+                ];
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI
+            $topSetQuery = UserCollection::where('user_id', $userId)
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
+                ->join('cmapi_sets', 'cmapi_cards.set_cmapi_id', '=', 'cmapi_sets.id')
+                ->selectRaw('cmapi_sets.id as set_id, cmapi_sets.name, COUNT(DISTINCT user_collection.cmapi_card_id) as owned_count')
+                ->whereNotNull('user_collection.cmapi_card_id')
+                ->groupBy('cmapi_sets.id', 'cmapi_sets.name')
+                ->orderBy('owned_count', 'desc')
+                ->first();
+
+            $setCompletion = null;
+            if ($topSetQuery) {
+                $setName = $topSetQuery->name;
+                $setNameEn = is_array($setName) ? ($setName['en'] ?? reset($setName) ?? 'Unknown') : $setName;
+
+                $totalInSet = \App\Models\Cmapi\CmapiCard::where('set_cmapi_id', $topSetQuery->set_id)
+                    ->when($currentGame, function ($q) use ($currentGame) {
+                        $q->where('game', $currentGame->slug);
+                    })
+                    ->count();
+
+                $completionPercentage = $totalInSet > 0 ? round(($topSetQuery->owned_count / $totalInSet) * 100, 1) : 0;
+                $setCompletion = [
+                    'name' => $setNameEn,
+                    'owned' => $topSetQuery->owned_count,
+                    'total' => $totalInSet,
+                    'percentage' => $completionPercentage,
                 ];
             }
         } else {
@@ -739,17 +827,30 @@ class CollectionController extends Controller
         $conditionQuery = UserCollection::where('user_id', $userId)
             ->selectRaw('`condition`, COUNT(*) as count, SUM(quantity) as total_quantity')
             ->groupBy('condition');
-        if ($currentGame) {
-            $conditionQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
-        // Filter by catalog backend
+
         if ($catalogBackend === 'tcgdex') {
             $conditionQuery->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $conditionQuery->whereHas('tcgdexCard', function ($q) use ($currentGame) {
+                    $q->whereHas('set', fn ($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $conditionQuery->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                $conditionQuery->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
+            }
         } else {
+            // TCGCSV
             $conditionQuery->whereNotNull('product_id');
+            if ($currentGame) {
+                $conditionQuery->whereHas('card', fn ($q) => $q->where('game_id', $currentGame->id));
+            }
         }
-        $conditionDistribution = $conditionQuery
-            ->get();
+
+        $conditionDistribution = $conditionQuery->get();
         
         // Cards with photos
         $cardsWithPhotosQuery = UserCollection::where('user_id', $userId)
@@ -814,9 +915,25 @@ class CollectionController extends Controller
             $setStatsQuery = UserCollection::where('user_id', $userId)
                 ->join('tcgdx_cards', 'user_collection.tcgdex_card_id', '=', 'tcgdx_cards.id')
                 ->selectRaw('COUNT(DISTINCT tcgdx_cards.set_tcgdx_id) as total_sets')
-                ->whereNotNull('user_collection.tcgdex_card_id')
-                ->first();
-            $setStats = $setStatsQuery;
+                ->whereNotNull('user_collection.tcgdex_card_id');
+
+            if ($currentGame) {
+                $setStatsQuery->whereHas('tcgdexCard.set', fn ($q) => $q->where('game_id', $currentGame->id));
+            }
+
+            $setStats = $setStatsQuery->first();
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI
+            $setStatsQuery = UserCollection::where('user_id', $userId)
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
+                ->selectRaw('COUNT(DISTINCT cmapi_cards.set_cmapi_id) as total_sets')
+                ->whereNotNull('user_collection.cmapi_card_id');
+
+            if ($currentGame) {
+                $setStatsQuery->where('cmapi_cards.game', $currentGame->slug);
+            }
+
+            $setStats = $setStatsQuery->first();
         } else {
             // TCGCSV
             $setStatsQuery = UserCollection::where('user_id', $userId)
@@ -857,6 +974,33 @@ class CollectionController extends Controller
                     return $set;
                 });
             $topSets = $topSetsQuery;
+        } elseif ($catalogBackend === 'cmapi') {
+            // CMAPI
+            $topSetsQuery = UserCollection::where('user_id', $userId)
+                ->join('cmapi_cards', 'user_collection.cmapi_card_id', '=', 'cmapi_cards.cmapi_id')
+                ->join('cmapi_sets', 'cmapi_cards.set_cmapi_id', '=', 'cmapi_sets.id')
+                ->selectRaw('cmapi_sets.id as set_id, cmapi_sets.name, COUNT(DISTINCT user_collection.cmapi_card_id) as owned_count')
+                ->whereNotNull('user_collection.cmapi_card_id')
+                ->groupBy('cmapi_sets.id', 'cmapi_sets.name')
+                ->orderBy('owned_count', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($set) use ($currentGame) {
+                    $setName = $set->name;
+                    $setNameEn = is_array($setName) ? ($setName['en'] ?? reset($setName) ?? 'Unknown') : $setName;
+
+                    $totalInSetQuery = \App\Models\Cmapi\CmapiCard::where('set_cmapi_id', $set->set_id);
+                    if ($currentGame) {
+                        $totalInSetQuery->where('game', $currentGame->slug);
+                    }
+                    $totalInSet = $totalInSetQuery->count();
+
+                    $set->name = $setNameEn;
+                    $set->total_in_set = $totalInSet;
+                    $set->completion_percentage = $totalInSet > 0 ? round(($set->owned_count / $totalInSet) * 100, 1) : 0;
+                    return $set;
+                });
+            $topSets = $topSetsQuery;
         } else {
             // TCGCSV
             $topSetsQuery = UserCollection::where('user_id', $userId)
@@ -889,15 +1033,29 @@ class CollectionController extends Controller
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month', 'asc');
-        if ($currentGame) {
-            $timelineQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
-        }
-        // Filter by catalog backend
+
         if ($catalogBackend === 'tcgdex') {
             $timelineQuery->whereNotNull('tcgdex_card_id');
+            if ($currentGame) {
+                $timelineQuery->whereHas('tcgdexCard', function ($q) use ($currentGame) {
+                    $q->whereHas('set', fn ($sq) => $sq->where('game_id', $currentGame->id));
+                });
+            }
+        } elseif ($catalogBackend === 'cmapi') {
+            $timelineQuery->whereNotNull('cmapi_card_id');
+            if ($currentGame) {
+                $timelineQuery->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
+            }
         } else {
+            // TCGCSV
             $timelineQuery->whereNotNull('product_id');
+            if ($currentGame) {
+                $timelineQuery->whereHas('card', fn ($q) => $q->where('game_id', $currentGame->id));
+            }
         }
+
         $timeline = $timelineQuery->get();
         
         // Foil cards count
