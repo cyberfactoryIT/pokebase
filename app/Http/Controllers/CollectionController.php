@@ -71,11 +71,25 @@ class CollectionController extends Controller
                             continue;
                         }
                         $set = $card->set;
+
+                        // Normalize JSON names for TCGDEX (set and card)
+                        $setName = optional($set)->name;
+                        if (is_string($setName) && str_starts_with($setName, '{')) {
+                            $decoded = json_decode($setName, true);
+                            $setName = is_array($decoded) ? ($decoded['en'] ?? reset($decoded) ?? 'Unknown') : $setName;
+                        }
+
+                        $cardName = $card->name;
+                        if (is_string($cardName) && str_starts_with($cardName, '{')) {
+                            $decodedCard = json_decode($cardName, true);
+                            $cardName = is_array($decodedCard) ? ($decodedCard['en'] ?? reset($decodedCard) ?? 'Unknown') : $cardName;
+                        }
+
                         fputcsv($out, [
                             'tcgdex',
                             optional($set)->game_id,
-                            optional($set)->name,
-                            $card->name,
+                            $setName,
+                            $cardName,
                             $card->local_id,
                             $item->quantity,
                             $card->rarity,
