@@ -389,7 +389,8 @@ class CardSearchController extends Controller
                 ]
             );
         }
-            ->orderBy('cmapi_sets.release_date', 'DESC')
+
+        $results->orderBy('cmapi_sets.release_date', 'DESC')
             ->orderBy('cmapi_cards.number', 'ASC')
             ->orderBy('cmapi_cards.id', 'DESC')
             ->limit($limit);
