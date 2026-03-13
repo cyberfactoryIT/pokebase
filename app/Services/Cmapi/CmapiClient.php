@@ -111,7 +111,11 @@ class CmapiClient
             'code' => $episodeData['code'] ?? $episodeData['slug'] ?? null,
             'logo_url' => $episodeData['logo'] ?? $episodeData['logo_url'] ?? null,
             'release_date' => $episodeData['release_date'] ?? $episodeData['released_at'] ?? null,
-            'card_count' => $episodeData['card_count'] ?? $episodeData['total_cards'] ?? null,
+            // Prefer explicit printed total, then total_cards, then generic card_count
+            'card_count' => $episodeData['cards_printed_total']
+                ?? $episodeData['total_cards']
+                ?? $episodeData['card_count']
+                ?? null,
             'raw' => $episodeData,
         ];
     }
