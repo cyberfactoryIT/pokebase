@@ -87,4 +87,10 @@ return [
     'previous' => 'Forrige',
     'next' => 'Næste',
     'no_sets_in_collection' => 'Ingen sæt i din samling endnu',
+
+    // CMAPI missing-cards header
+    'completion' => 'Fuldførelse',
+    'value_missing' => 'Manglende værdi',
+    'missing_cards_from' => 'Manglende kort fra sæt',
+    'view_set' => 'Se sæt',
 ];

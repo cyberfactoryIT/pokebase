@@ -87,4 +87,10 @@ return [
     'previous' => 'Previous',
     'next' => 'Next',
     'no_sets_in_collection' => 'No sets in your collection yet',
+
+    // CMAPI missing-cards header
+    'completion' => 'Completion',
+    'value_missing' => 'Missing value',
+    'missing_cards_from' => 'Missing cards from set',
+    'view_set' => 'View set',
 ];
