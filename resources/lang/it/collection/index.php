@@ -73,4 +73,9 @@ return [
     
     // Search
     'no_cards_found' => 'Nessuna carta trovata',
+
+    'original_price' => 'Prezzo originale',
+    'cards_with_prices' => 'carte con prezzi',
+    'prices_from_cardmarket' => 'Prezzi da Cardmarket (EUR)',
+    'prices_from_tcgplayer' => 'Prezzi da TCGPlayer (USD)',
 ];

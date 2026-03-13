@@ -73,4 +73,9 @@ return [
     
     // Search
     'no_cards_found' => 'No cards found',
+    
+    'original_price' => 'Original price',
+    'cards_with_prices' => 'cards with prices',
+    'prices_from_cardmarket' => 'Prices from Cardmarket (EUR)',
+    'prices_from_tcgplayer' => 'Prices from TCGPlayer (USD)',
 ];

@@ -68,4 +68,9 @@ return [
     
     // Search
     'no_cards_found' => 'Ingen kort fundet',
+    
+    'original_price' => 'Oprindelig pris',
+    'cards_with_prices' => 'kort med priser',
+    'prices_from_cardmarket' => 'Priser fra Cardmarket (EUR)',
+    'prices_from_tcgplayer' => 'Priser fra TCGPlayer (USD)',
 ];
