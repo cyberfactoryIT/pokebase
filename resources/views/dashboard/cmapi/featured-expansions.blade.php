@@ -78,28 +78,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let isUserInteracting = false;
     
     if (carousel && prevBtn && nextBtn) {
-        // Measure original width before cloning for seamless loop
-        const originalWidth = carousel.scrollWidth;
-
-        // Clone items once for infinite scroll
-        const items = Array.from(carousel.querySelectorAll('a'));
-        items.forEach(item => {
-            const clone = item.cloneNode(true);
-            carousel.appendChild(clone);
-        });
-        
-        // Auto scroll function with seamless looping
+        // Auto scroll function with wrap-around
         function autoScroll() {
             if (!isUserInteracting) {
                 const step = 1;
-                const loopWidth = originalWidth; // width of one full sequence
+                const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                const nextPos = carousel.scrollLeft + step;
 
-                carousel.scrollLeft += step;
-
-                // When we've scrolled past the first sequence, jump back by one loop width.
-                // Because we've duplicated content, this jump is seamless.
-                if (carousel.scrollLeft >= loopWidth) {
-                    carousel.scrollLeft -= loopWidth;
+                if (nextPos >= maxScroll) {
+                    // Wrap back to the start when we hit the end
+                    carousel.scrollLeft = 0;
+                } else {
+                    carousel.scrollLeft = nextPos;
                 }
             }
         }
@@ -116,13 +106,28 @@ document.addEventListener('DOMContentLoaded', function() {
             isUserInteracting = false;
         });
         
-        // Manual navigation
+        // Manual navigation with wrap-around
         prevBtn.addEventListener('click', () => {
-            carousel.scrollBy({ left: -200, behavior: 'smooth' });
+            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+
+            if (carousel.scrollLeft <= 0) {
+                // From the start, jump to the end
+                carousel.scrollTo({ left: maxScroll, behavior: 'smooth' });
+            } else {
+                carousel.scrollBy({ left: -200, behavior: 'smooth' });
+            }
         });
         
         nextBtn.addEventListener('click', () => {
-            carousel.scrollBy({ left: 200, behavior: 'smooth' });
+            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+            const nextPos = carousel.scrollLeft + 200;
+
+            if (nextPos >= maxScroll) {
+                // From (or near) the end, jump back to the start
+                carousel.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                carousel.scrollBy({ left: 200, behavior: 'smooth' });
+            }
         });
     }
 });
