@@ -1442,14 +1442,29 @@ class CollectionController extends Controller
                     $q->where('rarity', $rarityFilter);
                 });
             }
+        } elseif ($catalogBackend === 'cmapi') {
+            $cachedQuery->whereNotNull('cmapi_card_id');
+
+            if ($currentGame) {
+                // CMAPI uses string game code (e.g. pokemon, lorcana, onepiece, riftbound)
+                $cachedQuery->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
+            }
+
+            if ($rarityFilter) {
+                $cachedQuery->whereHas('cmapiCard', function ($q) use ($rarityFilter) {
+                    $q->where('rarity', $rarityFilter);
+                });
+            }
         } else {
+            // TCGCSV
             $cachedQuery->whereNotNull('product_id');
-            // Filter by current game (only for TCGCSV)
+
             if ($currentGame) {
                 $cachedQuery->whereHas('card', fn($q) => $q->where('game_id', $currentGame->id));
             }
             
-            // Apply rarity filter for TCGCSV
             if ($rarityFilter) {
                 $cachedQuery->whereHas('card', function($q) use ($rarityFilter) {
                     $q->where('rarity', $rarityFilter);
@@ -1486,7 +1501,23 @@ class CollectionController extends Controller
                     $q->where('rarity', $rarityFilter);
                 });
             }
+        } elseif ($catalogBackend === 'cmapi') {
+            $uncachedQuery->whereNotNull('cmapi_card_id')
+                          ->with('cmapiCard');
+
+            if ($currentGame) {
+                $uncachedQuery->whereHas('cmapiCard', function ($q) use ($currentGame) {
+                    $q->where('game', $currentGame->slug);
+                });
+            }
+
+            if ($rarityFilter) {
+                $uncachedQuery->whereHas('cmapiCard', function ($q) use ($rarityFilter) {
+                    $q->where('rarity', $rarityFilter);
+                });
+            }
         } else {
+            // TCGCSV
             $uncachedQuery->whereNotNull('product_id')
                          ->with([
                              'card.prices' => function($q) {
@@ -1511,6 +1542,16 @@ class CollectionController extends Controller
         $uncachedItems = $uncachedQuery->get();
         
         foreach ($uncachedItems as $item) {
+            // CMAPI pricing
+            if ($item->cmapi_card_id && $item->cmapiCard) {
+                $priceEur = $item->cmapiCard->price_eur ?? 0;
+                if ($priceEur > 0) {
+                    $totalValueEur += $priceEur * $item->quantity;
+                    $totalValueUsd += ($priceEur * 1.10) * $item->quantity;
+                }
+                continue;
+            }
+
             // TCGDEX pricing
             if ($item->tcgdex_card_id && $item->tcgdexCard) {
                 $pricing = $item->tcgdexCard->raw['pricing'] ?? null;

@@ -309,6 +309,14 @@ class CardSearchController extends Controller
         // Escape LIKE wildcards to prevent injection
         $escapedQuery = $this->escapeLikeWildcards($query);
         
+        // Support queries like "189/165" (card number / set total)
+        $numberPart = null;
+        $totalPart = null;
+        if (preg_match('/^\s*(\d+)\s*\/\s*(\d+)\s*$/', $query, $matches)) {
+            $numberPart = $matches[1];
+            $totalPart = (int) $matches[2];
+        }
+        
         // Build search query
         $results = CmapiCard::query()
             ->select([
@@ -342,26 +350,48 @@ class CardSearchController extends Controller
         }
         
         // Search by:
+        // - Full "number/total" match if user typed it (e.g. "189/165")
         // - Card name
         // - Card number (like "1", "001")
         // - Set episode (like "1", "2")
         // - Set name
-        $results->where(function($q) use ($escapedQuery) {
-                $q->where('cmapi_cards.name', 'LIKE', "%{$escapedQuery}%")
-                  ->orWhere('cmapi_cards.number', 'LIKE', "%{$escapedQuery}%")
-                  ->orWhere('cmapi_sets.cmapi_episode', 'LIKE', "%{$escapedQuery}%")
-                  ->orWhere('cmapi_sets.name', 'LIKE', "%{$escapedQuery}%");
+        $results->where(function($q) use ($escapedQuery, $numberPart, $totalPart) {
+                if ($numberPart !== null) {
+                    // Exact composite match on number + set card_count
+                    $q->where(function ($qq) use ($numberPart, $totalPart) {
+                        $qq->where('cmapi_cards.number', $numberPart);
+                        if ($totalPart > 0) {
+                            $qq->where('cmapi_sets.card_count', $totalPart);
+                        }
+                    });
+                } else {
+                    $q->where('cmapi_cards.name', 'LIKE', "%{$escapedQuery}%")
+                      ->orWhere('cmapi_cards.number', 'LIKE', "%{$escapedQuery}%")
+                      ->orWhere('cmapi_sets.cmapi_episode', 'LIKE', "%{$escapedQuery}%")
+                      ->orWhere('cmapi_sets.name', 'LIKE', "%{$escapedQuery}%");
+                }
             })
             ->orderByRaw(
                 'CASE 
-                    WHEN cmapi_cards.number = ? THEN 0
-                    WHEN cmapi_sets.cmapi_episode = ? THEN 1
-                    WHEN cmapi_cards.name LIKE ? THEN 2 
-                    WHEN cmapi_cards.number LIKE ? THEN 3
-                    WHEN cmapi_sets.name LIKE ? THEN 4
-                    ELSE 5 
+                    WHEN ? IS NOT NULL AND ? > 0 AND cmapi_cards.number = ? AND cmapi_sets.card_count = ? THEN 0
+                    WHEN cmapi_cards.number = ? THEN 1
+                    WHEN cmapi_sets.cmapi_episode = ? THEN 2
+                    WHEN cmapi_cards.name LIKE ? THEN 3 
+                    WHEN cmapi_cards.number LIKE ? THEN 4
+                    WHEN cmapi_sets.name LIKE ? THEN 5
+                    ELSE 6 
                 END',
-                [$escapedQuery, $escapedQuery, "{$escapedQuery}%", "{$escapedQuery}%", "{$escapedQuery}%"]
+                [
+                    $numberPart,
+                    $totalPart,
+                    $numberPart,
+                    $totalPart,
+                    $escapedQuery,
+                    $escapedQuery,
+                    "{$escapedQuery}%",
+                    "{$escapedQuery}%",
+                    "{$escapedQuery}%",
+                ]
             )
             ->orderBy('cmapi_sets.release_date', 'DESC')
             ->orderBy('cmapi_cards.number', 'ASC')
