@@ -318,6 +318,16 @@ class CardSearchController extends Controller
     {
         // Escape LIKE wildcards to prevent injection
         $escapedQuery = $this->escapeLikeWildcards($query);
+
+        // Detect queries like "185/165" (card number / total cards in set)
+        $isCompositeNumber = false;
+        $numberPart = null;
+        $totalPart = null;
+        if (preg_match('/^\s*(\d+)\s*\/\s*(\d+)\s*$/', $query, $matches)) {
+            $isCompositeNumber = true;
+            $numberPart = $matches[1];
+            $totalPart = (int) $matches[2];
+        }
         
         // Build search query
         $results = CmapiCard::query()
