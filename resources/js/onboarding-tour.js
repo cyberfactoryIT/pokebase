@@ -110,15 +110,28 @@ function setupOnboardingAutoStart() {
     }, 600);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function setupOnboardingBindings() {
     // Manual trigger buttons
     document.querySelectorAll('[data-onboarding-show-tour="true"]').forEach((button) => {
+        // Avoid attaching duplicate listeners
+        if (button.__onboardingBound) {
+            return;
+        }
+        button.__onboardingBound = true;
+
         button.addEventListener('click', (event) => {
             event.preventDefault();
-            startOnboardingTour({ auto: false });
+            // Small delay to make sure Livewire/Alpine-rendered elements are present
+            setTimeout(() => startOnboardingTour({ auto: false }), 200);
         });
     });
 
     setupOnboardingAutoStart();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupOnboardingBindings);
+} else {
+    setupOnboardingBindings();
+}
 
