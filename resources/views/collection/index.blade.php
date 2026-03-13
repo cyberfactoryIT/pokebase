@@ -269,7 +269,16 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">{{ __('collection/index.collection_value') }}</p>
+                        <p class="text-gray-400 text-sm flex items-center gap-1">
+                            {{ __('collection/index.collection_value') }}
+                            <button type="button"
+                                    class="text-gray-400 hover:text-gray-200 focus:outline-none"
+                                    aria-label="{{ __('tooltips.collection_value') }}"
+                                    data-tooltip="{{ __('tooltips.collection_value') }}"
+                                    data-tooltip-placement="top">
+                                <i class="fa fa-circle-question text-xs"></i>
+                            </button>
+                        </p>
                         
                         @if($preferredCurrency)
                             <!-- User has preferred currency - show converted price with original -->
@@ -315,11 +324,29 @@
                             </p>
                         @endif
                         
-                        <p class="text-gray-500 text-xs mt-1" x-show="currency === 'EUR'">
-                            {{ $valuation['cards_with_prices_eur'] }}/{{ $stats['unique_cards'] }} {{ __('collection/index.cards_with_prices') }}
+                        <p class="text-gray-500 text-xs mt-1 flex items-center gap-1" x-show="currency === 'EUR'">
+                            <span>
+                                {{ $valuation['cards_with_prices_eur'] }}/{{ $stats['unique_cards'] }} {{ __('collection/index.cards_with_prices') }}
+                            </span>
+                            <button type="button"
+                                    class="text-gray-500 hover:text-gray-300 focus:outline-none"
+                                    aria-label="{{ __('tooltips.cards_with_prices') }}"
+                                    data-tooltip="{{ __('tooltips.cards_with_prices') }}"
+                                    data-tooltip-placement="top">
+                                <i class="fa fa-circle-question text-[10px]"></i>
+                            </button>
                         </p>
-                        <p class="text-gray-500 text-xs mt-1" x-show="currency === 'USD'">
-                            {{ $valuation['cards_with_prices_usd'] }}/{{ $stats['unique_cards'] }} {{ __('collection/index.cards_with_prices') }}
+                        <p class="text-gray-500 text-xs mt-1 flex items-center gap-1" x-show="currency === 'USD'">
+                            <span>
+                                {{ $valuation['cards_with_prices_usd'] }}/{{ $stats['unique_cards'] }} {{ __('collection/index.cards_with_prices') }}
+                            </span>
+                            <button type="button"
+                                    class="text-gray-500 hover:text-gray-300 focus:outline-none"
+                                    aria-label="{{ __('tooltips.cards_with_prices') }}"
+                                    data-tooltip="{{ __('tooltips.cards_with_prices') }}"
+                                    data-tooltip-placement="top">
+                                <i class="fa fa-circle-question text-[10px]"></i>
+                            </button>
                         </p>
                     </div>
                 </div>
