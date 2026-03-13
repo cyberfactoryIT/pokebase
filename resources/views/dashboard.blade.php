@@ -10,7 +10,7 @@
         @endif
         
         <!-- Welcome Header with License Badge and Quick Actions -->
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-4" data-tour="dashboard">
             <h2 class="font-semibold text-xl text-white">
                 {{ __('messages.welcome').' '.Auth::user()->name }}!
             </h2>
@@ -64,13 +64,20 @@
                 </div>
                 
                 @if(!$isPremium)
-                    <a href="{{ route('pricing') }}" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white text-sm font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                    <a href="{{ route('pricing') }}" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white text-sm font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" data-tour="upgrade">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                         </svg>
                         Upgrade
                     </a>
                 @endif
+
+                <!-- Onboarding Tour Trigger -->
+                <button type="button"
+                        class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-gray-300 border border-white/10 transition"
+                        data-onboarding-show-tour="true">
+                    {{ __('onboarding.show_tour') }}
+                </button>
             </div>
         </div>
 

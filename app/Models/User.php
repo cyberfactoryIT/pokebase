@@ -75,6 +75,8 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
             'privacy_accepted_at' => 'datetime',
+            'onboarding_tour_completed_at' => 'datetime',
+            'onboarding_tour_skipped_at' => 'datetime',
         ];
     }
 

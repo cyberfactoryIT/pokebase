@@ -162,6 +162,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/process', [\App\Http\Controllers\CheckoutController::class,'processPayment'])->name('checkout.process');
     Route::get('/checkout/success', [\App\Http\Controllers\CheckoutController::class,'success'])->name('checkout.success');
     Route::get('/checkout/cancel', [\App\Http\Controllers\CheckoutController::class,'cancel'])->name('checkout.cancel');
+
+    // Onboarding tour state
+    Route::post('/onboarding-tour/completed', [\App\Http\Controllers\OnboardingTourController::class, 'completed'])
+        ->name('onboarding-tour.completed');
+    Route::post('/onboarding-tour/skipped', [\App\Http\Controllers\OnboardingTourController::class, 'skipped'])
+        ->name('onboarding-tour.skipped');
+    Route::post('/onboarding-tour/reset', [\App\Http\Controllers\OnboardingTourController::class, 'reset'])
+        ->name('onboarding-tour.reset');
 });
 
 Route::middleware(['web', 'auth'])->prefix('admin')->group(function () {

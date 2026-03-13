@@ -1,6 +1,7 @@
 import './bootstrap';
 import './cardSearch';
 import './quickAddCard';
+import './onboarding-tour';
 
 import Alpine from 'alpinejs';
 

@@ -13,12 +13,52 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
-    <!-- Analytics Config -->
+    @php
+        $shouldAutoStartOnboardingTour = auth()->check()
+            && request()->routeIs('dashboard')
+            && auth()->user()->onboarding_tour_completed_at === null
+            && auth()->user()->onboarding_tour_skipped_at === null;
+
+        $onboardingTourConfig = [
+            'buttons' => [
+                'next' => __('onboarding.buttons.next'),
+                'previous' => __('onboarding.buttons.previous'),
+                'done' => __('onboarding.buttons.done'),
+                'skip' => __('onboarding.buttons.skip'),
+            ],
+            'steps' => [
+                'dashboard' => [
+                    'title' => __('onboarding.steps.dashboard.title'),
+                    'description' => __('onboarding.steps.dashboard.description'),
+                ],
+                'search' => [
+                    'title' => __('onboarding.steps.search.title'),
+                    'description' => __('onboarding.steps.search.description'),
+                ],
+                'collection' => [
+                    'title' => __('onboarding.steps.collection.title'),
+                    'description' => __('onboarding.steps.collection.description'),
+                ],
+                'deck' => [
+                    'title' => __('onboarding.steps.deck.title'),
+                    'description' => __('onboarding.steps.deck.description'),
+                ],
+                'upgrade' => [
+                    'title' => __('onboarding.steps.upgrade.title'),
+                    'description' => __('onboarding.steps.upgrade.description'),
+                ],
+            ],
+        ];
+    @endphp
+
+    <!-- Analytics & App Config -->
     <script>
         window.appConfig = {
             analyticsType: '{{ config("services.analytics.type") }}',
             analyticsId: '{{ config("services.analytics.id") }}',
-            analyticsEnabled: {{ config("services.analytics.enabled") ? 'true' : 'false' }}
+            analyticsEnabled: {{ config("services.analytics.enabled") ? 'true' : 'false' }},
+            shouldAutoStartOnboardingTour: {{ $shouldAutoStartOnboardingTour ? 'true' : 'false' }},
+            onboardingTour: <?php echo json_encode($onboardingTourConfig); ?>,
         };
     </script>
     

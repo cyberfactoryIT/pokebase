@@ -79,6 +79,7 @@
                         placeholder="Search cards..."
                         class="px-3 py-1.5 w-64 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-white/40 text-sm"
                         @focus="searchOpen = true"
+                        data-tour="search-cards"
                     >
                     <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 mt-1 bg-[#1a1a19] border border-white/20 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
                         <!-- Results will be inserted here by JS -->
@@ -86,7 +87,7 @@
                 </div>
 
                 <!-- Collection Icon -->
-                <a href="{{ route('collection.index') }}" class="p-2 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition {{ request()->routeIs('collection.*') ? 'bg-white/10 text-white' : '' }}" title="{{ __('tcg/interactions.likes_title') }}">
+                <a href="{{ route('collection.index') }}" class="p-2 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition {{ request()->routeIs('collection.*') ? 'bg-white/10 text-white' : '' }}" title="{{ __('tcg/interactions.likes_title') }}" data-tour="collection">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                     </svg>
@@ -116,7 +117,7 @@
 
                 <!-- Decks Dropdown -->
                 <div class="relative" x-data="{ decksOpen: false }">
-                    <button @click="decksOpen = !decksOpen" class="p-2 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition {{ request()->routeIs('decks.*') ? 'bg-white/10 text-white' : '' }}" title="My Decks">
+                    <button @click="decksOpen = !decksOpen" class="p-2 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition {{ request()->routeIs('decks.*') ? 'bg-white/10 text-white' : '' }}" title="My Decks" data-tour="deck">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
                         </svg>
